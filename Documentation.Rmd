@@ -1,0 +1,57 @@
+---
+title: "Measurement quality monitoring"
+author: "Team MQM"
+date: "6/12/2017"
+output: html_document
+---
+
+## Introduction
+
+Here comes an introduction about our work in the innovation week. 
+
+You can add bullets:
+* first item
+* second
+* another
+
+And add different headers:
+
+# very bif
+## bit smaller
+### and so on
+
+In the chunk below r code is included (also others are like python are possible)
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r }
+library(RSQLite)
+source("inlog_testdata.R")
+
+# sqlite = dbDriver("SQLite")
+
+#con<-dbConnect(drv=RSQLite::SQLite(),user=name,password=passwrd,host="bvmlab-218-30.knmi.nl",dbfile="test_data")#
+
+# tab<-dbListTables(con)
+# results = dbSendQuery(con,'select * from tab')
+# data = fetch(results)
+```
+
+## Test data
+
+The test data is stored 
+
+```{r testdata}
+inputfiles<-list.files("/home/dirksen/Hackathon-RDWD-QualityMonitoring/data/testdata/",full.names = TRUE)
+saveRDS(inputfiles,"data/testdata.rda")
+cat(inputfiles)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
