@@ -37,19 +37,20 @@ source("inlog_testdata.R")
 
 # sqlite = dbDriver("SQLite")
 
-con<-dbConnect(drv=RSQLite::SQLite(),user=name,password=passwrd,host="bvmlab-218-30.knmi.nl",dbfile="test_data")
+#con<-dbConnect(drv=RSQLite::SQLite(),user=name,password=passwrd,host="bvmlab-218-30.knmi.nl",dbfile="test_data")#
 
-tab<-dbListTables(con)
-results = dbSendQuery(con,'select * from tab')
-data = fetch(results)
+# tab<-dbListTables(con)
+# results = dbSendQuery(con,'select * from tab')
+# data = fetch(results)
 ```
 
-## Including Plots
+## Test data
 
-You can also embed plots, for example:
+The test data is stored 
 
-```{bash}
-plot(pressure)
+```{r testdata}
+inputfiles<-list.files("/home/dirksen/Hackathon-RDWD-QualityMonitoring/data/testdata/")
+cat(inputfiles)
 ```
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

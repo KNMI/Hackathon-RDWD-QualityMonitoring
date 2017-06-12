@@ -2,7 +2,5 @@
 .Rhistory
 .RData
 .Ruserdata
-inlog_testdata.R
-data
-config
-
+data/testdata
+config/inlog_testdata.R
