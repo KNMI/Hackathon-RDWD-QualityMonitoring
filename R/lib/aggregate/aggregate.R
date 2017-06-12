@@ -1,5 +1,6 @@
 library(data.table)
 
+#' Load in test data from Mariekes directory
 grab.test.data <- function() {
   marieke.dir <- "/home/dirksen/Hackathon-RDWD-QualityMonitoring/data/testdata/"
   
@@ -14,6 +15,8 @@ grab.test.data <- function() {
   return(data.tables)
 }
 
+#'
+#' @param aggregate88 The 8-8 aggregated data to be further aggregated to seasonal
 aggregate.to.seasonal <- function(aggregate88) {
   winter <- c(12, 1, 2)
   spring <- c(3, 4, 5)
@@ -44,6 +47,11 @@ aggregate.to.seasonal <- function(aggregate88) {
   return(aggregate.seasonal)
 }
 
+#'
+#' @param raw The raw data to be aggregated to 8-8 data
+aggregate.to.88 <- function(raw) {
+  
+}
 
 
 
