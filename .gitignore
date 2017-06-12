@@ -2,3 +2,6 @@
 .Rhistory
 .RData
 .Ruserdata
+
+inlog_testdata.R
+function_AWS_dayaggregation.R
