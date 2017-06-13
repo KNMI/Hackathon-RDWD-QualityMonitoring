@@ -46,6 +46,9 @@ grab.test.data <- function() {
 
 aggregate.to.seasonal <- function(aggregate88) {
   
+  cfg <- config::get(file = "config/config.yml")
+  data.availability.threshold <- cfg$data.availability.threshold
+  
   # Define meteorological seasons
   winter <- c(12, 1, 2)
   spring <- c(3, 4, 5)
@@ -127,6 +130,9 @@ aggregate.to.seasonal <- function(aggregate88) {
 
 
 aggregate.to.88 <- function(hourly) {
+  
+  cfg <- config::get(file = "config/config.yml")
+  data.availability.threshold <- cfg$data.availability.threshold
   
   names(hourly) <- c("date", "hour", "value")
 

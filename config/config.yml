@@ -4,7 +4,7 @@ default:
   password : "welkom4MQM@K"
   host : "145.23.219.9"
   port : 3306
-  min.NA : 0.8
+  data.availability.threshold : 0.8
 
 test:
   test.data.dir : "/home/dirksen/Hackathon-RDWD-QualityMonitoring/data/testdata/"
