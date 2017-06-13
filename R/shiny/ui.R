@@ -2,28 +2,34 @@ library(shiny)
 
 #title above navbar
 
+fluidPage(
 
-navbarPage("Inhomogenity detection",
-           titlePanel("Hello Shiny!"),
-           tabPanel("Introduction",
+  h1("Inhomogenity detection", align = "center"),
+
+navbarPage("",
+           tabPanel("Alerts",
                     fluidRow(
-                      h1('Alerts'),
-                      p('Alarm if there is a break')
+                      
+                      includeMarkdown("Warning_example.Rmd")
                       ),
                     
+                    
+                    
                     fluidRow(
-                      column(6,plotOutput("plot")),
+                      
+                      column(6,class = "well",style = "background-color:red",plotOutput("plot")),
                       column(6,h4("quantiles"),
                              tableOutput("summary"))
                     )),
                     tabPanel("Background information",
                     fluidRow(
-                      column(6,h1('There are large differences!'),
-                             text('Alert! What is going on? Parameters, Meetnetwerken, Significant? What to do? Some basic info
-                                  Extra: What is the process behind this alert?')
-                        ))
+                      
+                        includeMarkdown("Background_info_example.Rmd")
+                        )
            )
 
            )
+
+)
 
            
