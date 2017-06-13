@@ -19,7 +19,8 @@ grab.test.data <- function() {
 }
 
 #' @title Aggregate 8am to 8am data to yearly sums and seasonal sums
-#' @description Since the variability is seasonal dependent we would like to be able to compare certain seasons only
+#' @description Since the variability is seasonal dependent we would like to be able to compare certain seasons only. 
+#' @details When data availability is below 80% in a season (i.e. >18 days missing), or a year (i.e. > 73 days missing), the aggregation becomes -9999.
 #' @param aggregate88 The 8-8 aggregated data to be further aggregated to seasonal
 #' @example aggregated.seasonal <- aggregate.to.seasonal(data.tables$`DeBilt_550_N_8-8daily_precip`)
 #' @author Jurian
