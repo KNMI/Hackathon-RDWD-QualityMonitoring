@@ -1,13 +1,6 @@
-# function to determine dif between AWS and Manual. 
-# input: timeseries of (average) AWS and (average) manual gauge. 
-# Assumption: the input contains 1 timecolumn and only 1 value column named 'average', and NA values are indicated with '-9999'.
-# output: a single timeseries of relative differences between the two.
-
-#' @example input files:
-# files <- grab.test.data()
-# AWS_timeserie <- files$Almelo_664_N_seasonal_precip[,c(1,3)]
-# Man_timeserie <- files$Enschede_665_N_seasonal_precip[,c(1,3)]
-# names(AWS_timeserie) <- names(Man_timeserie) <- c("time", "average")
+#' @example input; files <- grab.test.data(); AWS_timeserie <- files$Almelo_664_N_seasonal_precip[,c(1,3)]; Man_timeserie <- files$Enschede_665_N_seasonal_precip[,c(1,3)]; names(AWS_timeserie) <- names(Man_timeserie) <- c("time", "average")
+#' @param AWS_timeserie The input contains 1 timecolumn and only 1 value column with AWS precipitation averages named 'average', and NA values are indicated with '-9999'.
+#' @param Man_timeserie The input contains 1 timecolumn and only 1 value column with Man precipitation averages named 'average', and NA values are indicated with '-9999'.
 
 relative.difference <- function(AWS_timeserie, Man_timeserie){
 
