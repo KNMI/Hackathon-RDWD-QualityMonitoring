@@ -28,7 +28,8 @@ aggregate.to.seasonal <- function(aggregate88) {
   names(aggregate88) <- c("date", "value")
   # Convert the character vector to a date so we can perform operations like month() and year()
   aggregate88$date <- as.Date(as.character(aggregate88$date), format="%Y%m%d")
-  
+  aggregate88$value[which(aggregate88$value == -9999)] <- NA
+    
   # Collect months
   aggregate88$month <- month(aggregate88$date)
   # Collect years
@@ -46,16 +47,26 @@ aggregate.to.seasonal <- function(aggregate88) {
   aggregate88$season[aggregate88$month %in% autumn] <- "autumn"
   # Make sure the columns are in the correct ordering
   aggregate88$season <- factor(aggregate88$season, levels = c("winter", "spring", "summer", "autumn"))
-  
+
+  # Find the locations where value is NA
+  year_season_NAvalues <- aggregate88[which(is.na(aggregate88$value)),c(4,5)]
+  NAvaluestable <- as.data.frame(table(year_season_NAvalues))
+  # A season has 365/4 = 91.25 days. 80% data availability corresponds with no more than 18 days with NA values. 
+  seasons_with_over20percent_NAvalues <- NAvaluestable[which(NAvaluestable$Freq>18),c(1,2)]
+  year_NAvalues <- aggregate88$year[which(is.na(aggregate88$value))]
+  NAvaluestable <- as.data.frame(table(year_NAvalues))
+  # 80% data availability corresponds with no more than 73 days with NA values. 
+  years_with_over20percent_NAvalues <- as.character(NAvaluestable[which(NAvaluestable$Freq>73),1])
+    
   # Create a data.table for calendar yearly sums
-  yearly.sums <- data.table(aggregate(list(y = aggregate88$value), by = list(year = year(aggregate88$date)), sum))
+  yearly.sums <- data.table(aggregate(list(y = aggregate88$value), by = list(year = year(aggregate88$date)), sum, na.rm=T))
   # Set key for really fast merging later on
   setkey(yearly.sums, year)
   
   # Create a list of data.tables, one for each season, this makes it easier to merge later on than
   # aggregating by year AND season at once. This is because we need them merged column wise and not row wise.
   aggregate.sums <- by(aggregate88, aggregate88$season, function(x) {
-    seasonal.sum <- data.table(aggregate(list(value = x$value), list(year = x$year), sum))
+    seasonal.sum <- data.table(aggregate(list(value = x$value), list(year = x$year), sum, na.rm=T))
     # Set key for really fast merging later on
     setkey(seasonal.sum, year)
     return(seasonal.sum)
@@ -67,6 +78,10 @@ aggregate.to.seasonal <- function(aggregate88) {
   names(aggregate.seasonal) <- c("year", "djf", "mam", "jja", "son")
   # Merge the yearly sums with the seasonal sums
   aggregate.seasonal <- merge(yearly.sums, aggregate.seasonal, by = "year")
+  
+  # Insert NA for output that has been constructed on less than 80% data availability. 
+  aggregate.seasonal$y[which( aggregate.seasonal$year %in% years_with_over20percent_NAvalues)] <- -999
+  aggregate.seasonal$djf
   
   # Profit!
   return(aggregate.seasonal)
@@ -100,7 +115,7 @@ aggregate.to.88 <- function(hourly) {
 
   days_with_NAvalues <- time_agg[which(is.na(rainselec))] # if more than 4 hours per 24 hours is NA, the dayvalue should be NA (>80% data availability rule)
   NAvaluestable <- as.data.frame(table(days_with_NAvalues))
-  days_with_over20percent_NAvalues <- as.numeric(as.character( NAvaluestable[which(NAvaluestable[,2]>4),1] ))
+  days_with_over20percent_NAvalues <- as.numeric(as.character( NAvaluestable[which(NAvaluestable$Freq>4),1] ))
   
   rain_agg <- setDT(as.data.frame(rainselec))[,lapply(.SD,sum, na.rm=T),by=.(time_agg)]$rainselec
   rain_agg[days_with_over20percent_NAvalues] <- -9999
