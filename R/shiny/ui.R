@@ -1,29 +1,45 @@
 library(shiny)
 
-#title above navbar
+# Run using:
+# runApp("~/Hackathon-RDWD-QualityMonitoring/R/shiny")
 
+fluidPage(
 
-navbarPage("Inhomogenity detection",
-           titlePanel("Hello Shiny!"),
-           tabPanel("Introduction",
-                    fluidRow(
-                      h1('Alerts'),
-                      p('Alarm if there is a break')
-                      ),
-                    
-                    fluidRow(
-                      column(6,plotOutput("plot")),
-                      column(6,h4("quantiles"),
-                             tableOutput("summary"))
-                    )),
-                    tabPanel("Background information",
-                    fluidRow(
-                      column(6,h1('There are large differences!'),
-                             text('Alert! What is going on? Parameters, Meetnetwerken, Significant? What to do? Some basic info
-                                  Extra: What is the process behind this alert?')
-                        ))
-           )
+  #title above navbar
+  h1("Inhomogenity detection", align = "center"),
 
-           )
+  navbarPage("",
+    tabPanel("Alerts",
+      fluidRow(
+        includeMarkdown("Warning_example.Rmd")
+      ),
+      fluidRow(
+        column(6,
+          div(class = "panel panel-danger", 
+            div(class="panel-heading", "title"),
+            div(class="panel-body", 
+              div("Body"),
+              div(plotOutput("plot"))
+            )
+          )
+        ),
+        column(6,
+          h4("quantiles"),
+          tableOutput("summary")
+        )
+      )
+    ),
+    tabPanel("Overview",
+      fluidRow(
+        p("table: red/green, plotje on white board")
+      )
+    ),
+    tabPanel("Background information",
+      fluidRow(
+        includeMarkdown("Background_info_example.Rmd")
+      )
+    )
+  )
+)
 
            
