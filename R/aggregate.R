@@ -1,3 +1,8 @@
+library(data.table)
+library(config)
+
+Sys.setenv(R_CONFIG_ACTIVE = "test")
+
 #' Load test data
 #' 
 #' @title Load test data
@@ -12,7 +17,10 @@
 #' @author Jurian and Lotte
 
 grab.test.data <- function() {
-  marieke.dir <- "/home/dirksen/Hackathon-RDWD-QualityMonitoring/data/testdata/"
+  
+  cfg <- config::get(file = "config/config.yml")
+  
+  marieke.dir <- cfg$test.data.dir
   
   data.names <- lapply(list.files(marieke.dir), function(x) {
     name <- substr(x, 0, nchar(x) - 4)
