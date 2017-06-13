@@ -1,9 +1,11 @@
-#' @title 
-#' @description 
-#' @example input; files <- grab.test.data(); AWS_timeserie <- files$Almelo_664_N_seasonal_precip[,c(1,3)]; Man_timeserie <- files$Enschede_665_N_seasonal_precip[,c(1,3)]; names(AWS_timeserie) <- names(Man_timeserie) <- c("time", "average")
+#' Relative difference
+#' 
+#' #@example input; files <- grab.test.data(); AWS_timeserie <- files$Almelo_664_N_seasonal_precip[,c(1,3)]; Man_timeserie <- files$Enschede_665_N_seasonal_precip[,c(1,3)]; names(AWS_timeserie) <- names(Man_timeserie) <- c("time", "average")
 #' @param AWS_timeserie The input contains 1 timecolumn and only 1 value column with AWS precipitation averages named 'average', and NA values are indicated with '-9999'.
-#' @param Man_timeserie The input contains 1 timecolumn and only 1 value column with Man precipitation averages named 'average', and NA values are indicated with '-9999'.
 #' @author Antonello
+#' @param Man_timeserie The input contains 1 timecolumn and only 1 value column with Man precipitation averages named 'average', and NA values are indicated with '-9999'.
+#' @export
+
 relative.difference <- function(AWS_timeserie, Man_timeserie){
 
   # control statements
@@ -22,4 +24,4 @@ relative.difference <- function(AWS_timeserie, Man_timeserie){
   return(output)
 }
 
-relative.difference(AWS_timeserie, Man_timeserie)
+# relative.difference(AWS_timeserie, Man_timeserie)
