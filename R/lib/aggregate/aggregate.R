@@ -72,9 +72,12 @@ aggregate.to.seasonal <- function(aggregate88) {
   return(aggregate.seasonal)
 }
 
-#'
+#' @title Aggregate hourly data to daily from 8am to 8am the next day
+#' @description Rain is measured hourly in the automatic weather stations, this needs to be converted to
+#' sums from 8 am to 8 am on the next day.
 #' @param hourly The hourly data to be aggregated to 8-8 data
 #' @example aggregated88 <- aggregate.to.88(data.tables$`DeBilt_260_H_hourly_precip`)
+#' @author Lotte
 aggregate.to.88 <- function(hourly) {
   
   names(hourly) <- c("date", "hour", "value")
