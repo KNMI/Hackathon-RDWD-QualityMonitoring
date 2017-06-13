@@ -8,15 +8,17 @@ settings <- list(
   port = 3306
 )
 
-setup.db <- function(settings) {
+setup.db <- function() {
+  
+  cfg <- config::get(file = "config/config.yml")
+  
   dbConnect(RMySQL::MySQL(), 
-            dbname = settings$dbname, 
-            username = settings$username,
-            password = settings$password, 
-            host = settings$host, 
-            port = settings$port)
+            dbname = cfg$dbname, 
+            username = cfg$username,
+            password = cfg$password, 
+            host = cfg$host, 
+            port = cfg$port)
 }
-
 
 query.hourly <- function(db) {
   
