@@ -1,9 +1,13 @@
 library(shiny)
 
-navbarPage("Break Detection",
+#title above navbar
+
+
+navbarPage("Inhomogenity detection",
+           titlePanel("Hello Shiny!"),
            tabPanel("Introduction",
                     fluidRow(
-                      h1('Introduction'),
+                      h1('Alerts'),
                       p('Alarm if there is a break')
                       ),
                     
@@ -12,15 +16,14 @@ navbarPage("Break Detection",
                       column(6,h4("quantiles"),
                              tableOutput("summary"))
                     )),
-                    tabPanel("Differences",
+                    tabPanel("Background information",
                     fluidRow(
-                      column(6,h1('There are large differences!')
+                      column(6,h1('There are large differences!'),
+                             text('Alert! What is going on? Parameters, Meetnetwerken, Significant? What to do? Some basic info
+                                  Extra: What is the process behind this alert?')
                         ))
-           ),
-           tabPanel("Something else",
-                    fluidRow(
-                      column(5,h1('Another Panel'))
+           )
 
            )
-))
+
            
