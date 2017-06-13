@@ -74,16 +74,18 @@ aggregate.to.seasonal <- function(aggregate88) {
 
 #'
 #' @param hourly The hourly data to be aggregated to 8-8 data
-#' @example aggregated88 <- aggregate.to.88(data.tables$`DeBilt_260_H_hourly_precip`)
+#' @example aggregate88 <- aggregate.to.88(data.tables$`DeBilt_260_H_hourly_precip`)
 aggregate.to.88 <- function(hourly) {
   
   names(hourly) <- c("date", "hour", "value")
-  
+
   # Convert the character vector to a date
-  hourly$date <- as.Date(as.character(hourly$date), format="%Y%m%d")
+  # hourly$date <- as.Date(as.character(hourly$date), format="%Y%m%d")
   hourly$hour <- as.integer(hourly$hour) / 10000
 
   rain <- hourly$value    
+  rain[which(rain==-9999)] <- NA 
+  
 
   # Make timeline of timestamps 0800 indicating the end of each day
   # Use integers for really fast comparison
@@ -95,7 +97,13 @@ aggregate.to.88 <- function(hourly) {
   nrdays <- length(first_timestep:last_timestep) / 24
   time_agg <- rep(1:nrdays, each = 24 )
   rainselec <- rain[first_timestep:last_timestep]  
-  rain_agg <- setDT(as.data.frame(rainselec))[,lapply(.SD,sum),by=.(time_agg)]$rainselec
+
+  days_with_NAvalues <- time_agg[which(is.na(rainselec))] # if more than 4 hours per 24 hours is NA, the dayvalue should be NA (>80% data availability rule)
+  NAvaluestable <- as.data.frame(table(days_with_NAvalues))
+  days_with_over20percent_NAvalues <- as.numeric(as.character( NAvaluestable[which(NAvaluestable[,2]>4),1] ))
+  
+  rain_agg <- setDT(as.data.frame(rainselec))[,lapply(.SD,sum, na.rm=T),by=.(time_agg)]$rainselec
+  rain_agg[days_with_over20percent_NAvalues] <- -9999
   
   # output file
   aggregated_data <- hourly[seq((first_timestep + 23 ), last_timestep, by = 24), 1]
