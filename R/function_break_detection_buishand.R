@@ -1,11 +1,9 @@
-#' Break detection
 #' @title Break detection with Buishand method
 #' @description Function for break detection in a yearly or seasonal series that uses the Buishand cumulative test. It needs a table with two columns (year and value). the input is temporarily downloaded by the dummy data
-#' @param df.difference An input table with two columns: year and difference
 #' @author Antonello Squintu
 
 
-break.detection <- function(df.difference){
+break.detection <- function(input){
 
 #Package "climtrends" is needed
 library("climtrends")
@@ -17,7 +15,7 @@ library("climtrends")
 # diff=read.table(diff_files)
   
 #Setting of the input table  
-diff=df.difference
+diff=input
 colnames(diff)=c('year','diff')
 diff$year=as.numeric(diff$year)
 
