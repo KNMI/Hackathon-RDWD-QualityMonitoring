@@ -1,13 +1,5 @@
 library(RMySQL)
 
-settings <- list(
-  dbname = "mqm_db",
-  username = "MQMuser",
-  password = "NA",
-  host = "145.23.219.9",
-  port = 3306
-)
-
 setup.db <- function() {
   
   cfg <- config::get(file = "config/config.yml")
