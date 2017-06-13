@@ -1,6 +1,9 @@
 library(data.table)
 
-#' Load in test data from Mariekes directory
+#' @title Load in test data from Mariekes directory
+#' @description This is just a temporary function to make testing of aggregation possible
+#' @example test.data <- grab.test.data()
+#' @author Jurian
 grab.test.data <- function() {
   marieke.dir <- "/home/dirksen/Hackathon-RDWD-QualityMonitoring/data/testdata/"
   
@@ -15,8 +18,11 @@ grab.test.data <- function() {
   return(data.tables)
 }
 
-#'
+#' @title Aggregate 8am to 8am data to yearly sums and seasonal sums
+#' @description Since the variability is seasonal dependent we would like to be able to compare certain seasons only
 #' @param aggregate88 The 8-8 aggregated data to be further aggregated to seasonal
+#' @example aggregated.seasonal <- aggregate.to.seasonal(data.tables$`DeBilt_550_N_8-8daily_precip`)
+#' @author Jurian
 aggregate.to.seasonal <- function(aggregate88) {
   
   # Define meteorological seasons
@@ -80,16 +86,21 @@ aggregate.to.seasonal <- function(aggregate88) {
   aggregate.seasonal <- merge(yearly.sums, aggregate.seasonal, by = "year")
   
   # Insert NA for output that has been constructed on less than 80% data availability. 
-  aggregate.seasonal$y[which( aggregate.seasonal$year %in% years_with_over20percent_NAvalues)] <- -999
-  aggregate.seasonal$djf
-  
+  aggregate.seasonal$y[which(aggregate.seasonal$year %in% years_with_over20percent_NAvalues)] <- -9999
+  aggregate.seasonal$djf[which(aggregate.seasonal$year %in% seasons_with_over20percent_NAvalues$year[seasons_with_over20percent_NAvalues$season=="winter"])] <- -9999
+  aggregate.seasonal$mam[which(aggregate.seasonal$year %in% seasons_with_over20percent_NAvalues$year[seasons_with_over20percent_NAvalues$season=="spring"])] <- -9999
+  aggregate.seasonal$jja[which(aggregate.seasonal$year %in% seasons_with_over20percent_NAvalues$year[seasons_with_over20percent_NAvalues$season=="summer"])] <- -9999
+  aggregate.seasonal$son[which(aggregate.seasonal$year %in% seasons_with_over20percent_NAvalues$year[seasons_with_over20percent_NAvalues$season=="autumn"])] <- -9999
+    
   # Profit!
   return(aggregate.seasonal)
 }
 
-#'
+#' @title Aggregate hourly data to daily from 8am to 8am the next day
+#' @description Rain is measured hourly in the automatic weather stations, this needs to be converted to sums from 8 am to 8 am on the next day.
 #' @param hourly The hourly data to be aggregated to 8-8 data
-#' @example aggregate88 <- aggregate.to.88(data.tables$`DeBilt_260_H_hourly_precip`)
+#' @example aggregated88 <- aggregate.to.88(data.tables$`DeBilt_260_H_hourly_precip`)
+#' @author Lotte
 aggregate.to.88 <- function(hourly) {
   
   names(hourly) <- c("date", "hour", "value")
