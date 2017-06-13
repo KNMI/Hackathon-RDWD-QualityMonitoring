@@ -2,19 +2,22 @@
 % Please edit documentation in R/aggregate.R
 \name{grab.test.data}
 \alias{grab.test.data}
-\title{Compute seasonal data}
+\title{Load test data
+
+#@import data.table}
 \usage{
 grab.test.data()
 }
-\arguments{
-\item{aggregate88}{The 8-8 aggregated data to be further aggregated to seasonal}
-
-\item{hourly}{The hourly data to be aggregated to 8-8 data
-#@example aggregated88 <- aggregate.to.88(data.tables$`DeBilt_260_H_hourly_precip`)}
-}
 \description{
-Load in test data from Mariekes directory
+This is just a temporary function to make testing of aggregation possible. Load in test data from Mariekes directory
+
+#@param aggregate88 The 8-8 aggregated data to be further aggregated to seasonal
+#@param hourly The hourly data to be aggregated to 8-8 data
+#@example aggregated88 <- aggregate.to.88(data.tables$`DeBilt_260_H_hourly_precip`)
 }
 \details{
-#@import data.table
+Load test data
+}
+\author{
+Jurian and Lotte
 }

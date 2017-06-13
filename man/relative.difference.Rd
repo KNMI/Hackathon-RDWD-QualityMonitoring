@@ -14,3 +14,6 @@ relative.difference(AWS_timeserie, Man_timeserie)
 \description{
 #@example input; files <- grab.test.data(); AWS_timeserie <- files$Almelo_664_N_seasonal_precip[,c(1,3)]; Man_timeserie <- files$Enschede_665_N_seasonal_precip[,c(1,3)]; names(AWS_timeserie) <- names(Man_timeserie) <- c("time", "average")
 }
+\author{
+Antonello
+}
