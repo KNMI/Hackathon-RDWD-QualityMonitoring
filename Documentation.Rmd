@@ -16,7 +16,7 @@ You can add bullets:
 
 And add different headers:
 
-# very bif
+# very big
 ## bit smaller
 ### and so on
 

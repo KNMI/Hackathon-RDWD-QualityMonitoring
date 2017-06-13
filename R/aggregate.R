@@ -1,11 +1,26 @@
 library(data.table)
+library(config)
 
-#' @title Load in test data from Mariekes directory
-#' @description This is just a temporary function to make testing of aggregation possible
-#' @example test.data <- grab.test.data()
-#' @author Jurian
+Sys.setenv(R_CONFIG_ACTIVE = "test")
+
+#' Load test data
+#' 
+#' @title Load test data
+#'
+#' #@import data.table
+#' @description This is just a temporary function to make testing of aggregation possible. Load in test data from Mariekes directory
+#'
+#' #@param aggregate88 The 8-8 aggregated data to be further aggregated to seasonal
+#' #@param hourly The hourly data to be aggregated to 8-8 data
+#' #@example aggregated88 <- aggregate.to.88(data.tables$`DeBilt_260_H_hourly_precip`)
+#' @export
+#' @author Jurian and Lotte
+
 grab.test.data <- function() {
-  marieke.dir <- "/home/dirksen/Hackathon-RDWD-QualityMonitoring/data/testdata/"
+  
+  cfg <- config::get(file = "config/config.yml")
+  
+  marieke.dir <- cfg$test.data.dir
   
   data.names <- lapply(list.files(marieke.dir), function(x) {
     name <- substr(x, 0, nchar(x) - 4)
@@ -18,12 +33,17 @@ grab.test.data <- function() {
   return(data.tables)
 }
 
+
+#' Calculate seasonal sums
 #' @title Aggregate 8am to 8am data to yearly sums and seasonal sums
-#' @description Since the variability is seasonal dependent we would like to be able to compare certain seasons only. 
+#' @description Since the variability is seasonal dependent we would like to be able to compare certain seasons only.
 #' @details When data availability is below 80% in a season (i.e. >18 days missing), or a year (i.e. > 73 days missing), the aggregation becomes -9999.
 #' @param aggregate88 The 8-8 aggregated data to be further aggregated to seasonal
-#' @example aggregated.seasonal <- aggregate.to.seasonal(data.tables$`DeBilt_550_N_8-8daily_precip`)
+#' #@example aggregated.seasonal <- aggregate.to.seasonal(data.tables$`DeBilt_550_N_8-8daily_precip`)
 #' @author Jurian
+
+
+
 aggregate.to.seasonal <- function(aggregate88) {
   
   # Define meteorological seasons
@@ -97,11 +117,15 @@ aggregate.to.seasonal <- function(aggregate88) {
   return(aggregate.seasonal)
 }
 
+
+#' Daily aggeration
 #' @title Aggregate hourly data to daily from 8am to 8am the next day
 #' @description Rain is measured hourly in the automatic weather stations, this needs to be converted to sums from 8 am to 8 am on the next day.
 #' @param hourly The hourly data to be aggregated to 8-8 data
 #' @example aggregated88 <- aggregate.to.88(data.tables$`DeBilt_260_H_hourly_precip`)
 #' @author Lotte
+
+
 aggregate.to.88 <- function(hourly) {
   
   names(hourly) <- c("date", "hour", "value")
