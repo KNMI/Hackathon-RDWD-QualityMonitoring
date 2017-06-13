@@ -9,8 +9,12 @@ grab.test.data()
 \arguments{
 \item{aggregate88}{The 8-8 aggregated data to be further aggregated to seasonal}
 
-\item{hourly}{The hourly data to be aggregated to 8-8 data}
+\item{hourly}{The hourly data to be aggregated to 8-8 data
+#@example aggregated88 <- aggregate.to.88(data.tables$`DeBilt_260_H_hourly_precip`)}
 }
 \description{
 Load in test data from Mariekes directory
+}
+\details{
+#@import data.table
 }

@@ -2,4 +2,3 @@
 
 export(grab.test.data)
 export(relative.difference)
-import(data.table)

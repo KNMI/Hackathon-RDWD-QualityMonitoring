@@ -1,12 +1,12 @@
 #' Compute seasonal data
 #'
 #'
-#' @import data.table
+#' #@import data.table
 #' @description Load in test data from Mariekes directory
 #'
 #' @param aggregate88 The 8-8 aggregated data to be further aggregated to seasonal
 #' @param hourly The hourly data to be aggregated to 8-8 data
-#' @example aggregated88 <- aggregate.to.88(data.tables$`DeBilt_260_H_hourly_precip`)
+#' #@example aggregated88 <- aggregate.to.88(data.tables$`DeBilt_260_H_hourly_precip`)
 #' @export
 
 
