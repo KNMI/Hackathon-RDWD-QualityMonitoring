@@ -1,5 +1,7 @@
-library(data.table)
+# library(data.table)
 
+
+#' @import data.table
 #' Load in test data from Mariekes directory
 grab.test.data <- function() {
   marieke.dir <- "/home/dirksen/Hackathon-RDWD-QualityMonitoring/data/testdata/"
