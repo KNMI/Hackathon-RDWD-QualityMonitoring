@@ -1,8 +1,15 @@
-# library(data.table)
-
-
+#' Compute seasonal data
+#'
+#'
 #' @import data.table
-#' Load in test data from Mariekes directory
+#' @description Load in test data from Mariekes directory
+#'
+#' @param aggregate88 The 8-8 aggregated data to be further aggregated to seasonal
+#' @param hourly The hourly data to be aggregated to 8-8 data
+#' @example aggregated88 <- aggregate.to.88(data.tables$`DeBilt_260_H_hourly_precip`)
+#' @export
+
+
 grab.test.data <- function() {
   marieke.dir <- "/home/dirksen/Hackathon-RDWD-QualityMonitoring/data/testdata/"
   
@@ -17,8 +24,6 @@ grab.test.data <- function() {
   return(data.tables)
 }
 
-#'
-#' @param aggregate88 The 8-8 aggregated data to be further aggregated to seasonal
 aggregate.to.seasonal <- function(aggregate88) {
   
   # Define meteorological seasons
@@ -74,9 +79,6 @@ aggregate.to.seasonal <- function(aggregate88) {
   return(aggregate.seasonal)
 }
 
-#'
-#' @param hourly The hourly data to be aggregated to 8-8 data
-#' @example aggregated88 <- aggregate.to.88(data.tables$`DeBilt_260_H_hourly_precip`)
 aggregate.to.88 <- function(hourly) {
   
   names(hourly) <- c("date", "hour", "value")
