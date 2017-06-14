@@ -16,6 +16,8 @@ setup.db <- function() {
 
 query.hourly <- function(db, id = NA) {
   
+  base.id <- 10000000
+  
   max.qc <- c(0,1)
   table.name <- "1hour_validated_"
   element.name <- "rh"
@@ -65,11 +67,13 @@ query.hourly <- function(db, id = NA) {
       ser_current = x[nrow(x),"date"]
     )
   })
-  names(obj$meta) <- as.character(as.integer(names(obj$meta)) + 1000000)
+  
   obj$hourly <- by(result, factor(result$data_id), function(x){
     data.table(datetime = x$date, value = x$value)
   })
-  names(obj$hourly) <- as.character(as.integer(names(obj$hourly)) + 1000000)
+  
+  names(obj$meta) <- as.character(as.integer(names(obj$meta)) + base.id)
+  names(obj$hourly) <- as.character(as.integer(names(obj$hourly)) + base.id)
   
   dbClearResult(data.ref)
   dbDisconnect(db)
