@@ -10,12 +10,15 @@
               /home/besselaa/MySQLscripts/create_tables.sql
 
               Filled table types using 
-	      /home/besselaa/MySQLscripts/insert_types.sql
+	            /home/besselaa/MySQLscripts/insert_types.sql
 
 20170614 EvdB Filled table elements using
-	      /home/besselaa/MySQLscripts/insert_elements.sql
+      	      /home/besselaa/MySQLscripts/insert_elements.sql
 
               Filled table quality using
               /home/besselaa/MySQLscripts/insert_quality.sql
 
-
+              Included dummy data in series, stations, 
+              hourly rh and daily rd for 2 stations and 2 series
+              
+              
