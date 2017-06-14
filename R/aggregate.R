@@ -126,8 +126,12 @@ aggregate.to.seasonal <- function(aggregate88) {
 #' Daily aggeration
 #' @title Aggregate hourly data to daily from 8am to 8am the next day
 #' @description Rain is measured hourly in the automatic weather stations, this needs to be converted to sums from 8 am to 8 am on the next day.
-#' @param hourly The hourly data to be aggregated to 8-8 data in format ID, YYYYMMDDHHMMSS, value with no header names.
-#' @example aggregated88 <- aggregate.to.88(hourly)
+#' @param obj The R object containing all timeseries and metadata
+#' @param all.stations default is "TRUE" means all stations are aggregated. If all.stations = FALSE, an array of sta_ID needs to be provided. 
+#' @param sta_type default is "AWS", but could be extended to for instance "WOW" in the future.
+#' @param var_id default is "RH" for hourly rainfall. 
+#' @param sta_id defines the subset of sta_ID's that need to be aggregated. Only applies when all.stations = FALSE. 
+#' @example aggregated88 <- aggregate.to.88(obj=obj)
 #' @author Lotte
 
 ## format input imitation -> is niet het geval! De input data ziet er in realiteit anders uit. Wacht af wat Jurian daar over zegt morgen. 
@@ -135,23 +139,47 @@ hourly <- data.tables$`DeBilt_260_H_hourly_precip`
 names(hourly) <- c("ID", "time", "value")
 hourly$time[which(nchar(hourly$time)==5)] <- paste0(0,hourly$time[which(nchar(hourly$time)==5)])
 hourly$time <- paste0(hourly$ID, hourly$time)
-hourly$ID <- 1
-names(hourly) <- c("V1", "V2", "V3")
+#hourly$ID <- 1
+hourly <- hourly[,-1]
+names(hourly) <- c("V1", "V2")
 
-aggregate.to.88 <- function(hourly) {
+#function makes aggregations from all AWS datasets. 
+#default is all.stations=TRUE. if all.stations=FALSE, specify sta_ID. 
+aggregate.to.88 <- function(obj, all.stations=TRUE, sta_type="AWS", var_ID="RH", sta_id=NULL){
+    cfg <- config::get(file = "config/config.yml")
+    data.availability.threshold <- cfg$data.availability.threshold
+    MaxNAPerDay <- floor((1-data.availability.threshold)*24)  #if exceeded, the day should be excluded. 
   
-  cfg <- config::get(file = "config/config.yml")
-  data.availability.threshold <- cfg$data.availability.threshold
-  MaxNAPerDay <- floor((1-data.availability.threshold)*24)  #if exceeded, the day should be excluded. 
-  
-  names(hourly) <- c("ID", "time", "value")
+  if(all.stations==FALSE){
+    if(is.null(sta_ID)){stop("At least one sta_ID needs to be provided")}
 
+    seriesidselec <- sapply(obj$meta,function(m){if(m$sta_type=="AWS" & m$var_id =="RH" & m$sta_id %in% sta_id){
+      {return(TRUE)}
+      else(return(FALSE))}})
+    
+    }else{ # in case of default: all.stations=TRUE
+      
+   seriesidselec <- sapply(obj$meta,function(m){if(m$sta_type=="AWS" & m$var_id =="RH"){
+      {return(TRUE)}
+      else(return(FALSE))}})
+    }
+  }
+  
+#maybe [[1]] needed to access elements in list. 
+  seriesidlist <- names(obj$meta)[seriesidselec]
+  
+  for(sid in 1:length(names(obj$hourly))){
+    if(names(obj$hourly)[[sid]] %in% seriesidlist){
+
+  hourly <- obj$hourly[[sid]]
+  names(hourly) <- c("time", "value")
+  
   rain <- hourly$value    
   rain[which(rain==-9999)] <- NA 
   
   # Make timeline of timestamps 0800 indicating the end of each day
   # Use integers for really fast comparison
-  first_timestep <- which(hourly$hour == 9)[1]
+  first_timestep <- which(hour(strptime(hourly$time, format="%Y%m%d%H%M%s")) == 9)[1]
   # Last occurence of 8, same as first occurance of the reverse
   last_timestep <- rev(which(hourly$hour == 8))[1]
   
@@ -170,6 +198,9 @@ aggregate.to.88 <- function(hourly) {
   # output file
   aggregated_data <- hourly[seq((first_timestep + 23 ), last_timestep, by = 24), 1]
   aggregated_data$value <- rain_agg
+  
+    } #end if-loop
+  } #end for-loop
   
   return(aggregated_data)
 }
