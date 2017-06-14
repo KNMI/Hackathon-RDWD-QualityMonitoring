@@ -1,0 +1,21 @@
+# =============================
+# Log-file to keep track of changes to the MySQL database mqm_db
+# used for hackaton Measurement Quality Monitoring
+#
+# Created by Else van den Besselaar
+# Date 13 June 2017
+# =============================
+
+20170613 EvdB Created database tables using
+              /home/besselaa/MySQLscripts/create_tables.sql
+
+              Filled table types using 
+	      /home/besselaa/MySQLscripts/insert_types.sql
+
+20170614 EvdB Filled table elements using
+	      /home/besselaa/MySQLscripts/insert_elements.sql
+
+              Filled table quality using
+              /home/besselaa/MySQLscripts/insert_quality.sql
+
+

@@ -1,5 +1,5 @@
 library(shiny)
-#runApp("/home/dirksen/Hackathon-RDWD-QualityMonitoring/R/shiny")
+#runApp("~/Hackathon-RDWD-QualityMonitoring/R/shiny")
 
 library(ggplot2)
 library(data.table)

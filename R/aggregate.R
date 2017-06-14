@@ -1,11 +1,26 @@
 library(data.table)
+library(config)
 
-#' @title Load in test data from Mariekes directory
-#' @description This is just a temporary function to make testing of aggregation possible
-#' @example test.data <- grab.test.data()
-#' @author Jurian
+Sys.setenv(R_CONFIG_ACTIVE = "test")
+
+#' Load test data
+#' 
+#' @title Load test data
+#'
+#' #@import data.table
+#' @description This is just a temporary function to make testing of aggregation possible. Load in test data from Mariekes directory
+#'
+#' #@param aggregate88 The 8-8 aggregated data to be further aggregated to seasonal
+#' #@param hourly The hourly data to be aggregated to 8-8 data
+#' #@example aggregated88 <- aggregate.to.88(data.tables$`DeBilt_260_H_hourly_precip`)
+#' @export
+#' @author Jurian and Lotte
+
 grab.test.data <- function() {
-  marieke.dir <- "/home/dirksen/Hackathon-RDWD-QualityMonitoring/data/testdata/"
+  
+  cfg <- config::get(file = "config/config.yml")
+  
+  marieke.dir <- cfg$test.data.dir
   
   data.names <- lapply(list.files(marieke.dir), function(x) {
     name <- substr(x, 0, nchar(x) - 4)
@@ -18,13 +33,23 @@ grab.test.data <- function() {
   return(data.tables)
 }
 
+
+#' Calculate seasonal sums
 #' @title Aggregate 8am to 8am data to yearly sums and seasonal sums
-#' @description Since the variability is seasonal dependent we would like to be able to compare certain seasons only. 
+#' @description Since the variability is seasonal dependent we would like to be able to compare certain seasons only.
 #' @details When data availability is below 80% in a season (i.e. >18 days missing), or a year (i.e. > 73 days missing), the aggregation becomes -9999.
 #' @param aggregate88 The 8-8 aggregated data to be further aggregated to seasonal
-#' @example aggregated.seasonal <- aggregate.to.seasonal(data.tables$`DeBilt_550_N_8-8daily_precip`)
+#' #@example aggregated.seasonal <- aggregate.to.seasonal(data.tables$`DeBilt_550_N_8-8daily_precip`)
 #' @author Jurian
+
+
+
 aggregate.to.seasonal <- function(aggregate88) {
+  
+  cfg <- config::get(file = "config/config.yml")
+  data.availability.threshold <- cfg$data.availability.threshold
+  MaxNAPerSeason <- floor((1-data.availability.threshold)*(365/4))  #if exceeded, the day should be excluded. 
+  MaxNAPerYear <- floor((1-data.availability.threshold)*(365))  #if exceeded, the day should be excluded. 
   
   # Define meteorological seasons
   winter <- c(12, 1, 2)
@@ -59,11 +84,11 @@ aggregate.to.seasonal <- function(aggregate88) {
   year_season_NAvalues <- aggregate88[which(is.na(aggregate88$value)),c(4,5)]
   NAvaluestable <- as.data.frame(table(year_season_NAvalues))
   # A season has 365/4 = 91.25 days. 80% data availability corresponds with no more than 18 days with NA values. 
-  seasons_with_over20percent_NAvalues <- NAvaluestable[which(NAvaluestable$Freq>18),c(1,2)]
+  seasons_with_over20percent_NAvalues <- NAvaluestable[which(NAvaluestable$Freq>MaxNAPerSeason),c(1,2)]
   year_NAvalues <- aggregate88$year[which(is.na(aggregate88$value))]
   NAvaluestable <- as.data.frame(table(year_NAvalues))
   # 80% data availability corresponds with no more than 73 days with NA values. 
-  years_with_over20percent_NAvalues <- as.character(NAvaluestable[which(NAvaluestable$Freq>73),1])
+  years_with_over20percent_NAvalues <- as.character(NAvaluestable[which(NAvaluestable$Freq>MaxNAPerYear),1])
     
   # Create a data.table for calendar yearly sums
   yearly.sums <- data.table(aggregate(list(y = aggregate88$value), by = list(year = year(aggregate88$date)), sum, na.rm=T))
@@ -97,23 +122,33 @@ aggregate.to.seasonal <- function(aggregate88) {
   return(aggregate.seasonal)
 }
 
+
+#' Daily aggeration
 #' @title Aggregate hourly data to daily from 8am to 8am the next day
 #' @description Rain is measured hourly in the automatic weather stations, this needs to be converted to sums from 8 am to 8 am on the next day.
-#' @param hourly The hourly data to be aggregated to 8-8 data
-#' @example aggregated88 <- aggregate.to.88(data.tables$`DeBilt_260_H_hourly_precip`)
+#' @param hourly The hourly data to be aggregated to 8-8 data in format ID, YYYYMMDDHHMMSS, value with no header names.
+#' @example aggregated88 <- aggregate.to.88(hourly)
 #' @author Lotte
+
+## format input imitation -> is niet het geval! De input data ziet er in realiteit anders uit. Wacht af wat Jurian daar over zegt morgen. 
+hourly <- data.tables$`DeBilt_260_H_hourly_precip`
+names(hourly) <- c("ID", "time", "value")
+hourly$time[which(nchar(hourly$time)==5)] <- paste0(0,hourly$time[which(nchar(hourly$time)==5)])
+hourly$time <- paste0(hourly$ID, hourly$time)
+hourly$ID <- 1
+names(hourly) <- c("V1", "V2", "V3")
+
 aggregate.to.88 <- function(hourly) {
   
-  names(hourly) <- c("date", "hour", "value")
-
-  # Convert the character vector to a date
-  # hourly$date <- as.Date(as.character(hourly$date), format="%Y%m%d")
-  hourly$hour <- as.integer(hourly$hour) / 10000
+  cfg <- config::get(file = "config/config.yml")
+  data.availability.threshold <- cfg$data.availability.threshold
+  MaxNAPerDay <- floor((1-data.availability.threshold)*24)  #if exceeded, the day should be excluded. 
+  
+  names(hourly) <- c("ID", "time", "value")
 
   rain <- hourly$value    
   rain[which(rain==-9999)] <- NA 
   
-
   # Make timeline of timestamps 0800 indicating the end of each day
   # Use integers for really fast comparison
   first_timestep <- which(hourly$hour == 9)[1]
@@ -127,7 +162,7 @@ aggregate.to.88 <- function(hourly) {
 
   days_with_NAvalues <- time_agg[which(is.na(rainselec))] # if more than 4 hours per 24 hours is NA, the dayvalue should be NA (>80% data availability rule)
   NAvaluestable <- as.data.frame(table(days_with_NAvalues))
-  days_with_over20percent_NAvalues <- as.numeric(as.character( NAvaluestable[which(NAvaluestable$Freq>4),1] ))
+  days_with_over20percent_NAvalues <- as.numeric(as.character( NAvaluestable[which(NAvaluestable$Freq>MaxNAPerDay),1] ))
   
   rain_agg <- setDT(as.data.frame(rainselec))[,lapply(.SD,sum, na.rm=T),by=.(time_agg)]$rainselec
   rain_agg[days_with_over20percent_NAvalues] <- -9999
