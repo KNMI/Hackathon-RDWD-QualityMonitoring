@@ -69,8 +69,11 @@ query.hourly <- function(db, id = NA) {
   })
   
   obj$hourly <- by(result, factor(result$data_id), function(x){
-    data.table(datetime = x$date, value = x$value)
+    dt <- data.table(datetime = x$date, value = x$value)
+    setkey(dt, datetime)
   })
+  
+  obj$daily <- list()
   
   names(obj$meta) <- as.character(as.integer(names(obj$meta)) + base.id)
   names(obj$hourly) <- as.character(as.integer(names(obj$hourly)) + base.id)

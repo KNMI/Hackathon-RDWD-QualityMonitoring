@@ -2,8 +2,9 @@ library(data.table)
 
 temporal.average <- function(dataseries) {
   
-  # Check series cover the same timespan
+  combined <- Reduce(function(X,Y) X[Y], dataseries)
+
+  rowMeans(combined[,2:ncol(combined)])
   
-  rbindlist(dataseries)[,lapply(.SD,mean), list(Lon, Lat)]
-  
+
 }
