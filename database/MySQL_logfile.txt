@@ -19,4 +19,3 @@
               /home/besselaa/MySQLscripts/insert_quality.sql
 
 
-test
