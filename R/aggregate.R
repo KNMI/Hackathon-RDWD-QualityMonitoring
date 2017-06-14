@@ -5,16 +5,10 @@ Sys.setenv(R_CONFIG_ACTIVE = "test")
 
 #' Load test data
 #' 
-#' @title Load test data
-#'
-#' #@import data.table
-#' @description This is just a temporary function to make testing of aggregation possible. Load in test data from Mariekes directory
-#'
-#' #@param aggregate88 The 8-8 aggregated data to be further aggregated to seasonal
-#' #@param hourly The hourly data to be aggregated to 8-8 data
-#' #@example aggregated88 <- aggregate.to.88(data.tables$`DeBilt_260_H_hourly_precip`)
-#' @export
+#' @title Load in test data from Mariekes directory
+#' @description This is just a temporary function to make testing of aggregation possible. 
 #' @author Jurian and Lotte
+
 
 grab.test.data <- function() {
   
@@ -128,7 +122,7 @@ aggregate.to.seasonal <- function(aggregate88) {
 #' @description Rain is measured hourly in the automatic weather stations, this needs to be converted to sums from 8 am to 8 am on the next day.
 #' @param hourly The hourly data to be aggregated to 8-8 data in format ID, YYYYMMDDHHMMSS, value with no header names.
 #' @example aggregated88 <- aggregate.to.88(hourly)
-#' @author Lotte
+#' @author Lotte and Jurian
 
 ## format input imitation -> is niet het geval! De input data ziet er in realiteit anders uit. Wacht af wat Jurian daar over zegt morgen. 
 hourly <- data.tables$`DeBilt_260_H_hourly_precip`
