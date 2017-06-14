@@ -53,7 +53,8 @@ abline(h=cv,col='darkgreen',lwd=2)
 abline(h=-cv,col='darkgreen',lwd=2)
 abline(v=bd_buishand$year[bd_buishand$TF],col='red',lwd=2)
 
-breaks=bd_buishand[bd_buishand$TF,'year']
+breaks=list()
+breaks[as.character(id)]=bd_buishand[bd_buishand$TF,'year']
 
 return(breaks)
 }
