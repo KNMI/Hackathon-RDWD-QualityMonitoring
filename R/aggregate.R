@@ -182,13 +182,20 @@ aggregate.to.88 <- function(obj, all.stations=TRUE, sta_type="AWS", var_ID="RH",
   value_agg <- setDT(as.data.frame(timeselec))[,lapply(.SD,sum, na.rm=T),by=.(time_agg)]$timeselec
   value_agg[days_with_over20percent_NAvalues] <- -9999
   
-  # output file
+  # output file --> does not work yet
+  
   aggregated_data <- hourly[seq((first_timestep + 23 ), last_timestep, by = 24), 1]
   aggregated_data$value <- value_agg
   
-  newseriesid <- as.character(as.numeric(names(obj$hourly)[[sid]]) + 100000000)
-  obj$meta[newseriesid]
+  newseriesid <- as.character(as.numeric(names(obj$hourly)[[sid]]) + 10000000)
+
+  # add new daily file to obj. 
+  dt <- as.data.table(aggregated_data)
+  obj$daily <- c(obj$daily, list(dt))
+  n <- names(obj$daily)
+  names(obj$daily) <- c( n[-length(n)], newseriesid)
   
+
     } #end if-loop
   } #end for-loop
   
