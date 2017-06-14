@@ -1,5 +1,5 @@
 #' @title Break detection with Buishand method
-#' @description Function for break detection in a yearly or seasonal series that uses the Buishand cumulative test. It needs a table with two columns (year and value). the input is temporarily downloaded by the dummy data
+#' @description Function for break detection in a yearly or seasonal series that uses the Buishand cumulative test. It needs a table with two columns (datetime and value). the input is temporarily downloaded by the dummy data
 #' @author Antonello Squintu
 
 
