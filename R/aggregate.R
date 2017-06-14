@@ -128,14 +128,9 @@ aggregate.to.seasonal <- function(aggregate88) {
 #' @example aggregated88 <- aggregate.to.88(obj=obj)
 #' @author Lotte
 
-## format input imitation -> is niet het geval! De input data ziet er in realiteit anders uit. Wacht af wat Jurian daar over zegt morgen. 
-hourly <- data.tables$`DeBilt_260_H_hourly_precip`
-names(hourly) <- c("ID", "time", "value")
-hourly$time[which(nchar(hourly$time)==5)] <- paste0(0,hourly$time[which(nchar(hourly$time)==5)])
-hourly$time <- paste0(hourly$ID, hourly$time)
-#hourly$ID <- 1
-hourly <- hourly[,-1]
-names(hourly) <- c("V1", "V2")
+#source("R/dbOperations.R")
+#db <- setup.db()
+#obj <- query.hourly(db)
 
 #function makes aggregations from all AWS datasets. 
 #default is all.stations=TRUE. if all.stations=FALSE, specify sta_ID. 
@@ -148,55 +143,56 @@ aggregate.to.88 <- function(obj, all.stations=TRUE, sta_type="AWS", var_ID="RH",
     if(is.null(sta_ID)){stop("At least one sta_ID needs to be provided")}
 
     seriesidselec <- sapply(obj$meta,function(m){if(m$sta_type=="AWS" & m$var_id =="RH" & m$sta_id %in% sta_id){
-      {return(TRUE)}
-      else(return(FALSE))}})
+      return(TRUE)
+        }else{
+          return(FALSE)}})
     
     }else{ # in case of default: all.stations=TRUE
       
    seriesidselec <- sapply(obj$meta,function(m){if(m$sta_type=="AWS" & m$var_id =="RH"){
-      {return(TRUE)}
-      else(return(FALSE))}})
+     return(TRUE)
+        }else{
+          return(FALSE)}})
     }
-  }
-  
-#maybe [[1]] needed to access elements in list. 
+
   seriesidlist <- names(obj$meta)[seriesidselec]
   
   for(sid in 1:length(names(obj$hourly))){
     if(names(obj$hourly)[[sid]] %in% seriesidlist){
 
   hourly <- obj$hourly[[sid]]
-  names(hourly) <- c("time", "value")
-  
-  rain <- hourly$value    
-  rain[which(rain==-9999)] <- NA 
+
+  hourly$value[which(hourly$value==-9999)] <- NA 
   
   # Make timeline of timestamps 0800 indicating the end of each day
   # Use integers for really fast comparison
-  first_timestep <- which(hour(strptime(hourly$time, format="%Y%m%d%H%M%s")) == 9)[1]
+  first_timestep <- which(hour(strptime(hourly$datetime, format="%Y%m%d%H%M%S")) == 9)[1]
   # Last occurence of 8, same as first occurance of the reverse
-  last_timestep <- rev(which(hourly$hour == 8))[1]
+  last_timestep <- rev(which(hour(strptime(hourly$datetime, format="%Y%m%d%H%M%S")) == 8))[1]
   
   # aggregate rainfall in the 24 hours belonging to the 0800-0800 timeframe          
   nrdays <- length(first_timestep:last_timestep) / 24
   time_agg <- rep(1:nrdays, each = 24 )
-  rainselec <- rain[first_timestep:last_timestep]  
+  timeselec <- hourly$value[first_timestep:last_timestep]  
 
-  days_with_NAvalues <- time_agg[which(is.na(rainselec))] # if more than 4 hours per 24 hours is NA, the dayvalue should be NA (>80% data availability rule)
+  days_with_NAvalues <- time_agg[which(is.na(timeselec))] # if more than 4 hours per 24 hours is NA, the dayvalue should be NA (>80% data availability rule)
   NAvaluestable <- as.data.frame(table(days_with_NAvalues))
   days_with_over20percent_NAvalues <- as.numeric(as.character( NAvaluestable[which(NAvaluestable$Freq>MaxNAPerDay),1] ))
   
-  rain_agg <- setDT(as.data.frame(rainselec))[,lapply(.SD,sum, na.rm=T),by=.(time_agg)]$rainselec
-  rain_agg[days_with_over20percent_NAvalues] <- -9999
+  value_agg <- setDT(as.data.frame(timeselec))[,lapply(.SD,sum, na.rm=T),by=.(time_agg)]$timeselec
+  value_agg[days_with_over20percent_NAvalues] <- -9999
   
   # output file
   aggregated_data <- hourly[seq((first_timestep + 23 ), last_timestep, by = 24), 1]
-  aggregated_data$value <- rain_agg
+  aggregated_data$value <- value_agg
+  
+  newseriesid <- as.character(as.numeric(names(obj$hourly)[[sid]]) + 100000000)
+  obj$meta[newseriesid]
   
     } #end if-loop
   } #end for-loop
   
-  return(aggregated_data)
+  return(obj)
 }
 
 
