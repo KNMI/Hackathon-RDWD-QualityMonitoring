@@ -5,16 +5,10 @@ Sys.setenv(R_CONFIG_ACTIVE = "test")
 
 #' Load test data
 #' 
-#' @title Load test data
-#'
-#' #@import data.table
-#' @description This is just a temporary function to make testing of aggregation possible. Load in test data from Mariekes directory
-#'
-#' #@param aggregate88 The 8-8 aggregated data to be further aggregated to seasonal
-#' #@param hourly The hourly data to be aggregated to 8-8 data
-#' #@example aggregated88 <- aggregate.to.88(data.tables$`DeBilt_260_H_hourly_precip`)
-#' @export
+#' @title Load in test data from Mariekes directory
+#' @description This is just a temporary function to make testing of aggregation possible. 
 #' @author Jurian and Lotte
+
 
 grab.test.data <- function() {
   
@@ -126,6 +120,7 @@ aggregate.to.seasonal <- function(aggregate88) {
 #' Daily aggeration
 #' @title Aggregate hourly data to daily from 8am to 8am the next day
 #' @description Rain is measured hourly in the automatic weather stations, this needs to be converted to sums from 8 am to 8 am on the next day.
+<<<<<<< HEAD
 #' @param obj The R object containing all timeseries and metadata
 #' @param all.stations default is "TRUE" means all stations are aggregated. If all.stations = FALSE, an array of sta_ID needs to be provided. 
 #' @param sta_type default is "AWS", but could be extended to for instance "WOW" in the future.
@@ -133,6 +128,11 @@ aggregate.to.seasonal <- function(aggregate88) {
 #' @param sta_id defines the subset of sta_ID's that need to be aggregated. Only applies when all.stations = FALSE. 
 #' @example aggregated88 <- aggregate.to.88(obj=obj)
 #' @author Lotte
+=======
+#' @param hourly The hourly data to be aggregated to 8-8 data in format ID, YYYYMMDDHHMMSS, value with no header names.
+#' @example aggregated88 <- aggregate.to.88(hourly)
+#' @author Lotte and Jurian
+>>>>>>> ccab606fd2d92e9625da5aaa8c8ee3961210627c
 
 ## format input imitation -> is niet het geval! De input data ziet er in realiteit anders uit. Wacht af wat Jurian daar over zegt morgen. 
 hourly <- data.tables$`DeBilt_260_H_hourly_precip`
