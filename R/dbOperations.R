@@ -71,6 +71,8 @@ query.hourly <- function(db, id = NA) {
   })
   names(obj$hourly) <- as.character(as.integer(names(obj$hourly)) + 1000000)
   
+  dbClearResult(result)
+  dbDisconnect(db)
   
   return(obj)
 }
