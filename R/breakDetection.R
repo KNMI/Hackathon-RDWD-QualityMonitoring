@@ -19,8 +19,9 @@ break.detection <- function (series_1) {
   diff=series_1[[1]]
   colnames(diff)=c('datetime','diff')
   #diff$time <- strptime(diff$datetime, format="%Y%m%d%H%M%S")
-  diff$year <- as.integer(format((strptime(diff$datetime, format="%Y%m%d%H%M%S")-9*3600),'%Y'))
-  
+  #diff$year <- as.integer(format((strptime(diff$datetime, format="%Y%m%d%H%M%S")-9*3600),'%Y'))
+  diff$year <- as.integer(diff$datetime)
+  range <- 5
   #Buishand test
   bd_buishand=data.frame(year=diff$year)
   bd_buishand$score=round(BuishandRangeTest(diff$diff),digits=2)
@@ -32,20 +33,22 @@ break.detection <- function (series_1) {
   bd_buishand$TF=FALSE
   
   #Research of local maxima in the critical years
-  for(i in 1:nrow(cy))
-  {
-    if (cy$year[i]>bd_buishand$year[1]+range && cy$year[i]<bd_buishand$year[nrow(bd_buishand)]-range )
+  if (nrow(cy) > 0) {
+    for(i in 1:nrow(cy))
     {
-      aux <- bd_buishand[bd_buishand$year %in% (cy$year[i]-r):(cy$year[i]+r),]
-      if (which.max(abs(aux$score))==r+1)
+      if (cy$year[i]>bd_buishand$year[1]+range && cy$year[i]<bd_buishand$year[nrow(bd_buishand)]-range )
       {
-        bd_buishand[bd_buishand$year==cy$year[i],'TF']=TRUE
+        aux <- bd_buishand[bd_buishand$year %in% (cy$year[i]-r):(cy$year[i]+r),]
+        if (which.max(abs(aux$score))==r+1)
+        {
+          bd_buishand[bd_buishand$year==cy$year[i],'TF']=TRUE
+        }
       }
     }
   }
   
   plot(bd_buishand$year,bd_buishand$score,type='l',
-       main=paste('Buishand Test',id),
+       main=paste('Buishand Test',ser_id),
        xlab='year',
        ylab='buishand score',
        ylim=c(min(-cv,bd_buishand$score),max(cv,bd_buishand$score)))
