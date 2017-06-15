@@ -21,4 +21,8 @@
               Included dummy data in series, stations, 
               hourly rh and daily rd for 2 stations and 2 series
               
+20170615 EvdB Real data has been included for hourly and daily 
+              precipitation, including the corresponding station 
+              and series metadata.
               
+  
