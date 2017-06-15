@@ -30,7 +30,7 @@ grab.test.data <- function() {
 
 #' Calculate seasonal sums
 #' @title Aggregate 8am to 8am data to yearly sums and seasonal sums
-#' @description Since the variability is seasonal dependent we would like to be able to compare certain seasons only.
+#' @description Since the variability is seasonal dependent we would like to be able to compare certain seasons only. The function takes the R object, calculates aggregates and returns this in the object, included updated meta data. 
 #' @details When data availability is below 80% in a season (i.e. >18 days missing), or a year (i.e. > 73 days missing), the aggregation becomes -9999.
 #' @param obj The R object containing all timeseries and metadata
 #' @param all.stations default is "TRUE" means all stations are aggregated. If all.stations = FALSE, an array of sta_ID needs to be provided. 
