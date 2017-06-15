@@ -13,7 +13,7 @@ source("R/breakDetection.R")
  # Input data #
     StartTime <- proc.time()
 db <- db.setup()
-obj <- db.query(db, "day", "derived", "rd")
+obj <- db.query(db, "hour", "validated", "rh")
 db.close(db)
     cat(sprintf("Finished obtaining obj. (%.1f seconds)\n",round((proc.time()-StartTime)[3],digits=1)))
 
