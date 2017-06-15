@@ -45,7 +45,6 @@ db.query <- function(db, time.period, station.type, element.name) {
   max.qc <- cfg$qc.threshold
   na.value <- cfg$database.na.value
 
-  # This is just a test example for now
   query <- sprintf (
     paste("SELECT",
           "validated.data_id AS data_id, types.type_id AS type_id, elements.element_id AS element_id, stations.code AS code,",
@@ -67,7 +66,7 @@ db.query <- function(db, time.period, station.type, element.name) {
   
   data.ref <- dbSendQuery(db, query.safe)
   
-  result <- fetch(data.ref)
+  result <- fetch(data.ref, n = -1)
   
   obj <- list()
   class(obj) <- "mqm.data.container"
@@ -125,6 +124,6 @@ db.query <- function(db, time.period, station.type, element.name) {
   
   # Clean up
   dbClearResult(data.ref)
-  
+  rm(result)
   return(obj)
 }

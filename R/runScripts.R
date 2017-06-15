@@ -1,5 +1,7 @@
 setwd("~/Hackathon-RDWD-QualityMonitoring/")
 
+Sys.setenv(R_CONFIG_ACTIVE = "test")
+
  # Functions # 
 source("R/databaseOperations.R")
 source("R/aggregateOperations.R")
@@ -10,7 +12,7 @@ source("R/breakDetection.R")
 
  # Input data #
 db <- db.setup()
-obj <- db.query(db, "day", "derived", "rd")
+obj <- db.query(db, "hour", "validated", "rh")
 db.close(db)
 
  # Aggregate AWS hourly values in 8-8 daily values #

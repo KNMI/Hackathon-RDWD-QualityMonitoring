@@ -13,7 +13,10 @@ average.spatial <- function(timeseries) {
   combined <- Reduce(function(X,Y) X[Y], timeseries)
   
   dt <- data.table(datetime = combined$datetime, value = rowMeans(combined[,-1], na.rm = T))
-  dt$value[1 - rowSums(is.na(combined)) / nstations < cfg$data.availability.threshold] <- NA
-
+  dt$value[1 - rowSums(is.na(combined)) / nstations < cfg$data.availability.threshold.averaging] <- NA
+  
+  t.order = order(dt$datetime)
+  dt = dt[t.order, ]
+  
   return(dt)
 }
