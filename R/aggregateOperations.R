@@ -1,8 +1,6 @@
 library(data.table)
 library(config)
 
-Sys.setenv(R_CONFIG_ACTIVE = "test")
-
 #' Calculate seasonal sums
 #' @title Aggregate 8am to 8am data to yearly sums and seasonal sums
 #' @description Since the variability is seasonal dependent we would like to be able to compare certain seasons only. The function takes the R object, calculates aggregates and returns this in the object, included updated meta data. 
@@ -212,6 +210,7 @@ aggregate.to.88 <- function(obj, all.stations=TRUE, sta_type="AWS", var_id="RH",
     if(names(obj$hourly)[[sid]] %in% seriesidlist){
 
   hourly <- obj$hourly[[sid]]
+  if(length(which(is.na(hourly$value)==F)) < 1){next} # in case all values are NA-values. 
 
   # Make timeline of timestamps 0800 indicating the end of each day
   # Use integers for really fast comparison
@@ -220,12 +219,10 @@ aggregate.to.88 <- function(obj, all.stations=TRUE, sta_type="AWS", var_id="RH",
   last_timestep <- rev(which(hour(strptime(hourly$datetime, format="%Y%m%d%H%M%S")) == 8))[1]
   if(is.na(first_timestep) | is.na(last_timestep))stop("Incomplete timeperiod")
   
-  # Aggregate rainfall in the 24 hours belonging to the 0800-0800 timeframe          
+  # Aggregate rainfall in the 24 hours belonging to the 0800-0800 timeframe      
   nrdays <- length(first_timestep:last_timestep) / 24
-#  if(round(nrdays) != nrdays){stop("Incomplete timeperiod")}
-  if(round(nrdays) != nrdays){warning("Incomplete timeperiod")
-    return(FALSE)}
-  
+  if(round(nrdays) != nrdays){stop("Incomplete timeperiod")}
+
   time_agg <- rep(1:nrdays, each = 24 )
   timeselec <- hourly$value[first_timestep:last_timestep]  
 

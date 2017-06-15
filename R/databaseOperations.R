@@ -45,7 +45,6 @@ db.query <- function(db, time.period, station.type, element.name) {
   max.qc <- cfg$qc.threshold
   na.value <- cfg$database.na.value
 
-  # This is just a test example for now
   query <- sprintf (
     paste("SELECT",
           "validated.data_id AS data_id, types.type_id AS type_id, elements.element_id AS element_id, stations.code AS code,",
@@ -67,7 +66,7 @@ db.query <- function(db, time.period, station.type, element.name) {
   
   data.ref <- dbSendQuery(db, query.safe)
   
-  result <- fetch(data.ref)
+  result <- fetch(data.ref, n = -1)
   
   obj <- list()
   class(obj) <- "mqm.data.container"
@@ -107,9 +106,25 @@ db.query <- function(db, time.period, station.type, element.name) {
     dt <- data.table(datetime = x$date, value = x$value)
     setkey(dt, datetime)
     
+    # Set any observations which do not pass the quality check to NA
+    # Set any observations which are missing (-9999) to NA
     qc.idx <- !(x$qc %in% max.qc)
     missing.idx <- x$value == na.value
     dt$value[missing.idx | qc.idx] <- NA
+    
+    # Check for holes in the timeline and fill them up if necessary
+    begin <- strptime(min(dt$datetime), format = "%Y%m%d%H%M%S", tz="GMT")
+    end <- strptime(max(dt$datetime), format = "%Y%m%d%H%M%S", tz="GMT")
+    
+    complete.timeline <- seq(begin, end, by = time.period)
+    
+    if(length(complete.timeline) != nrow(dt)) {
+      complete.timeline <- format(complete.timeline, format = "%Y%m%d%H%M%S")
+      complete.timeline <- data.table(datetime = complete.timeline, value = NA)
+      setkey(complete.timeline, datetime)
+      
+      dt <- base::merge(dt, complete.timeline, by = "datetime", all = T)
+    }
     
     return(dt)
   }))
@@ -125,6 +140,6 @@ db.query <- function(db, time.period, station.type, element.name) {
   
   # Clean up
   dbClearResult(data.ref)
-  
+  rm(result)
   return(obj)
 }
