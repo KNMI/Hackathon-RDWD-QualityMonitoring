@@ -134,7 +134,7 @@ aggregate.to.seasonal <- function(aggregate88) {
 
 #function makes aggregations from all AWS datasets. 
 #default is all.stations=TRUE. if all.stations=FALSE, specify sta_ID. 
-aggregate.to.88 <- function(obj, all.stations=TRUE, sta_type="AWS", var_ID="RH", sta_id=NULL){
+aggregate.to.88 <- function(obj, all.stations=TRUE, sta_type="AWS", var_id="RH", sta_id=NULL){
     cfg <- config::get(file = "config/config.yml")
     data.availability.threshold <- cfg$data.availability.threshold
     MaxNAPerDay <- floor((1-data.availability.threshold)*24)  #if exceeded, the day should be excluded. 
@@ -172,6 +172,7 @@ aggregate.to.88 <- function(obj, all.stations=TRUE, sta_type="AWS", var_ID="RH",
   
   # aggregate rainfall in the 24 hours belonging to the 0800-0800 timeframe          
   nrdays <- length(first_timestep:last_timestep) / 24
+  if(round(nrdays) != nrdays){stop("Incomplete timeperiod")}
   time_agg <- rep(1:nrdays, each = 24 )
   timeselec <- hourly$value[first_timestep:last_timestep]  
 
@@ -181,8 +182,6 @@ aggregate.to.88 <- function(obj, all.stations=TRUE, sta_type="AWS", var_ID="RH",
   
   value_agg <- setDT(as.data.frame(timeselec))[,lapply(.SD,sum, na.rm=T),by=.(time_agg)]$timeselec
   value_agg[days_with_over20percent_NAvalues] <- -9999
-  
-  # output file --> does not work yet
   
   aggregated_data <- hourly[seq((first_timestep + 23 ), last_timestep, by = 24), 1]
   aggregated_data$value <- value_agg
@@ -195,7 +194,15 @@ aggregate.to.88 <- function(obj, all.stations=TRUE, sta_type="AWS", var_ID="RH",
   n <- names(obj$daily)
   names(obj$daily) <- c( n[-length(n)], newseriesid)
   
-
+  # add new information to meta in obj.
+  
+  meta <- obj$meta[[which(names(obj$meta) ==  names(obj$hourly)[[sid]])]]
+  meta$var_period <- "day"
+  meta$ser_current <- dt$datetime[nrow(dt)] #last timestamp of daily timeseries. 
+  obj$meta <- c(obj$meta, list(meta))
+  n <- names(obj$meta)
+  names(obj$meta) <- c( n[-length(n)], newseriesid)
+  
     } #end if-loop
   } #end for-loop
   
