@@ -11,9 +11,11 @@ source("R/breakDetection.R")
 
 
  # Input data #
+    StartTime <- proc.time()
 db <- db.setup()
 obj <- db.query(db, "day", "derived", "rd")
 db.close(db)
+    cat(sprintf("Finished obtaining obj. (%.1f seconds)\n",round((proc.time()-StartTime)[3],digits=1)))
 
  # Aggregate AWS hourly values in 8-8 daily values #
 obj <- aggregate.to.88(obj=obj, all.stations=TRUE, sta_type="AWS", var_id="RH", sta_id=NULL)
