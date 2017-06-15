@@ -3,31 +3,6 @@ library(config)
 
 Sys.setenv(R_CONFIG_ACTIVE = "test")
 
-#' Load test data
-#' 
-#' @title Load in test data from Mariekes directory
-#' @description This is just a temporary function to make testing of aggregation possible. 
-#' @author Jurian and Lotte
-
-
-grab.test.data <- function() {
-  
-  cfg <- config::get(file = "config/config.yml")
-  
-  marieke.dir <- cfg$test.data.dir
-  
-  data.names <- lapply(list.files(marieke.dir), function(x) {
-    name <- substr(x, 0, nchar(x) - 4)
-  })
-  data.tables <- lapply(list.files(marieke.dir), function(x) {
-    fread(paste0(marieke.dir, x))  
-  })
-  names(data.tables) <- data.names
-  
-  return(data.tables)
-}
-
-
 #' Calculate seasonal sums
 #' @title Aggregate 8am to 8am data to yearly sums and seasonal sums
 #' @description Since the variability is seasonal dependent we would like to be able to compare certain seasons only. The function takes the R object, calculates aggregates and returns this in the object, included updated meta data. 
@@ -38,28 +13,28 @@ grab.test.data <- function() {
 #' @param var_id default is "RD" for daily rainfall. 
 #' @param sta_id defines the string of sta_id's that need to be aggregated. Only applies when all.stations = FALSE. 
 #' @example aggregated.seasonal <- aggregate.to.seasonal(obj)
-#' @author Jurian
+#' @author Jurian and Lotte
 
-aggregate.to.seasonal <- function(obj, all.stations=TRUE, sta_type="AWS", var_id="RD", sta_id=NULL){
+aggregate.to.seasonal <- function(obj, all.stations=TRUE, sta_type="AWS", var_id="RD", sta_id=NULL) {
   cfg <- config::get(file = "config/config.yml")
   data.availability.threshold <- cfg$data.availability.threshold
   MaxNAPerSeason <- floor((1-data.availability.threshold)*(365/4))  #if exceeded, the day should be excluded. 
   MaxNAPerYear <- floor((1-data.availability.threshold)*(365))  #if exceeded, the day should be excluded. 
   
-  if(all.stations==FALSE){
-    if(is.null(sta_id)){stop("At least one sta_id needs to be provided")}
+  if(all.stations){
     
-    seriesidselec <- sapply(obj$meta,function(m){if(m$sta_type==sta_type & m$var_id == var_id & m$sta_id %in% sta_id){
-      return(TRUE)
-    }else{
-      return(FALSE)}})
+    seriesidselec <- sapply(obj$meta,function(m){
+      m$sta_type==sta_type & m$var_id == var_id
+    })
     
   }else{ # in case of default: all.stations=TRUE
     
-    seriesidselec <- sapply(obj$meta,function(m){if(m$sta_type==sta_type & m$var_id == var_id){
-      return(TRUE)
-    }else{
-      return(FALSE)}})
+    if(is.null(sta_id)){stop("At least one sta_id needs to be provided")}
+    
+    seriesidselec <- sapply(obj$meta,function(m){
+      m$sta_type==sta_type & m$var_id == var_id & m$sta_id %in% sta_id
+    })
+
   }
   
   seriesidlist <- names(obj$meta)[seriesidselec]
@@ -75,8 +50,7 @@ aggregate.to.seasonal <- function(obj, all.stations=TRUE, sta_type="AWS", var_id
       
       daily <- obj$daily[[sid]]
       daily$datetime <- as.Date(as.character(daily$datetime), format="%Y%m%d")
-      daily$value[which(daily$value==-9999)] <- NA      
-      
+
       # Collect months
       daily$month <- month(daily$datetime)
       # Collect years
@@ -127,7 +101,7 @@ aggregate.to.seasonal <- function(obj, all.stations=TRUE, sta_type="AWS", var_id
       aggregate.sums$autumn$value[which(aggregate.sums$autumn$year %in% seasons_with_over20percent_NAvalues$year[seasons_with_over20percent_NAvalues$season=="autumn"])] <- NA
       
       # Add new yearly file to obj. 
-      newseriesid <- as.character(as.numeric(names(obj$daily)[[sid]]) + 20000000) #annual series id's have precursor 4, daily serie id's have precursor 2.
+      newseriesid <- as.character(as.numeric(names(obj$daily)[[sid]]) - cfg$obj.base.id.daily + cfg$obj.base.id.yearly) #annual series id's have precursor 4, daily serie id's have precursor 2.
 
       dt <- as.data.table(yearly.sums)
       names(dt) <- c("datetime", "value")
@@ -148,7 +122,7 @@ aggregate.to.seasonal <- function(obj, all.stations=TRUE, sta_type="AWS", var_id
       obj <- write.meta.yearly.dt(obj=obj, dt=dt, sid=sid, newseriesid=newseriesid)
       
       # djf
-      newseriesid <- as.character(as.numeric(names(obj$daily)[[sid]]) + 30000000) #djf series id's have precursor 5
+      newseriesid <- as.character(as.numeric(names(obj$daily)[[sid]]) - cfg$obj.base.id.daily + cfg$obj.base.id.djf) #djf series id's have precursor 5
       
       dt <- as.data.table(aggregate.sums$winter)
       names(dt) <- c("datetime", "value")
@@ -159,7 +133,7 @@ aggregate.to.seasonal <- function(obj, all.stations=TRUE, sta_type="AWS", var_id
       obj <- write.meta.yearly.dt(obj=obj, dt=dt, sid=sid, newseriesid=newseriesid)
       
       # mam
-      newseriesid <- as.character(as.numeric(names(obj$daily)[[sid]]) + 40000000) #mam series id's have precursor 6
+      newseriesid <- as.character(as.numeric(names(obj$daily)[[sid]]) - cfg$obj.base.id.daily + cfg$obj.base.id.mam) #mam series id's have precursor 6
       
       dt <- as.data.table(aggregate.sums$spring)
       names(dt) <- c("datetime", "value")
@@ -170,7 +144,7 @@ aggregate.to.seasonal <- function(obj, all.stations=TRUE, sta_type="AWS", var_id
       obj <- write.meta.yearly.dt(obj=obj, dt=dt, sid=sid, newseriesid=newseriesid)
       
       # jja
-      newseriesid <- as.character(as.numeric(names(obj$daily)[[sid]]) + 50000000) #jja series id's have precursor 7
+      newseriesid <- as.character(as.numeric(names(obj$daily)[[sid]]) - cfg$obj.base.id.daily + cfg$obj.base.id.jja) #jja series id's have precursor 7
       
       dt <- as.data.table(aggregate.sums$summer)
       names(dt) <- c("datetime", "value")
@@ -181,7 +155,7 @@ aggregate.to.seasonal <- function(obj, all.stations=TRUE, sta_type="AWS", var_id
       obj <- write.meta.yearly.dt(obj=obj, dt=dt, sid=sid, newseriesid=newseriesid)
       
       #son
-      newseriesid <- as.character(as.numeric(names(obj$daily)[[sid]]) + 60000000) #son series id's have precursor 8
+      newseriesid <- as.character(as.numeric(names(obj$daily)[[sid]]) - cfg$obj.base.id.daily + cfg$obj.base.id.son) #son series id's have precursor 8
       
       dt <- as.data.table(aggregate.sums$autumn)
       names(dt) <- c("datetime", "value")
@@ -217,20 +191,19 @@ aggregate.to.88 <- function(obj, all.stations=TRUE, sta_type="AWS", var_id="RH",
     data.availability.threshold <- cfg$data.availability.threshold
     MaxNAPerDay <- floor((1-data.availability.threshold)*24)  #if exceeded, the day should be excluded. 
   
-  if(all.stations==FALSE){
-    if(is.null(sta_id)){stop("At least one sta_ID needs to be provided")}
-
-    seriesidselec <- sapply(obj$meta,function(m){if(m$sta_type==sta_type & m$var_id == var_id & m$sta_id %in% sta_id){
-      return(TRUE)
-        }else{
-          return(FALSE)}})
+  if(all.stations){
+    
+    seriesidselec <- sapply(obj$meta,function(m){
+      m$sta_type==sta_type & m$var_id == var_id
+    })
     
     }else{ # in case of default: all.stations=TRUE
       
-   seriesidselec <- sapply(obj$meta,function(m){if(m$sta_type==sta_type & m$var_id == var_id){
-     return(TRUE)
-        }else{
-          return(FALSE)}})
+      if(is.null(sta_id)) stop("At least one sta_ID needs to be provided")
+      
+      seriesidselec <- sapply(obj$meta,function(m){
+        m$sta_type==sta_type & m$var_id == var_id & m$sta_id %in% sta_id
+      }) 
     }
 
   seriesidlist <- names(obj$meta)[seriesidselec]
@@ -239,8 +212,7 @@ aggregate.to.88 <- function(obj, all.stations=TRUE, sta_type="AWS", var_id="RH",
     if(names(obj$hourly)[[sid]] %in% seriesidlist){
 
   hourly <- obj$hourly[[sid]]
-  hourly$value[which(hourly$value==-9999)] <- NA 
-  
+
   # Make timeline of timestamps 0800 indicating the end of each day
   # Use integers for really fast comparison
   first_timestep <- which(hour(strptime(hourly$datetime, format="%Y%m%d%H%M%S")) == 9)[1]
@@ -258,12 +230,12 @@ aggregate.to.88 <- function(obj, all.stations=TRUE, sta_type="AWS", var_id="RH",
   days_with_over20percent_NAvalues <- as.numeric(as.character( NAvaluestable[which(NAvaluestable$Freq>MaxNAPerDay),1] ))
   
   value_agg <- setDT(as.data.frame(timeselec))[,lapply(.SD,sum, na.rm=T),by=.(time_agg)]$timeselec
-  value_agg[days_with_over20percent_NAvalues] <- -9999
+  value_agg[days_with_over20percent_NAvalues] <- NA
   
   aggregated_data <- hourly[seq((first_timestep + 23 ), last_timestep, by = 24), 1]
   aggregated_data$value <- value_agg
   
-  newseriesid <- as.character(as.numeric(names(obj$hourly)[[sid]]) + 10000000)
+  newseriesid <- as.character(as.numeric(names(obj$hourly)[[sid]]) - cfg$obj.base.id.hourly + cfg$obj.base.id.daily)
 
   # Add new daily file to obj. 
   dt <- as.data.table(aggregated_data)
