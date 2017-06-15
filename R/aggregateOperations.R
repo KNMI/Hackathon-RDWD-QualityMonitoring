@@ -1,8 +1,6 @@
 library(data.table)
 library(config)
 
-Sys.setenv(R_CONFIG_ACTIVE = "test")
-
 #' Calculate seasonal sums
 #' @title Aggregate 8am to 8am data to yearly sums and seasonal sums
 #' @description Since the variability is seasonal dependent we would like to be able to compare certain seasons only. The function takes the R object, calculates aggregates and returns this in the object, included updated meta data. 
