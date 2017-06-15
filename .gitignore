@@ -7,3 +7,4 @@ function_AWS_dayaggregation.R
 test_Lotte.R
 data/testdata
 config/config.yml
+output/fig
