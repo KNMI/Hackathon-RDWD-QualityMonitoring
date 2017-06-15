@@ -219,7 +219,7 @@ aggregate.to.88 <- function(obj, all.stations=TRUE, sta_type="AWS", var_id="RH",
   last_timestep <- rev(which(hour(strptime(hourly$datetime, format="%Y%m%d%H%M%S")) == 8))[1]
   if(is.na(first_timestep) | is.na(last_timestep))stop("Incomplete timeperiod")
   
-  # Aggregate rainfall in the 24 hours belonging to the 0800-0800 timeframe          
+  # Aggregate rainfall in the 24 hours belonging to the 0800-0800 timeframe      
   nrdays <- length(first_timestep:last_timestep) / 24
   if(round(nrdays) != nrdays){stop("Incomplete timeperiod")}
 
