@@ -5,8 +5,6 @@ date: "6/13/2017"
 output: html_document
 ---
 
-# Background information inhomogenity detection
-
 * Algorithm
 * What kind of errors occur?
 * How often have they occured? List with previous warnings. 

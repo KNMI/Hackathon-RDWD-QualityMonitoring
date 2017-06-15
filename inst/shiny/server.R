@@ -24,6 +24,11 @@ p<-ggplot(Bilt,aes(time,P))+
 
 server<-function(input, output, session){
   
+  detection_datetime <- Sys.time()
+  
+  output$datetime <- renderText({ 
+    format(detection_datetime)
+  })
 
   output$plot<-renderPlot({
     if (input$go == 0)
