@@ -1,7 +1,7 @@
 library(RMySQL)
 library(data.table)
 
-setup.db <- function() {
+db.setup <- function() {
   
   cfg <- config::get(file = "config/config.yml")
   
@@ -13,8 +13,11 @@ setup.db <- function() {
             port = cfg$port)
 }
 
+db.close <- function(db) {
+  dbDisconnect(db)
+}
 
-query.hourly <- function(db, id = NA) {
+db.query.hourly <- function(db, id = NA) {
   
   cfg <- config::get(file = "config/config.yml")
   
@@ -29,7 +32,7 @@ query.hourly <- function(db, id = NA) {
   query <- sprintf (
     paste("SELECT",
           "validated.data_id AS data_id, types.type_id AS type_id, elements.element_id AS element_id, stations.code AS code,",
-          "DATE_FORMAT(date, '%%Y%%m%%d%%H%%i%%s') AS date, value, qc, aggregation, type, name, latitude, longitude, elevation, element_group, elements.description AS element_desc, types.description AS type_desc, element, scale, unit",
+          "DATE_FORMAT(date, %%s) AS date, value, qc, aggregation, type, name, latitude, longitude, elevation, element_group, elements.description AS element_desc, types.description AS type_desc, element, scale, unit",
           "FROM %s%s AS validated",
           "INNER JOIN series ON validated.data_id = series.data_id",
           "INNER JOIN stations ON series.type_id = stations.type_id AND series.code = stations.code",
@@ -40,9 +43,11 @@ query.hourly <- function(db, id = NA) {
     table.name, 
     element.name)
   
-  #query.safe <- dbEscapeStrings(db, query)
+  query.safe <- dbEscapeStrings(db, query)
   
-  data.ref <- dbSendQuery(db, query)
+  query.safe <- sprintf(query.safe, "'%Y%m%d%H%i%s'")
+  
+  data.ref <- dbSendQuery(db, query.safe)
   
   result <- fetch(data.ref)
   
@@ -72,15 +77,14 @@ query.hourly <- function(db, id = NA) {
   })
   
   obj$hourly <- by(result, factor(result$data_id), function(x) {
-    
-    qc.idx <- which(x$qc %in% max.qc)
-    
     dt <- data.table(datetime = x$date, value = x$value)
     setkey(dt, datetime)
     
+    qc.idx <- !(x$qc %in% max.qc)
     missing.idx <- x$value == na.value
+    dt$value[missing.idx | qc.idx] <- NA
     
-    
+    return(dt)
   })
   
   obj$daily <- list()
@@ -89,7 +93,5 @@ query.hourly <- function(db, id = NA) {
   names(obj$hourly) <- as.character(as.integer(names(obj$hourly)) + base.id)
   
   dbClearResult(data.ref)
-  dbDisconnect(db)
-  
   return(obj)
 }
