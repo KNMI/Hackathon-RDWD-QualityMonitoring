@@ -1,5 +1,5 @@
-source("R/aggregate.R")
-source("R/dbOperations.R")
+source("R/aggregateOperations.R")
+source("R/databaseOperations.R")
 
 db <- db.setup()
 
