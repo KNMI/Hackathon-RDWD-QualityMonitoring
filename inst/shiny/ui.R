@@ -1,14 +1,20 @@
 library(shiny)
 
 # Run using:
-# runApp("~/Hackathon-RDWD-QualityMonitoring/R/shiny")
+# runApp("~/Hackathon-RDWD-QualityMonitoring/inst/shiny")
 
-fluidPage(
+navbarPage(fluid=TRUE, theme="mqm_style.css", windowTitle="MQM: Inhomogeneity detection",
+           title=div(class="alert alert-success", img(src="mqm_logo.svg", width=48), "MQM", tags$small("inhomogeneity detection")),
 
   #title above navbar
-  h1("Inhomogenity detection", align = "center"),
+#  h1("Inhomogeneity detection", align = "center"),
+  
+  #titlePanel(title=div(class="alert alert-success", img(src="mqm_logo.svg", width=48), "MQM", tags$small("inhomogeneity detection"))),
 
-  navbarPage("",
+  #navlistPanel("",
+
+    navbarMenu("",
+
     tabPanel("Alerts",
       fluidRow(
         includeMarkdown("Warning_example.Rmd")
