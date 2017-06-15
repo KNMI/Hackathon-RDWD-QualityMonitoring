@@ -15,6 +15,9 @@ relative.difference <- function(timeserie1, timeserie2){
     stop("Timeperiods of input files do not match")
   
   relative_dif <- 100 * (timeserie2$value - timeserie1$value) / timeserie1$value
+  relative_dif[timeserie1$value == 0 & timeserie2$value == 0] <- 0
+  relative_dif[timeserie1$value == 0 & timeserie2$value != 0] <- NA
+  
   output <- data.table(datetime=timeserie2$datetime, value=relative_dif)
   
   return(output)
