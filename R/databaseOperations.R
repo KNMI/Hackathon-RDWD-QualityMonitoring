@@ -1,6 +1,10 @@
 library(RMySQL)
 library(data.table)
 
+#' @title Setup a connection to the MySQL database
+#' @description This function returns a handle which can be used later to query the db.
+#' @return An object of class "MySQLConnection" and "RMySQL"
+#' @author Jurian and Hidde
 db.setup <- function() {
   
   cfg <- config::get(file = "config/config.yml")
@@ -13,20 +17,27 @@ db.setup <- function() {
             port = cfg$port)
 }
 
+#' @title Close the connection to the MySQL database
+#' @description This closes the connection, discards all pending work, and frees resources (e.g., memory, sockets). 
+#' @return TRUE, invisibly
+#' @author Jurian and Hidde
 db.close <- function(db) {
   dbDisconnect(db)
 }
 
-db.query.hourly <- function(db, id = NA) {
+#' @title Query the database for hourly 
+#' @param db Handle to MySQL database, taken from db.setup()
+#' @param element.name Name of type of data; e.g. "rh" for hourly rainfall or "t" for temperature
+#' @seealso db.setup()
+#' @author Jurian and Hidde
+db.query.hourly <- function(db, element.name) {
   
   cfg <- config::get(file = "config/config.yml")
   
-  base.id <- cfg$obj.base.id
   max.qc <- cfg$qc.threshold
   na.value <- cfg$database.na.value
   
   table.name <- "1hour_validated_"
-  element.name <- "rh"
   
   # This is just a test example for now
   query <- sprintf (
@@ -72,7 +83,7 @@ db.query.hourly <- function(db, id = NA) {
       var_unit = unique(x$unit),
       var_scale = unique(x$scale),
       var_period = unique(x$aggregation),
-      ser_current = x[nrow(x),"date"]
+      ser_current = x[nrow(x), "date"]
     )
   })
   
@@ -88,10 +99,13 @@ db.query.hourly <- function(db, id = NA) {
   })
   
   obj$daily <- list()
+  obj$yearly <- list()
+
+  names(obj$meta) <- as.character(as.integer(names(obj$meta)) + cfg$obj.base.id.hourly)
+  names(obj$hourly) <- as.character(as.integer(names(obj$hourly)) + cfg$obj.base.id.hourly)
   
-  names(obj$meta) <- as.character(as.integer(names(obj$meta)) + base.id)
-  names(obj$hourly) <- as.character(as.integer(names(obj$hourly)) + base.id)
-  
+  # Clean up
   dbClearResult(data.ref)
+  
   return(obj)
 }
