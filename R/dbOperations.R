@@ -16,9 +16,12 @@ setup.db <- function() {
 
 query.hourly <- function(db, id = NA) {
   
-  base.id <- 10000000
+  cfg <- config::get(file = "config/config.yml")
   
-  max.qc <- c(0,1)
+  base.id <- cfg$obj.base.id
+  max.qc <- cfg$qc.threshold
+  na.value <- cfg$database.na.value
+  
   table.name <- "1hour_validated_"
   element.name <- "rh"
   
@@ -68,9 +71,16 @@ query.hourly <- function(db, id = NA) {
     )
   })
   
-  obj$hourly <- by(result, factor(result$data_id), function(x){
+  obj$hourly <- by(result, factor(result$data_id), function(x) {
+    
+    qc.idx <- which(x$qc %in% max.qc)
+    
     dt <- data.table(datetime = x$date, value = x$value)
     setkey(dt, datetime)
+    
+    missing.idx <- x$value == na.value
+    
+    
   })
   
   obj$daily <- list()
