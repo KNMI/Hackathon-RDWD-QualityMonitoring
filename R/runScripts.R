@@ -3,7 +3,7 @@ source("R/databaseOperations.R")
 
 db <- db.setup()
 
-obj <- db.query.hourly(db)
+obj <- db.query.hourly(db, "rh")
 
 db.close(db)
 
