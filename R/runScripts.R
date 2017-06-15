@@ -13,7 +13,6 @@ db <- db.setup()
 obj <- db.query.hourly(db, "rh")
 db.close(db)
 
-
  # Aggregate AWS hourly values in 8-8 daily values #
 obj <- aggregate.to.88(obj=obj, all.stations=TRUE, sta_type="AWS", var_id="RH", sta_id=NULL)
 
