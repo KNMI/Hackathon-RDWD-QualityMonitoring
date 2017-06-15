@@ -207,7 +207,7 @@ aggregate.to.seasonal <- function(obj, all.stations=TRUE, sta_type="AWS", var_id
 #' @param sta_type default is "AWS", but could be extended to for instance "WOW" in the future.
 #' @param var_id default is "RH" for hourly rainfall. 
 #' @param sta_id defines the string of sta_id's that need to be aggregated. Only applies when all.stations = FALSE. 
-#' @example aggregated88 <- aggregate.to.88(obj=obj)
+#' #@example aggregated88 <- aggregate.to.88(obj=obj)
 #' @author Lotte
 
 #function makes aggregations from all AWS datasets. 

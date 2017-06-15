@@ -22,7 +22,9 @@ fluidPage(
           )
         )
       )
-    ),
+),
+                  
+    
     tabPanel("Overview",
       fluidRow(
         p("table: red/green, plotje on white board")
