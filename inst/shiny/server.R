@@ -24,13 +24,16 @@ p<-ggplot(Bilt,aes(time,P))+
 
 server<-function(input, output, session){
   
-  output$summary<-renderTable({
-    quantile(Bilt$P)
-  })
-  
+
   output$plot<-renderPlot({
-     p
+    if (input$go == 0)
+      return()
+    
+    isolate(
+    p
+    )
   })
+
   
   
 }

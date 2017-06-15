@@ -17,21 +17,15 @@ navbarPage(fluid=TRUE, theme="mqm_style.css", windowTitle="MQM: Inhomogeneity de
 
     tabPanel("Alerts",
       fluidRow(
-        includeMarkdown("Warning_example.Rmd")
-      ),
-      fluidRow(
-        column(6,
+        column(12,
           div(class = "panel panel-danger", 
-            div(class="panel-heading", "title"),
+            div(class="panel-heading", "The systems has detected a Break!"),
             div(class="panel-body", 
-              div("Body"),
+              div(includeMarkdown("Warning_example.Rmd")),
+              div(actionButton("go", "More details...")),
               div(plotOutput("plot"))
             )
           )
-        ),
-        column(6,
-          h4("quantiles"),
-          tableOutput("summary")
         )
       )
     ),
