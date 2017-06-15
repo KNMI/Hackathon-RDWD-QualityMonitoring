@@ -1,6 +1,10 @@
 library(RMySQL)
 library(data.table)
 
+#' @title Setup a connection to the MySQL database
+#' @description This function returns a handle which can be used later to query the db.
+#' @return An object of class "MySQLConnection" and "RMySQL"
+#' @author Jurian and Hidde
 db.setup <- function() {
   
   cfg <- config::get(file = "config/config.yml")
@@ -13,34 +17,48 @@ db.setup <- function() {
             port = cfg$port)
 }
 
+#' @title Close the connection to the MySQL database
+#' @description This closes the connection, discards all pending work, and frees resources (e.g., memory, sockets). 
+#' @return TRUE, invisibly
+#' @author Jurian and Hidde
 db.close <- function(db) {
   dbDisconnect(db)
 }
 
-db.query.hourly <- function(db, id = NA) {
+#' @title Query the database for hourly 
+#' @param db Handle to MySQL database, taken from db.setup()
+#' @param time.period One of {"hour", "day", "month", "year"} NB. Season not supported ATM!
+#' @param station.type One of {"validated", "derived"}
+#' @param element.name Name of type of data; e.g. "rh" for hourly rainfall or "t" for temperature
+#' @seealso db.setup()
+#' @author Jurian and Hidde
+db.query <- function(db, time.period, station.type, element.name) {
+  
+  supported.station.types <- c("validated", "derived")
+  supported.time.periods <- c("hour", "day", "month", "year")
+  
+  if(!station.type %in% supported.station.types) stop(paste("Unsupported station type:", station.type))
+  if(!time.period %in% supported.time.periods) stop(paste("Unuspported time period:", time.period))
   
   cfg <- config::get(file = "config/config.yml")
   
-  base.id <- cfg$obj.base.id
   max.qc <- cfg$qc.threshold
   na.value <- cfg$database.na.value
-  
-  table.name <- "1hour_validated_"
-  element.name <- "rh"
-  
+
   # This is just a test example for now
   query <- sprintf (
     paste("SELECT",
           "validated.data_id AS data_id, types.type_id AS type_id, elements.element_id AS element_id, stations.code AS code,",
           "DATE_FORMAT(date, %%s) AS date, value, qc, aggregation, type, name, latitude, longitude, elevation, element_group, elements.description AS element_desc, types.description AS type_desc, element, scale, unit",
-          "FROM %s%s AS validated",
+          "FROM 1%s_%s_%s AS validated",
           "INNER JOIN series ON validated.data_id = series.data_id",
           "INNER JOIN stations ON series.type_id = stations.type_id AND series.code = stations.code",
           "INNER JOIN types ON series.type_id = types.type_id",
           "INNER JOIN elements ON series.element_id = elements.element_id",
           ";"
           ),
-    table.name, 
+    time.period,
+    station.type,
     element.name)
   
   query.safe <- dbEscapeStrings(db, query)
@@ -72,11 +90,20 @@ db.query.hourly <- function(db, id = NA) {
       var_unit = unique(x$unit),
       var_scale = unique(x$scale),
       var_period = unique(x$aggregation),
-      ser_current = x[nrow(x),"date"]
+      ser_current = x[nrow(x), "date"]
     )
   })
   
-  obj$hourly <- by(result, factor(result$data_id), function(x) {
+  # Init empty lists
+  obj$hourly <- list()
+  obj$daily <- list()
+  obj$monthly <- list()
+  obj$yearly <- list()
+  
+  # Get the right name for this list of timeseries
+  namely <- c("hourly", "daily", "monthly", "yearly")[which(time.period == supported.time.periods)]
+  
+  obj[namely] <- list(by(result, factor(result$data_id), function(x) {
     dt <- data.table(datetime = x$date, value = x$value)
     setkey(dt, datetime)
     
@@ -85,13 +112,19 @@ db.query.hourly <- function(db, id = NA) {
     dt$value[missing.idx | qc.idx] <- NA
     
     return(dt)
-  })
+  }))
   
-  obj$daily <- list()
-  
+  base.id <- c(
+    cfg$obj.base.id.hourly, 
+    cfg$obj.base.id.daily, 
+    cfg$obj.base.id.monthly, 
+    cfg$obj.base.id.yearly)[which(time.period == supported.time.periods)]
+
   names(obj$meta) <- as.character(as.integer(names(obj$meta)) + base.id)
-  names(obj$hourly) <- as.character(as.integer(names(obj$hourly)) + base.id)
+  names(obj[[namely]]) <- as.character(as.integer(names(obj[[namely]])) + base.id)
   
+  # Clean up
   dbClearResult(data.ref)
+  
   return(obj)
 }
