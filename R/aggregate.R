@@ -30,7 +30,7 @@ grab.test.data <- function() {
 
 #' Calculate seasonal sums
 #' @title Aggregate 8am to 8am data to yearly sums and seasonal sums
-#' @description Since the variability is seasonal dependent we would like to be able to compare certain seasons only.
+#' @description Since the variability is seasonal dependent we would like to be able to compare certain seasons only. The function takes the R object, calculates aggregates and returns this in the object, included updated meta data. 
 #' @details When data availability is below 80% in a season (i.e. >18 days missing), or a year (i.e. > 73 days missing), the aggregation becomes -9999.
 #' @param obj The R object containing all timeseries and metadata
 #' @param all.stations default is "TRUE" means all stations are aggregated. If all.stations = FALSE, an array of sta_ID needs to be provided. 
@@ -119,66 +119,77 @@ aggregate.to.seasonal <- function(obj, all.stations=TRUE, sta_type="AWS", var_id
         return(seasonal.sum)
       })
       
-#      # Merge all data tables in the list
-#      aggregate.seasonal <- Reduce(function(a, b) merge(a, b, by = "year", all = TRUE), aggregate.sums)
-#      # Fix names so we can merge the yearly sums
-#      names(aggregate.seasonal) <- c("year", "djf", "mam", "jja", "son")
-#      # Merge the yearly sums with the seasonal sums
-#      aggregate.seasonal <- merge(yearly.sums, aggregate.seasonal, by = "year")
-      
       # Insert NA for output that has been constructed on less than the data availability threshold. 
       yearly.sums$y[which(yearly.sums$year %in% years_with_over20percent_NAvalues)] <- NA
       aggregate.sums$winter$value[which(aggregate.sums$winter$year %in% seasons_with_over20percent_NAvalues$year[seasons_with_over20percent_NAvalues$season=="winter"])] <- NA
       aggregate.sums$spring$value[which(aggregate.sums$spring$year %in% seasons_with_over20percent_NAvalues$year[seasons_with_over20percent_NAvalues$season=="spring"])] <- NA
-      aaggregate.sums$summer$value[which(aggregate.sums$summer$year %in% seasons_with_over20percent_NAvalues$year[seasons_with_over20percent_NAvalues$season=="summer"])] <- NA
+      aggregate.sums$summer$value[which(aggregate.sums$summer$year %in% seasons_with_over20percent_NAvalues$year[seasons_with_over20percent_NAvalues$season=="summer"])] <- NA
       aggregate.sums$autumn$value[which(aggregate.sums$autumn$year %in% seasons_with_over20percent_NAvalues$year[seasons_with_over20percent_NAvalues$season=="autumn"])] <- NA
       
-      
-#      # Insert NA for output that has been constructed on less than 80% data availability. 
-#      aggregate.seasonal$y[which(aggregate.seasonal$year %in% years_with_over20percent_NAvalues)] <- -9999
-#      aggregate.seasonal$djf[which(aggregate.seasonal$year %in% seasons_with_over20percent_NAvalues$year[seasons_with_over20percent_NAvalues$season=="winter"])] <- -9999
-#      aggregate.seasonal$mam[which(aggregate.seasonal$year %in% seasons_with_over20percent_NAvalues$year[seasons_with_over20percent_NAvalues$season=="spring"])] <- -9999
-#      aggregate.seasonal$jja[which(aggregate.seasonal$year %in% seasons_with_over20percent_NAvalues$year[seasons_with_over20percent_NAvalues$season=="summer"])] <- -9999
-#      aggregate.seasonal$son[which(aggregate.seasonal$year %in% seasons_with_over20percent_NAvalues$year[seasons_with_over20percent_NAvalues$season=="autumn"])] <- -9999
-
+      # Add new yearly file to obj. 
       newseriesid <- as.character(as.numeric(names(obj$daily)[[sid]]) + 20000000) #annual series id's have precursor 4, daily serie id's have precursor 2.
 
-      # Add new yearly file to obj. 
       dt <- as.data.table(yearly.sums)
       names(dt) <- c("datetime", "value")
       obj$yearly$y <- c(obj$yearly$y, list(dt))
       n <- names(obj$yearly$y)
       names(obj$yearly$y) <- c( n[-length(n)], newseriesid)
       
-      meta <- obj$meta[[which(names(obj$meta) ==  names(obj$daily)[[sid]])]]
-      meta$var_period <- "year"
-      meta$var_id <- "RA"
-      meta$ser_current <- dt$datetime[nrow(dt)] #last timestamp of daily timeseries. 
-      obj$meta <- c(obj$meta, list(meta))
-      n <- names(obj$meta)
-      names(obj$meta) <- c( n[-length(n)], newseriesid)
+      write.meta.yearly.dt <- function(obj, dt, sid, newseriesid){   
+        meta <- obj$meta[[which(names(obj$meta) ==  names(obj$daily)[[sid]])]]
+        meta$var_period <- "year"
+        meta$var_id <- "RA"
+        meta$ser_current <- dt$datetime[nrow(dt)] #last timestamp of daily timeseries. 
+        obj$meta <- c(obj$meta, list(meta))
+        n <- names(obj$meta)
+        names(obj$meta) <- c( n[-length(n)], newseriesid)
+        return(obj)
+      }
+      obj <- write.meta.yearly.dt(obj=obj, dt=dt, sid=sid, newseriesid=newseriesid)
       
+      # djf
       newseriesid <- as.character(as.numeric(names(obj$daily)[[sid]]) + 30000000) #djf series id's have precursor 5
       
       dt <- as.data.table(aggregate.sums$winter)
       names(dt) <- c("datetime", "value")
-      obj$yearly$y <- c(obj$yearly$djf, list(dt))
+      obj$yearly$djf <- c(obj$yearly$djf, list(dt))
       n <- names(obj$yearly$djf)
       names(obj$yearly$djf) <- c( n[-length(n)], newseriesid)
+
+      obj <- write.meta.yearly.dt(obj=obj, dt=dt, sid=sid, newseriesid=newseriesid)
       
+      # mam
       newseriesid <- as.character(as.numeric(names(obj$daily)[[sid]]) + 40000000) #mam series id's have precursor 6
+      
+      dt <- as.data.table(aggregate.sums$spring)
+      names(dt) <- c("datetime", "value")
+      obj$yearly$mam <- c(obj$yearly$mam, list(dt))
+      n <- names(obj$yearly$mam)
+      names(obj$yearly$mam) <- c( n[-length(n)], newseriesid)
+      
+      obj <- write.meta.yearly.dt(obj=obj, dt=dt, sid=sid, newseriesid=newseriesid)
+      
+      # jja
       newseriesid <- as.character(as.numeric(names(obj$daily)[[sid]]) + 50000000) #jja series id's have precursor 7
+      
+      dt <- as.data.table(aggregate.sums$summer)
+      names(dt) <- c("datetime", "value")
+      obj$yearly$jja <- c(obj$yearly$jja, list(dt))
+      n <- names(obj$yearly$jja)
+      names(obj$yearly$jja) <- c( n[-length(n)], newseriesid)
+      
+      obj <- write.meta.yearly.dt(obj=obj, dt=dt, sid=sid, newseriesid=newseriesid)
+      
+      #son
       newseriesid <- as.character(as.numeric(names(obj$daily)[[sid]]) + 60000000) #son series id's have precursor 8
       
-      # Add new information to meta in obj.
+      dt <- as.data.table(aggregate.sums$autumn)
+      names(dt) <- c("datetime", "value")
+      obj$yearly$son <- c(obj$yearly$son, list(dt))
+      n <- names(obj$yearly$son)
+      names(obj$yearly$son) <- c( n[-length(n)], newseriesid)
       
-      meta <- obj$meta[[which(names(obj$meta) ==  names(obj$hourly)[[sid]])]]
-      meta$var_period <- "day"
-      meta$var_id <- "RD"
-      meta$ser_current <- dt$datetime[nrow(dt)] #last timestamp of daily timeseries. 
-      obj$meta <- c(obj$meta, list(meta))
-      n <- names(obj$meta)
-      names(obj$meta) <- c( n[-length(n)], newseriesid)
+      obj <- write.meta.yearly.dt(obj=obj, dt=dt, sid=sid, newseriesid=newseriesid)
             
     } #end if-loop
   } #end for-loop
@@ -187,88 +198,6 @@ aggregate.to.seasonal <- function(obj, all.stations=TRUE, sta_type="AWS", var_id
 }
 
 
-  
-############# old version: 
-
-aggregate.to.seasonal <- function(aggregate88) {
-  
-  cfg <- config::get(file = "config/config.yml")
-  data.availability.threshold <- cfg$data.availability.threshold
-  MaxNAPerSeason <- floor((1-data.availability.threshold)*(365/4))  #if exceeded, the day should be excluded. 
-  MaxNAPerYear <- floor((1-data.availability.threshold)*(365))  #if exceeded, the day should be excluded. 
-  
-  # Define meteorological seasons
-  winter <- c(12, 1, 2)
-  spring <- c(3, 4, 5)
-  summer <- c(6, 7, 8)
-  autumn <- c(9, 10, 11)
-  
-  names(aggregate88) <- c("date", "value")
-  # Convert the character vector to a date so we can perform operations like month() and year()
-  aggregate88$date <- as.Date(as.character(aggregate88$date), format="%Y%m%d")
-
-  # Collect months
-  aggregate88$month <- month(aggregate88$date)
-  # Collect years
-  aggregate88$year <- year(aggregate88$date)
-  
-  decembers.idx <- which(aggregate88$month == 12)
-  
-  aggregate88$year[decembers.idx] <- aggregate88$year[decembers.idx] + 1
-  
-  # Assign seasons to observations
-  aggregate88$season <- 0
-  aggregate88$season[aggregate88$month %in% winter] <- "winter"
-  aggregate88$season[aggregate88$month %in% spring] <- "spring"
-  aggregate88$season[aggregate88$month %in% summer] <- "summer"
-  aggregate88$season[aggregate88$month %in% autumn] <- "autumn"
-  # Make sure the columns are in the correct ordering
-  aggregate88$season <- factor(aggregate88$season, levels = c("winter", "spring", "summer", "autumn"))
-
-  # Find the locations where value is NA
-  year_season_NAvalues <- aggregate88[which(is.na(aggregate88$value)),c(4,5)]
-  NAvaluestable <- as.data.frame(table(year_season_NAvalues))
-  # A season has 365/4 = 91.25 days. 80% data availability corresponds with no more than 18 days with NA values. 
-  seasons_with_over20percent_NAvalues <- NAvaluestable[which(NAvaluestable$Freq>MaxNAPerSeason),c(1,2)]
-  year_NAvalues <- aggregate88$year[which(is.na(aggregate88$value))]
-  NAvaluestable <- as.data.frame(table(year_NAvalues))
-  # 80% data availability corresponds with no more than 73 days with NA values. 
-  years_with_over20percent_NAvalues <- as.character(NAvaluestable[which(NAvaluestable$Freq>MaxNAPerYear),1])
-    
-  # Create a data.table for calendar yearly sums
-  yearly.sums <- data.table(aggregate(list(y = aggregate88$value), by = list(year = year(aggregate88$date)), sum, na.rm=T))
-  # Set key for really fast merging later on
-  setkey(yearly.sums, year)
-  
-  # Create a list of data.tables, one for each season, this makes it easier to merge later on than
-  # aggregating by year AND season at once. This is because we need them merged column wise and not row wise.
-  aggregate.sums <- by(aggregate88, aggregate88$season, function(x) {
-    seasonal.sum <- data.table(aggregate(list(value = x$value), list(year = x$year), sum, na.rm=T))
-    # Set key for really fast merging later on
-    setkey(seasonal.sum, year)
-    return(seasonal.sum)
-  })
-  
-  Reduce(function(X,Y) X[Y], aggregate.sums)
-  
-  # Merge all data tables in the list
-  aggregate.seasonal <- Reduce(function(a, b) merge(a, b, by = "year", all = TRUE), aggregate.sums)
-  # Fix names so we can merge the yearly sums
-  names(aggregate.seasonal) <- c("year", "djf", "mam", "jja", "son")
-  # Merge the yearly sums with the seasonal sums
-  aggregate.seasonal <- merge(yearly.sums, aggregate.seasonal, by = "year")
-  
-  # Insert NA for output that has been constructed on less than 80% data availability. 
-  aggregate.seasonal$y[which(aggregate.seasonal$year %in% years_with_over20percent_NAvalues)] <- NA
-  aggregate.seasonal$djf[which(aggregate.seasonal$year %in% seasons_with_over20percent_NAvalues$year[seasons_with_over20percent_NAvalues$season=="winter"])] <- NA
-  aggregate.seasonal$mam[which(aggregate.seasonal$year %in% seasons_with_over20percent_NAvalues$year[seasons_with_over20percent_NAvalues$season=="spring"])] <- NA
-  aggregate.seasonal$jja[which(aggregate.seasonal$year %in% seasons_with_over20percent_NAvalues$year[seasons_with_over20percent_NAvalues$season=="summer"])] <- NA
-  aggregate.seasonal$son[which(aggregate.seasonal$year %in% seasons_with_over20percent_NAvalues$year[seasons_with_over20percent_NAvalues$season=="autumn"])] <- NA
-    
-  # Profit!
-  return(aggregate.seasonal)
-}
-##################
 
 #' Daily aggeration
 #' @title Aggregate hourly data to daily from 8am to 8am the next day
