@@ -1,5 +1,7 @@
 setwd("~/Hackathon-RDWD-QualityMonitoring/")
 
+Sys.setenv(R_CONFIG_ACTIVE = "test")
+
  # Functions # 
 source("R/databaseOperations.R")
 source("R/aggregateOperations.R")
