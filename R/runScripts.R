@@ -10,7 +10,7 @@ source("R/breakDetection.R")
 
  # Input data #
 db <- db.setup()
-obj <- db.query.hourly(db, "rh")
+obj <- db.query(db, "day", "derived", "rd")
 db.close(db)
 
  # Aggregate AWS hourly values in 8-8 daily values #
