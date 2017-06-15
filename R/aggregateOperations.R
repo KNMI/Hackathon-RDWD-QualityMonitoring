@@ -182,7 +182,7 @@ aggregate.to.seasonal <- function(obj, all.stations=TRUE, sta_type="AWS", var_id
 #' @param var_id default is "RH" for hourly rainfall. 
 #' @param sta_id defines the string of sta_id's that need to be aggregated. Only applies when all.stations = FALSE. 
 #' @example aggregated88 <- aggregate.to.88(obj=obj)
-#' @author Lotte
+#' @author Lotte, Jurian & Hidde
 
 #function makes aggregations from all AWS datasets. 
 #default is all.stations=TRUE. if all.stations=FALSE, specify sta_ID. 
@@ -218,6 +218,7 @@ aggregate.to.88 <- function(obj, all.stations=TRUE, sta_type="AWS", var_id="RH",
   first_timestep <- which(hour(strptime(hourly$datetime, format="%Y%m%d%H%M%S")) == 9)[1]
   # Last occurence of 8, same as first occurance of the reverse
   last_timestep <- rev(which(hour(strptime(hourly$datetime, format="%Y%m%d%H%M%S")) == 8))[1]
+  if(is.na(first_timestep) | is.na(last_timestep))stop("Incomplete timeperiod")
   
   # Aggregate rainfall in the 24 hours belonging to the 0800-0800 timeframe          
   nrdays <- length(first_timestep:last_timestep) / 24
