@@ -21,7 +21,6 @@ db.query.hourly <- function(db, id = NA) {
   
   cfg <- config::get(file = "config/config.yml")
   
-  base.id <- cfg$obj.base.id
   max.qc <- cfg$qc.threshold
   na.value <- cfg$database.na.value
   
@@ -89,9 +88,11 @@ db.query.hourly <- function(db, id = NA) {
   
   obj$daily <- list()
   
-  names(obj$meta) <- as.character(as.integer(names(obj$meta)) + base.id)
-  names(obj$hourly) <- as.character(as.integer(names(obj$hourly)) + base.id)
+  names(obj$meta) <- as.character(as.integer(names(obj$meta)) + cfg$obj.base.id.hourly)
+  names(obj$hourly) <- as.character(as.integer(names(obj$hourly)) + cfg$obj.base.id.hourly)
   
+  # Clean up
   dbClearResult(data.ref)
+  
   return(obj)
 }
