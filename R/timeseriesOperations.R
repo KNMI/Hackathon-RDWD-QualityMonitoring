@@ -5,7 +5,7 @@
 #' @param timeserie1 timeserie as data.table with first column datetime and second column (average) value. Possible input is AWS_timeserie. 
 #' @param timeserie2 timeserie as data.table with first column datetime and second column (average) value. Possible input is MAN_timeserie. 
 #' @author Lotte and Jurian
-relative.difference <- function(timeserie1, timeserie2){
+timeseries.relative.difference <- function(timeserie1, timeserie2){
   
   # control statements
   if(names(timeserie1)[1] != "datetime" | names(timeserie1)[2] != "value" | names(timeserie2)[1] != "datetime" | names(timeserie2)[2] != "value")
@@ -20,3 +20,9 @@ relative.difference <- function(timeserie1, timeserie2){
   return(output)
 }
 
+timeseries.intersection <- function(timeseries) {
+  
+  
+  Reduce(function(X,Y) fintersect(X,Y), timeseries)
+  
+}
