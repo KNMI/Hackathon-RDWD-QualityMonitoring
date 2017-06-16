@@ -1,0 +1,132 @@
+html, body {
+    font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 1rem;
+    font-weight: normal;
+    line-height: 1.5rem;
+    color: #292b2c;
+    background-color: #fff;
+    height: 100%;
+    width: 100%;
+}
+
+div {
+  display: flex;
+}
+
+body > .container-fluid {
+  padding: 0;
+  height: inherit;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.row {
+  margin: 0;
+}
+
+.Header .navbar {
+    background-color: #d9edf7;
+    color: #31708f;
+    border: none;
+    border-bottom: 1px solid #7daec6;
+    box-shadow: 0.06rem 0.125rem 0.125rem rgba(0, 0, 0, 0.3);
+    border-radius: 0;
+    padding: 0.1rem 0.5rem;
+    margin-bottom: 0.2rem;
+    width: 100%;
+}
+
+.Header .navbar-brand {
+    display: inline-block;
+    padding-top: .25rem;
+    padding-bottom: .25rem;
+    margin-right: 1rem;
+    font-size: 1.4rem;
+    line-height: inherit;
+    white-space: nowrap;
+}
+
+.Header .navbar-brand small {
+  font-style: italic;
+}
+
+.navbar .breadcrumb-active, .navbar .nav-link.active {
+    color: inherit;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.navbar .logo {
+    margin: 0.1rem 0.3rem 0.4rem;
+    width: 2.5rem;
+}
+
+.Header {
+  display: flex;
+}
+
+.MainSection {
+    flex: 1;
+    flex-direction: column;
+    margin: 0 0.2rem 0.2rem 0.2rem;
+}
+
+.MainSection > div {
+  flex-direction: column;
+}
+
+.MainSection .container-fluid {
+  margin: 0;
+}
+
+.tab-pane .panel {
+  flex-direction: column;
+}
+
+.tab-pane .panel-heading i {
+  margin: 0.5rem 0.6rem 0 0;
+}
+
+.tab-pane .panel-heading p {
+ margin: 0; 
+}
+
+.tab-pane .panel-body {
+  flex-direction: column;
+}
+
+.tab-pane .panel-body i {
+  margin: 0.2rem 0.2rem 0 0;
+}
+
+.tab-pane .panel-body button div {
+  justify-content: center;
+}
+
+.tab-content {
+  width: 100%;
+}
+
+.tab-content>.active {
+    display: flex;
+    flex-direction: column;
+}
+
+.tab-content > div, .tab-content .row {
+  width: inherit;
+}
+
+.tab-pane .panel-body .includeDivider {
+  border-top: 0.1rem solid #ebccd1;
+}
+
+td strong {
+  margin-right: 0.4rem;
+}
+
+.MainSection > col {
+    flex: 1;
+    flex-direction: column;
+    overflow: hidden;
+}

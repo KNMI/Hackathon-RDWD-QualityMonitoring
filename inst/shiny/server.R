@@ -24,7 +24,37 @@ p<-ggplot(Bilt,aes(time,P))+
 
 server<-function(input, output, session){
   
+  detection_datetime <- Sys.time()
+  
+  rv <- reactiveValues(showDetails = "false", station = "")
+  
+  setDetails <- function(detailVisible, station) {
+    if (detailVisible) {
+      rv$showDetails <- "true"
+      rv$station <- station
+    } else {
+      rv$showDetails <- "false"
+      rv$station <- ""
+    }
+  }
+  
+  observeEvent(input$showDetailsNL, setDetails(TRUE, "NL"))
+  observeEvent(input$showDetails280, setDetails(TRUE, "280"))
+  observeEvent(input$hideDetails, setDetails(FALSE))
+  
+  output$showDetails <- renderText(rv$showDetails)
+  output$stationId <- renderText({
+    paste("Details for station", rv$station)
+  })
 
+  output$datetime <- renderText({ 
+    paste(format(detection_datetime), ": NL - Annual")
+  })
+  
+  output$datetime2 <- renderText({ 
+    paste(format(detection_datetime - 363421), ": 280 - MAM")
+  })
+  
   output$plot<-renderPlot({
     if (input$go == 0)
       return()
@@ -33,7 +63,8 @@ server<-function(input, output, session){
     p
     )
   })
-  
-  
-  
+
+  outputOptions(output, "showDetails", suspendWhenHidden = FALSE)
+  outputOptions(output, "stationId", suspendWhenHidden = FALSE)
+
 }
