@@ -72,6 +72,10 @@ body > .container-fluid {
     margin: 0 0.2rem 0.2rem 0.2rem;
 }
 
+.MainSection > div {
+  flex-direction: column;
+}
+
 .MainSection .container-fluid {
   margin: 0;
 }
@@ -81,11 +85,23 @@ body > .container-fluid {
 }
 
 .tab-pane .panel-heading i {
-  margin: 0.3rem 0.6rem 0 0;
+  margin: 0.5rem 0.6rem 0 0;
+}
+
+.tab-pane .panel-heading p {
+ margin: 0; 
 }
 
 .tab-pane .panel-body {
   flex-direction: column;
+}
+
+.tab-pane .panel-body i {
+  margin: 0.2rem 0.2rem 0 0;
+}
+
+.tab-pane .panel-body button div {
+  justify-content: center;
 }
 
 .tab-content {
