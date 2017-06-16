@@ -47,9 +47,11 @@ fluidPage(
                                           class = "panel-body",
                                           textOutput("datetime"),
                                           div(class = "includeDivider", includeMarkdown("Warning_example.Rmd")),
-                                          actionButton(class = "btn-danger", "showDetailsNL", 
-                                                       div(icon("arrow-right", lib = "font-awesome"),
-                                                       "details..."))
+                                          actionButton(class = "btn-danger", "showDetailsNL",
+                                                       div(
+                                                         icon("arrow-right", lib = "font-awesome"),
+                                                         "details..."
+                                                       ))
                                         )
                                       )),
                                   div(class = "col-xs-2",
@@ -68,9 +70,11 @@ fluidPage(
                                           class = "panel-body",
                                           textOutput("datetime2"),
                                           div(class = "includeDivider", includeMarkdown("Warning_example.Rmd")),
-                                          actionButton(class = "btn-danger", "showDetails280",  
-                                                       div(icon("arrow-right", lib = "font-awesome"),
-                                                           "details..."))
+                                          actionButton(class = "btn-danger", "showDetails280",
+                                                       div(
+                                                         icon("arrow-right", lib = "font-awesome"),
+                                                         "details..."
+                                                       ))
                                         )
                                       ))
                                 ),
@@ -94,88 +98,58 @@ fluidPage(
                                       ),
                                       tags$tbody(
                                         tags$tr(
-                                          tags$td("NL"),
+                                          tags$td("NL",
+                                                  a(
+                                                    href = "#",
+                                                    icon("arrow-right", lib = "font-awesome"),
+                                                    "details..."
+                                                  )),
                                           tags$td(class = "alert alert-danger",
-                                                  tags$strong("Break!"),
-                                                  a(href = "#", 
-                                                    icon("arrow-right", lib = "font-awesome"),
-                                                    "details...")),
+                                                  tags$strong("Break!")),
                                           tags$td(class = "alert alert-success",
-                                                  tags$strong("Ok"),
-                                                  a(href = "#", 
-                                                    icon("arrow-right", lib = "font-awesome"),
-                                                    "details...")),
+                                                  tags$strong("Ok")),
                                           tags$td(class = "alert alert-success",
-                                                  tags$strong("Ok"),
-                                                  a(href = "#", 
-                                                    icon("arrow-right", lib = "font-awesome"),
-                                                    "details...")),
+                                                  tags$strong("Ok")),
                                           tags$td(class = "alert alert-success",
-                                                  tags$strong("Ok"),
-                                                  a(href = "#", 
-                                                    icon("arrow-right", lib = "font-awesome"),
-                                                    "details...")),
+                                                  tags$strong("Ok")),
                                           tags$td(class = "alert alert-success",
-                                                  tags$strong("Ok"),
-                                                  a(href = "#", 
-                                                    icon("arrow-right", lib = "font-awesome"),
-                                                    "details..."))
+                                                  tags$strong("Ok"))
                                         ),
                                         tags$tr(
-                                          tags$td("260"),
-                                          tags$td(class = "alert alert-success",
-                                                  tags$strong("Ok!"),
-                                                  a(href = "#", 
+                                          tags$td("260",
+                                                  a(
+                                                    href = "#",
                                                     icon("arrow-right", lib = "font-awesome"),
-                                                    "details...")),
+                                                    "details..."
+                                                  )),
                                           tags$td(class = "alert alert-success",
-                                                  tags$strong("Ok"),
-                                                  a(href = "#", 
-                                                    icon("arrow-right", lib = "font-awesome"),
-                                                    "details...")),
+                                                  tags$strong("Ok!")),
                                           tags$td(class = "alert alert-success",
-                                                  tags$strong("Ok"),
-                                                  a(href = "#", 
-                                                    icon("arrow-right", lib = "font-awesome"),
-                                                    "details...")),
+                                                  tags$strong("Ok")),
                                           tags$td(class = "alert alert-success",
-                                                  tags$strong("Ok"),
-                                                  a(href = "#", 
-                                                    icon("arrow-right", lib = "font-awesome"),
-                                                    "details...")),
+                                                  tags$strong("Ok")),
                                           tags$td(class = "alert alert-success",
-                                                  tags$strong("Ok"),
-                                                  a(href = "#", 
-                                                    icon("arrow-right", lib = "font-awesome"),
-                                                    "details..."))
+                                                  tags$strong("Ok")),
+                                          tags$td(class = "alert alert-success",
+                                                  tags$strong("Ok"))
                                         ),
                                         tags$tr(
-                                          tags$td("280"),
-                                          tags$td(class = "alert alert-success",
-                                                  tags$strong("Ok!"),
-                                                  a(href = "#", 
+                                          tags$td("280",
+                                                  a(
+                                                    href = "#",
                                                     icon("arrow-right", lib = "font-awesome"),
-                                                    "details...")),
+                                                    "details..."
+                                                  )),
                                           tags$td(class = "alert alert-success",
-                                                  tags$strong("Ok"),
-                                                  a(href = "#", 
-                                                    icon("arrow-right", lib = "font-awesome"),
-                                                    "details...")),
+                                                  tags$strong("Ok!")),
+                                          tags$td(class = "alert alert-success",
+                                                  tags$strong("Ok")),
                                           tags$td(class = "alert alert-danger",
-                                                  tags$strong("Break!"),
-                                                  a(href = "#", 
-                                                    icon("arrow-right", lib = "font-awesome"),
-                                                    "details...")),
+                                                  tags$strong("Break!")),
                                           tags$td(class = "alert alert-success",
-                                                  tags$strong("Ok"),
-                                                  a(href = "#", 
-                                                    "details ",
-                                                    icon("arrow-right", lib = "font-awesome"))),
+                                                  tags$strong("Ok")),
                                           tags$td(class = "alert alert-success",
-                                                  tags$strong("Ok"),
-                                                  a(href = "#", 
-                                                    icon("arrow-right", lib = "font-awesome"),
-                                                    "details..."))
+                                                  tags$strong("Ok"))
                                         )
                                       )
                                     )
@@ -187,16 +161,17 @@ fluidPage(
                                 ))
                      )),
     conditionalPanel(condition = "output.showDetails == 'true'",
-                     navbarPage(actionLink(class = "", "hideDetails",
-                                           icon("arrow-left", lib = "font-awesome")),
-                                tabPanel(
-                                  "Details",
-                                  div(class = "row",
-                                      div(class = "col-xs-4",
-                                          textOutput("stationId"),
-                                          div(plotOutput("plot"))
-                                      ))
-                                )))
+                     navbarPage(
+                       actionLink(class = "", "hideDetails",
+                                  icon("arrow-left", lib = "font-awesome")),
+                       tabPanel("Details",
+                                div(
+                                  class = "row",
+                                  div(class = "col-xs-4",
+                                      textOutput("stationId"),
+                                      div(plotOutput("plot")))
+                                ))
+                     ))
   )
   
 )
