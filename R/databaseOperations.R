@@ -119,11 +119,12 @@ db.query <- function(db, time.period, station.type, element.name) {
     complete.timeline <- seq(begin, end, by = time.period)
     
     if(length(complete.timeline) != nrow(dt)) {
-      complete.timeline <- format(complete.timeline, format = "%Y%m%d%H%M%S")
-      complete.timeline <- data.table(datetime = complete.timeline, value = NA)
+      complete.timeline <- data.table( format(complete.timeline, format = "%Y%m%d%H%M%S") )
+      names(complete.timeline) <- "datetime"
       setkey(complete.timeline, datetime)
       
       dt <- base::merge(dt, complete.timeline, by = "datetime", all = T)
+
     }
     
     return(dt)

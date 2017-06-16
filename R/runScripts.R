@@ -39,16 +39,16 @@ obj <- aggregate.to.seasonal(obj=obj, all.stations=TRUE, sta_type="MAN", var_id=
 seriesidselec <- sapply(obj$meta,function(m){m$sta_type=="AWS" & m$var_id == "RA"})
   seriesidlist <- names(obj$meta)[seriesidselec]
   AWS_timeseriesselec_y   <- obj$yearly$y[names(obj$yearly$y) %in% seriesidlist]
-  AWS_timeseriesselec_djf <- obj$yearly$dfj[names(obj$yearly$djf) %in% seriesidlist]
+  AWS_timeseriesselec_djf <- obj$yearly$djf[names(obj$yearly$djf) %in% seriesidlist]
   AWS_timeseriesselec_mam <- obj$yearly$mam[names(obj$yearly$mam) %in% seriesidlist]
   AWS_timeseriesselec_jja <- obj$yearly$jja[names(obj$yearly$jja) %in% seriesidlist]
   AWS_timeseriesselec_son <- obj$yearly$son[names(obj$yearly$son) %in% seriesidlist]
 
-  AWS_average_y   <- spatial.average(timeseries=AWS_timeseriesselec_y) 
-  AWS_average_djf <- spatial.average(timeseries=AWS_timeseriesselec_djf) 
-  AWS_average_mam <- spatial.average(timeseries=AWS_timeseriesselec_mam) 
-  AWS_average_jja <- spatial.average(timeseries=AWS_timeseriesselec_jja) 
-  AWS_average_son <- spatial.average(timeseries=AWS_timeseriesselec_son) 
+  AWS_average_y   <- average.spatial(timeseries=AWS_timeseriesselec_y) 
+  AWS_average_djf <- average.spatial(timeseries=AWS_timeseriesselec_djf) 
+  AWS_average_mam <- average.spatial(timeseries=AWS_timeseriesselec_mam) 
+  AWS_average_jja <- average.spatial(timeseries=AWS_timeseriesselec_jja) 
+  AWS_average_son <- average.spatial(timeseries=AWS_timeseriesselec_son) 
 
 seriesidselec <- sapply(obj$meta,function(m){m$sta_type=="MAN" & m$var_id == "RA"})
   seriesidlist <- names(obj$meta)[seriesidselec]
@@ -58,11 +58,11 @@ seriesidselec <- sapply(obj$meta,function(m){m$sta_type=="MAN" & m$var_id == "RA
   MAN_timeseriesselec_jja <- obj$yearly$jja[names(obj$yearly$jja) %in% seriesidlist]
   MAN_timeseriesselec_son <- obj$yearly$son[names(obj$yearly$son) %in% seriesidlist]
 
-  MAN_average_y   <- spatial.average(timeseries=MAN_timeseriesselec_y) 
-  MAN_average_djf <- spatial.average(timeseries=MAN_timeseriesselec_djf) 
-  MAN_average_mam <- spatial.average(timeseries=MAN_timeseriesselec_mam) 
-  MAN_average_jja <- spatial.average(timeseries=MAN_timeseriesselec_jja) 
-  MAN_average_son <- spatial.average(timeseries=MAN_timeseriesselec_son) 
+  MAN_average_y   <- average.spatial(timeseries=MAN_timeseriesselec_y) 
+  MAN_average_djf <- average.spatial(timeseries=MAN_timeseriesselec_djf) 
+  MAN_average_mam <- average.spatial(timeseries=MAN_timeseriesselec_mam) 
+  MAN_average_jja <- average.spatial(timeseries=MAN_timeseriesselec_jja) 
+  MAN_average_son <- average.spatial(timeseries=MAN_timeseriesselec_son) 
     cat(sprintf("Finished spatial aggregating of AWS and MAN. (%.1f seconds)\n",round((proc.time()-StartTime)[3],digits=1)))  
 
     
