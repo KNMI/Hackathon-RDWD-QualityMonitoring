@@ -109,7 +109,7 @@ db.query <- function(db, time.period, station.type, element.name) {
     # Set any observations which do not pass the quality check to NA
     # Set any observations which are missing (-9999) to NA
     qc.idx <- !(x$qc %in% max.qc)
-    missing.idx <- x$value == na.value
+    missing.idx <- trunc(x$value) <= na.value
     dt$value[missing.idx | qc.idx] <- NA
     
     # Check for holes in the timeline and fill them up if necessary

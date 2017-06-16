@@ -23,120 +23,155 @@ fluidPage(
                           )
                         )))
               )),
-  div(class = "MainSection row",
-      navbarPage(
-        "",
-        tabPanel("Alerts",
-                 div(class = "row",
-                     div(
-                       class = "col-xs-3",
-                       div(
-                         class = "panel panel-danger",
-                         div(class = "panel-heading", 
-                             icon("warning", "fa-2x", lib = "font-awesome"),
-                             "Break detected: Rain Gauges versus AWS"),
-                         div(
-                           class = "panel-body",
-                           textOutput("datetime"),
-                           div(class="includeDivider", includeMarkdown("Warning_example.Rmd")),
-                           actionButton(class="btn-danger", "details", "» details...")
-                           #,
-                           #div(plotOutput("plot"))
-                         )
-                       )
+  div(
+    class = "MainSection row",
+    conditionalPanel(condition = "output.showDetails != 'true'",
+                     navbarPage(
+                       "",
+                       tabPanel("Alerts",
+                                div(
+                                  class = "row",
+                                  div(class = "col-xs-2",
+                                      div(
+                                        class = "panel panel-danger",
+                                        div(
+                                          class = "panel-heading",
+                                          icon("warning", "fa-2x", lib = "font-awesome"),
+                                          p(
+                                            "Break detected: ",
+                                            tags$br(),
+                                            tags$strong("Rain Gauges versus AWS")
+                                          )
+                                        ),
+                                        div(
+                                          class = "panel-body",
+                                          textOutput("datetime"),
+                                          div(class = "includeDivider", includeMarkdown("Warning_example.Rmd")),
+                                          actionButton(class = "btn-danger", "showDetailsNL",
+                                                       div(
+                                                         icon("arrow-right", lib = "font-awesome"),
+                                                         "details..."
+                                                       ))
+                                        )
+                                      )),
+                                  div(class = "col-xs-2",
+                                      div(
+                                        class = "panel panel-danger",
+                                        div(
+                                          class = "panel-heading",
+                                          icon("warning", "fa-2x", lib = "font-awesome"),
+                                          p(
+                                            "Break detected: ",
+                                            tags$br(),
+                                            tags$strong("Rain Gauges versus AWS")
+                                          )
+                                        ),
+                                        div(
+                                          class = "panel-body",
+                                          textOutput("datetime2"),
+                                          div(class = "includeDivider", includeMarkdown("Warning_example.Rmd")),
+                                          actionButton(class = "btn-danger", "showDetails280",
+                                                       div(
+                                                         icon("arrow-right", lib = "font-awesome"),
+                                                         "details..."
+                                                       ))
+                                        )
+                                      ))
+                                ),
+                                div(class = "row", "")),
+                       tabPanel("Overview",
+                                div(
+                                  class = "row",
+                                  div(
+                                    class = "col-xs-8",
+                                    tags$table(
+                                      class = "table table-striped",
+                                      tags$thead(
+                                        tags$tr(
+                                          tags$th("Station(s)"),
+                                          tags$th("Annual"),
+                                          tags$th("DJF"),
+                                          tags$th("MAM"),
+                                          tags$th("JJA"),
+                                          tags$th("SON")
+                                        )
+                                      ),
+                                      tags$tbody(
+                                        tags$tr(
+                                          tags$td("NL",
+                                                  a(
+                                                    href = "#",
+                                                    icon("arrow-right", lib = "font-awesome"),
+                                                    "details..."
+                                                  )),
+                                          tags$td(class = "alert alert-danger",
+                                                  tags$strong("Break!")),
+                                          tags$td(class = "alert alert-success",
+                                                  tags$strong("Ok")),
+                                          tags$td(class = "alert alert-success",
+                                                  tags$strong("Ok")),
+                                          tags$td(class = "alert alert-success",
+                                                  tags$strong("Ok")),
+                                          tags$td(class = "alert alert-success",
+                                                  tags$strong("Ok"))
+                                        ),
+                                        tags$tr(
+                                          tags$td("260",
+                                                  a(
+                                                    href = "#",
+                                                    icon("arrow-right", lib = "font-awesome"),
+                                                    "details..."
+                                                  )),
+                                          tags$td(class = "alert alert-success",
+                                                  tags$strong("Ok!")),
+                                          tags$td(class = "alert alert-success",
+                                                  tags$strong("Ok")),
+                                          tags$td(class = "alert alert-success",
+                                                  tags$strong("Ok")),
+                                          tags$td(class = "alert alert-success",
+                                                  tags$strong("Ok")),
+                                          tags$td(class = "alert alert-success",
+                                                  tags$strong("Ok"))
+                                        ),
+                                        tags$tr(
+                                          tags$td("280",
+                                                  a(
+                                                    href = "#",
+                                                    icon("arrow-right", lib = "font-awesome"),
+                                                    "details..."
+                                                  )),
+                                          tags$td(class = "alert alert-success",
+                                                  tags$strong("Ok!")),
+                                          tags$td(class = "alert alert-success",
+                                                  tags$strong("Ok")),
+                                          tags$td(class = "alert alert-danger",
+                                                  tags$strong("Break!")),
+                                          tags$td(class = "alert alert-success",
+                                                  tags$strong("Ok")),
+                                          tags$td(class = "alert alert-success",
+                                                  tags$strong("Ok"))
+                                        )
+                                      )
+                                    )
+                                  )
+                                )),
+                       tabPanel("Background information",
+                                fluidRow(
+                                  includeMarkdown("Background_info_example.Rmd")
+                                ))
                      )),
-                 div(class = "row", "")),
-        tabPanel("Overview",
-                 div(class = "row",
-                      div(
-                        class = "col-xs-8",
-                   tags$table(class="table table-striped",
-                     tags$thead(
-                       tags$tr(
-                         tags$th("Station(s)"),
-                         tags$th("Annual"),
-                         tags$th("DJF"),
-                         tags$th("MAM"),
-                         tags$th("JJA"),
-                         tags$th("SON")
-                      )),
-                     tags$tbody(
-                       tags$tr(
-                         tags$td("NL"),
-                         tags$td(class="alert alert-danger",
-                            tags$strong("Break!"), 
-                            a(href="#", "» details...")
-                          ),
-                         tags$td(class="alert alert-success",
-                                 tags$strong("Ok"), 
-                                 a(href="#", "» details...")
-                         ),
-                         tags$td(class="alert alert-success",
-                                 tags$strong("Ok"), 
-                                 a(href="#", "» details...")
-                         ),
-                         tags$td(class="alert alert-success",
-                                 tags$strong("Ok"), 
-                                 a(href="#", "» details...")
-                         ),
-                         tags$td(class="alert alert-success",
-                                 tags$strong("Ok"), 
-                                 a(href="#", "» details...")
-                         )
-                        ),
-                       tags$tr(
-                         tags$td("260"),
-                         tags$td(class="alert alert-success",
-                                 tags$strong("Ok!"), 
-                                 a(href="#", "» details...")
-                         ),
-                         tags$td(class="alert alert-success",
-                                 tags$strong("Ok"), 
-                                 a(href="#", "» details...")
-                         ),
-                         tags$td(class="alert alert-success",
-                                 tags$strong("Ok"), 
-                                 a(href="#", "» details...")
-                         ),
-                         tags$td(class="alert alert-success",
-                                 tags$strong("Ok"), 
-                                 a(href="#", "» details...")
-                         ),
-                         tags$td(class="alert alert-success",
-                                 tags$strong("Ok"), 
-                                 a(href="#", "» details...")
-                         )
-                       ),
-                       tags$tr(
-                         tags$td("280"),
-                         tags$td(class="alert alert-success",
-                                 tags$strong("Ok!"), 
-                                 a(href="#", "» details...")
-                         ),
-                         tags$td(class="alert alert-success",
-                                 tags$strong("Ok"), 
-                                 a(href="#", "» details...")
-                         ),
-                         tags$td(class="alert alert-danger",
-                                 tags$strong("Break!"), 
-                                 a(href="#", "» details...")
-                         ),
-                         tags$td(class="alert alert-success",
-                                 tags$strong("Ok"), 
-                                 a(href="#", "» details...")
-                         ),
-                         tags$td(class="alert alert-success",
-                                 tags$strong("Ok"), 
-                                 a(href="#", "» details...")
-                         )
-                       )
-                      )
-                   )
-                 ))),
-        tabPanel("Background information",
-                 fluidRow(
-                   includeMarkdown("Background_info_example.Rmd")
-                 ))
-      ))
+    conditionalPanel(condition = "output.showDetails == 'true'",
+                     navbarPage(
+                       actionLink(class = "", "hideDetails",
+                                  icon("arrow-left", lib = "font-awesome")),
+                       tabPanel("Details",
+                                div(
+                                  class = "row",
+                                  div(class = "col-xs-4",
+                                      textOutput("stationId"),
+                                      div(plotOutput("plot")))
+                                ))
+                     ))
+  )
   
 )
