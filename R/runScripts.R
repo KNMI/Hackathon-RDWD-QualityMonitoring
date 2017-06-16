@@ -87,3 +87,11 @@ BD_jja <- break.detection(series1=rd_AWS_MAN_jja)
 BD_son <- break.detection(series1=rd_AWS_MAN_son)
     cat(sprintf("Finished calculating break detections. (%.1f seconds)\n",round((proc.time()-StartTime)[3],digits=1)))
 
+    
+  # Visualisation # 
+png("hackathon_NL_AWSvsMAN_y.png")
+plot(rd_AWS_MAN_y$datetime, rd_AWS_MAN_y$value, type="l", xlab="Time", ylab="Relative difference [%]", main="AWS vs MAN")
+points(rd_AWS_MAN_y$datetime, rd_AWS_MAN_y$value, pch=20)
+abline(v=BD_y, lty=2)
+    
+        
