@@ -89,9 +89,40 @@ BD_son <- break.detection(series1=rd_AWS_MAN_son)
 
     
   # Visualisation # 
-png("hackathon_NL_AWSvsMAN_y.png")
-plot(rd_AWS_MAN_y$datetime, rd_AWS_MAN_y$value, type="l", xlab="Time", ylab="Relative difference [%]", main="AWS vs MAN")
+png("output/fig/hackathon_NL_AWSvsMAN_y.png")
+plot(rd_AWS_MAN_y$datetime, rd_AWS_MAN_y$value, type="l", xlab="Time", ylab="Relative difference [%]", main="Yearly AWS vs MAN")
 points(rd_AWS_MAN_y$datetime, rd_AWS_MAN_y$value, pch=20)
 abline(v=BD_y, lty=2)
-    
+dev.off()
+  
+png("output/fig/hackathon_NL_AWSvsMAN_djf.png")
+plot(rd_AWS_MAN_djf$datetime, rd_AWS_MAN_djf$value, type="l", xlab="Time", ylab="Relative difference [%]", main="Winter AWS vs MAN", col="red")
+points(rd_AWS_MAN_djf$datetime, rd_AWS_MAN_djf$value, pch=20, col="red")
+abline(v=BD_djf, lty=2, col="red")
+dev.off()
+
+png("output/fig/hackathon_NL_AWSvsMAN_mam.png")
+plot(rd_AWS_MAN_mam$datetime, rd_AWS_MAN_mam$value, type="l", xlab="Time", ylab="Relative difference [%]", main="Spring AWS vs MAN", col="blue")
+points(rd_AWS_MAN_mam$datetime, rd_AWS_MAN_mam$value, pch=20, col="blue")
+abline(v=BD_mam, lty=2, col="blue")
+dev.off()
+
+png("output/fig/hackathon_NL_AWSvsMAN_jja.png")
+plot(rd_AWS_MAN_jja$datetime, rd_AWS_MAN_jja$value, type="l", xlab="Time", ylab="Relative difference [%]", main="Summer AWS vs MAN", col="violet")
+points(rd_AWS_MAN_jja$datetime, rd_AWS_MAN_jja$value, pch=20, col="violet")
+abline(v=BD_jja, lty=2, col="violet")
+dev.off()
         
+png("output/fig/hackathon_NL_AWSvsMAN_son.png")
+plot(rd_AWS_MAN_son$datetime, rd_AWS_MAN_son$value, type="l", xlab="Time", ylab="Relative difference [%]", main="Autumn AWS vs MAN: ", col="green")
+points(rd_AWS_MAN_son$datetime, rd_AWS_MAN_son$value, pch=20, col="green")
+abline(v=BD_son, lty=2, col="green")
+dev.off()
+
+
+png("output/fig/hackathon_NL_AWSvsMAN_all.png")
+plot(rd_AWS_MAN_y$datetime, rd_AWS_MAN_y$value, type="l", xlab="Time", ylab="Relative difference [%]", main="Yearly AWS vs MAN")
+plot(rd_AWS_MAN_son$datetime, rd_AWS_MAN_son$value, type="l", xlab="Time", ylab="Relative difference [%]", main="Autumn AWS vs MAN: ", col="green")
+points(rd_AWS_MAN_son$datetime, rd_AWS_MAN_son$value, pch=20, col="green")
+abline(v=BD_son, lty=2, col="green")
+dev.off()
