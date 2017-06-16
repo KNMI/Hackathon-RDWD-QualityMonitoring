@@ -39,7 +39,7 @@ obj <- aggregate.to.seasonal(obj=obj, all.stations=TRUE, sta_type="MAN", var_id=
 seriesidselec <- sapply(obj$meta,function(m){m$sta_type=="AWS" & m$var_id == "RA"})
   seriesidlist <- names(obj$meta)[seriesidselec]
   AWS_timeseriesselec_y   <- obj$yearly$y[names(obj$yearly$y) %in% seriesidlist]
-  AWS_timeseriesselec_djf <- obj$yearly$dfj[names(obj$yearly$djf) %in% seriesidlist]
+  AWS_timeseriesselec_djf <- obj$yearly$djf[names(obj$yearly$djf) %in% seriesidlist]
   AWS_timeseriesselec_mam <- obj$yearly$mam[names(obj$yearly$mam) %in% seriesidlist]
   AWS_timeseriesselec_jja <- obj$yearly$jja[names(obj$yearly$jja) %in% seriesidlist]
   AWS_timeseriesselec_son <- obj$yearly$son[names(obj$yearly$son) %in% seriesidlist]
