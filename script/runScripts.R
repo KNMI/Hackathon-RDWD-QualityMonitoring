@@ -19,25 +19,32 @@ obj <- db.query(db, "hour", "validated", "rh")
 obj2 <- db.query(db, "day", "derived", "rd")
 db.close(db)
     cat(sprintf("Finished obtaining obj. (%.1f seconds)\n",round((proc.time()-StartTime)[3],digits=1)))
-
+    
+ # Define the list of sta_id that you want to process #    
+sta_id <-   #output of query range selection (made by Marieke)/ standard list of related stations from database    
+  # to be filled in once the exact formulation of those outputs is known. 
+  # Possible output of range selection is all station id's with distance to station that is selected. In that case add line that selects only the stations where this distance is shorter than a given range. 
+  
  # Aggregate AWS hourly values in 8-8 daily values #
     StartTime <- proc.time()
-obj <- aggregate.to.88(obj=obj, all.stations=TRUE, sta_type="AWS", var_id="RH", sta_id=NULL)
+obj <- aggregate.to.88(obj=obj, all.stations=FALSE, sta_type="AWS", var_id="RH", sta_id=sta_id)
     cat(sprintf("Finished Aggregating AWS hourly. (%.1f seconds)\n",round((proc.time()-StartTime)[3],digits=1)))
 
     
 # Aggregate AWS and MAN daily values in yearly and seasonal values #
     StartTime <- proc.time()
-obj <- aggregate.to.seasonal(obj=obj, all.stations=TRUE, sta_type="AWS", var_id="RD", sta_id=NULL) 
-obj2 <- aggregate.to.seasonal(obj=obj2, all.stations=TRUE, sta_type="MAN", var_id="RD", sta_id=NULL) 
+obj <- aggregate.to.seasonal(obj=obj, all.stations=FALSE, sta_type="AWS", var_id="RD", sta_id=sta_id) 
+obj2 <- aggregate.to.seasonal(obj=obj2, all.stations=FALSE, sta_type="MAN", var_id="RD", sta_id=sta_id) 
     cat(sprintf("Finished yearly aggregating of AWS and MAN. (%.1f seconds)\n",round((proc.time()-StartTime)[3],digits=1)))
 
     
 # Average all AWS and MAN station aggregations for year and season #
-    
+
+        
     StartTime <- proc.time()
-seriesidselec <- sapply(obj$meta,function(m){m$sta_type=="AWS" & m$var_id == "RA"})
-  seriesidlist <- names(obj$meta)[seriesidselec]
+#seriesidselec <- sapply(obj$meta,function(m){m$sta_type=="AWS" & m$var_id == "RA"})
+seriesidselec <- sapply(obj$meta,function(m){m$sta_type=="AWS" & m$var_id == "RA", sta_id=sta_id})
+    seriesidlist <- names(obj$meta)[seriesidselec]
   AWS_timeseriesselec_y   <- obj$yearly$y[names(obj$yearly$y) %in% seriesidlist]
   AWS_timeseriesselec_djf <- obj$yearly$djf[names(obj$yearly$djf) %in% seriesidlist]
   AWS_timeseriesselec_mam <- obj$yearly$mam[names(obj$yearly$mam) %in% seriesidlist]
@@ -50,7 +57,7 @@ seriesidselec <- sapply(obj$meta,function(m){m$sta_type=="AWS" & m$var_id == "RA
   AWS_average_jja <- average.spatial(timeseries=AWS_timeseriesselec_jja) 
   AWS_average_son <- average.spatial(timeseries=AWS_timeseriesselec_son) 
 
-seriesidselec <- sapply(obj2$meta,function(m){m$sta_type=="MAN" & m$var_id == "RA"})
+seriesidselec <- sapply(obj2$meta,function(m){m$sta_type=="MAN" & m$var_id == "RA", sta_id=sta_id})
   seriesidlist <- names(obj2$meta)[seriesidselec]
   MAN_timeseriesselec_y   <- obj2$yearly$y[names(obj2$yearly$y) %in% seriesidlist]
   MAN_timeseriesselec_djf <- obj2$yearly$djf[names(obj2$yearly$djf) %in% seriesidlist]
