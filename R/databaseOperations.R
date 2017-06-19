@@ -7,7 +7,7 @@ library(data.table)
 #' @author Jurian and Hidde
 db.setup <- function() {
   
-  cfg <- config::get(file = "config/config.yml")
+  cfg <- config::get(file = "config/config.db.yml")
   
   dbConnect(RMySQL::MySQL(), 
             dbname = cfg$dbname, 
@@ -32,7 +32,7 @@ db.close <- function(db) {
 #' @param element.name Name of type of data; e.g. "rh" for hourly rainfall or "t" for temperature
 #' @seealso db.setup()
 #' @author Jurian and Hidde
-db.query <- function(db, time.period, station.type, element.name) {
+db.select.all <- function(db, time.period, station.type, element.name) {
   
   supported.station.types <- c("validated", "derived")
   supported.time.periods <- c("hour", "day", "month", "year")
@@ -47,10 +47,10 @@ db.query <- function(db, time.period, station.type, element.name) {
 
   query <- sprintf (
     paste("SELECT",
-          "validated.data_id AS data_id, types.type_id AS type_id, elements.element_id AS element_id, stations.code AS code,",
+          "data.data_id AS data_id, types.type_id AS type_id, elements.element_id AS element_id, stations.code AS code,",
           "DATE_FORMAT(date, %%s) AS date, value, qc, aggregation, type, name, latitude, longitude, elevation, element_group, elements.description AS element_desc, types.description AS type_desc, element, scale, unit",
-          "FROM 1%s_%s_%s AS validated",
-          "INNER JOIN series ON validated.data_id = series.data_id",
+          "FROM 1%s_%s_%s AS data",
+          "INNER JOIN series ON data = series.data_id",
           "INNER JOIN stations ON series.type_id = stations.type_id AND series.code = stations.code",
           "INNER JOIN types ON series.type_id = types.type_id",
           "INNER JOIN elements ON series.element_id = elements.element_id",
@@ -66,7 +66,7 @@ db.query <- function(db, time.period, station.type, element.name) {
   
   data.ref <- dbSendQuery(db, query.safe)
   
-  result <- fetch(data.ref, n = -1)
+  result <- dbFetch(data.ref, n = -1)
   
   obj <- list()
   class(obj) <- "mqm.data.container"
@@ -144,3 +144,104 @@ db.query <- function(db, time.period, station.type, element.name) {
   rm(result)
   return(obj)
 }
+
+db.select.timeseries <- function(db, seriesID, time.period, station.type, element.name) {
+  
+  #--------------------------------------#
+  ### Check the arguments for validity ###
+  #--------------------------------------#
+  
+  supported.station.types <- c("validated", "derived")
+  supported.time.periods <- c("hour", "day", "month", "year")
+  
+  if(!station.type %in% supported.station.types) stop(paste("Unsupported station type:", station.type))
+  if(!time.period %in% supported.time.periods) stop(paste("Unuspported time period:", time.period))
+  if(length(seriesID) == 0) stop("No series ID(s) given")
+  
+  cfg <- config::get(file = "config/config.yml")
+  
+  max.qc <- cfg$qc.threshold
+  db.na.value <- cfg$database.na.value
+  
+  #------------------------------------------#
+  ### Firstly we query the timeseries data ###
+  #------------------------------------------#
+  
+  query <- sprintf(paste(
+    "SELECT data_id AS id, DATE_FORMAT(date, %%s) AS datetime, value, qc",
+    "FROM 1%s_%s_%s AS data",
+    "WHERE data.data_id IN (%s)"),
+    time.period,
+    station.type,
+    element.name,
+    paste(seriesID, collapse = ","))
+  
+  query.safe <- dbEscapeStrings(db, query)
+  query.safe <- sprintf(query.safe, "'%Y%m%d%H%i%s'")
+  data.ref <- dbSendQuery(db, query.safe)
+  
+  result <- as.data.table(dbFetch(data.ref, n = -1))
+  setkey(result, datetime)
+  
+  # Clean up
+  dbClearResult(data.ref)
+
+  # Create a factor of the ID's so we can use it in by() later on
+  seriesID.factor <- factor(result$id)
+  
+  #------------------------------#
+  ### Create the master object ###
+  #------------------------------#
+  
+  # Init god object...
+  # ALL HAIL OBJ, MASTER OF THE OBJECTS
+  obj <- list()
+  class(obj) <- cfg$obj.main.class
+  
+  # Init empty lists
+  obj$hourly <- list()
+  obj$daily <- list()
+  obj$monthly <- list()
+  obj$yearly <- list()
+  
+  # Get the right name for this list of timeseries
+  namely <- c("hourly", "daily", "monthly", "yearly")[which(time.period == supported.time.periods)]
+  
+  obj[namely] <- list(by(result, seriesID.factor, function(x) {
+    
+    dt <- data.table(datetime = x$datetime, value = x$value)
+    setkey(dt, datetime)
+    
+    # Set any observations which do not pass the quality check to NA
+    # Set any observations which are missing (-9999) to NA
+    qc.idx <- !(x$qc %in% max.qc)
+    missing.idx <- trunc(x$value) <= db.na.value
+    dt$value[missing.idx | qc.idx] <- NA
+    
+    # We need the begin and end of the timeseries to check for holes
+    begin <- strptime(min(dt$datetime), format = "%Y%m%d%H%M%S", tz = "GMT")
+    end <- strptime(max(dt$datetime), format = "%Y%m%d%H%M%S", tz = "GMT")
+    
+    # If the timeseries has holes, then fill them up with NA's
+    if((difftime(end, begin, tz = "GMT", units = time.period) + 1) > nrow(dt)) {
+      complete.timeline <- data.table( datetime = format(seq(begin, end, by = time.period), format = "%Y%m%d%H%M%S") )
+      setkey(complete.timeline, datetime)
+      dt <- base::merge(dt, complete.timeline, by = "datetime", all = T)
+    }
+    
+    class(dt) <- append(class(dt), cfg$obj.timeseries.class)
+    return(dt)
+  }))
+  
+  
+  
+  return(result)
+}
+
+db.insert.timeseries <- function(db, timeseries, time.period, station.type, element.name) {
+  
+}
+
+# db.update.timeseries <- function(db) {
+#   
+# }
