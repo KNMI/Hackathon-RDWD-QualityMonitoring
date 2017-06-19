@@ -1,5 +1,5 @@
-library(data.table)
-library(config)
+# library(data.table)
+# library(config)
 
 #' @title Create an average over several stations
 #' @param timeseries A list of data.tables, each a timeseries of structure <datetime, value>
