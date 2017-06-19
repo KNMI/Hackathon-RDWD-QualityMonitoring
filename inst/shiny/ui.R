@@ -4,6 +4,8 @@ library(shiny)
 # runApp("~/Hackathon-RDWD-QualityMonitoring/inst/shiny")
 
 fluidPage(
+
+
   title = "MQM - Inhomogeneity detection",
   theme = "mqm_style.css",
   
@@ -161,24 +163,27 @@ fluidPage(
                                   class = "row",
                                   div(class = "col-xs-4",
                                       # textOutput("stationId"),
-                                      tags$img(src="figures/hackathon_NL_AWSvsMAN_y.png", maxHeight=100))
-                                  ),
-                                div(
-                                  class = "row",
-                                  div(class = "col-xs-4",
-                                      # textOutput("stationId"),
-                                      tags$img(src="figures/hackathon_NL_AWSvsMAN_djf.png")),
-                                  div(class = "col-xs-4",
-                                      # textOutput("stationId"),
-                                      tags$img(src="figures/hackathon_NL_AWSvsMAN_mam.png"))),
-                                  div(
-                                    class = "row",
-                                    div(class = "col-xs-4",
-                                        # textOutput("stationId"),
-                                        tags$img(src="figures/hackathon_NL_AWSvsMAN_jja.png")),
-                                    div(class = "col-xs-4",
-                                        # textOutput("stationId"),
-                                        tags$img(src="figures/hackathon_NL_AWSvsMAN_son.png"))
+                                #       tags$img(src="figures/hackathon_NL_AWSvsMAN_y.png", maxHeight=100))
+                                #   ),
+                                # div(
+                                #   class = "row",
+                                #   div(class = "col-xs-4",
+                                #       # textOutput("stationId"),
+                                #       tags$img(src="figures/hackathon_NL_AWSvsMAN_djf.png")),
+                                #   div(class = "col-xs-4",
+                                #       # textOutput("stationId"),
+                                #       tags$img(src="figures/hackathon_NL_AWSvsMAN_mam.png"))),
+                                #   div(
+                                #     class = "row",
+                                #     div(class = "col-xs-4",
+                                #         # textOutput("stationId"),
+                                #         tags$img(src="figures/hackathon_NL_AWSvsMAN_jja.png")),
+                                #     div(class = "col-xs-4",
+                                #         # textOutput("stationId"),
+                                #         tags$img(src="figures/hackathon_NL_AWSvsMAN_son.png"))
+                                # )))
+                                      textOutput("stationId"),
+                                      includeMarkdown("Details.Rmd"))
                                 )))
                      ))
   )

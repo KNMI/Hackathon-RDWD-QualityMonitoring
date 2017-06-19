@@ -9,15 +9,18 @@ html, body {
     width: 100%;
 }
 
-div {
+div, header {
   display: flex;
+}
+
+body > .container-fluid, .MainSection, .MainSection > div, .tab-pane .panel, .tab-pane .panel-body,
+.tab-pane.active .row div, .imgWrapper, .tab-content >.active, .MainSection > col {
+  flex-direction: column;
 }
 
 body > .container-fluid {
   padding: 0;
   height: inherit;
-  display: flex;
-  flex-direction: column;
   flex: 1;
 }
 
@@ -38,7 +41,6 @@ body > .container-fluid {
 }
 
 .Header .navbar-brand {
-    display: inline-block;
     padding-top: .25rem;
     padding-bottom: .25rem;
     margin-right: 1rem;
@@ -62,26 +64,13 @@ body > .container-fluid {
     width: 2.5rem;
 }
 
-.Header {
-  display: flex;
-}
-
 .MainSection {
     flex: 1;
-    flex-direction: column;
     margin: 0 0.2rem 0.2rem 0.2rem;
-}
-
-.MainSection > div {
-  flex-direction: column;
 }
 
 .MainSection .container-fluid {
   margin: 0;
-}
-
-.tab-pane .panel {
-  flex-direction: column;
 }
 
 .tab-pane .panel-heading i {
@@ -92,10 +81,6 @@ body > .container-fluid {
  margin: 0; 
 }
 
-.tab-pane .panel-body {
-  flex-direction: column;
-}
-
 .tab-pane .panel-body i {
   margin: 0.2rem 0.2rem 0 0;
 }
@@ -104,21 +89,12 @@ body > .container-fluid {
   justify-content: center;
 }
 
-.tab-pane.active .row div {
-  flex-direction: column;
-}
-
-.imgWrapper {
-  flex-direction: column;
-}
-
 .tab-content {
   width: 100%;
 }
 
-.tab-content>.active {
+.tab-content >.active {
     display: flex;
-    flex-direction: column;
 }
 
 .tab-content > div, .tab-content .row {
@@ -135,6 +111,5 @@ td strong {
 
 .MainSection > col {
     flex: 1;
-    flex-direction: column;
     overflow: hidden;
 }
