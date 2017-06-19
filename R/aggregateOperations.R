@@ -1,5 +1,5 @@
-library(data.table)
-library(config)
+# library(data.table)
+# library(config)
 
 #' Calculate seasonal sums
 #' @title Aggregate 8am to 8am data to yearly sums and seasonal sums
@@ -234,7 +234,7 @@ aggregate.to.88 <- function(obj, all.stations=TRUE, sta_type="AWS", var_id="RH",
   NAvaluestable <- as.data.frame(table(days_with_NAvalues))
   days_with_over20percent_NAvalues <- as.numeric(as.character( NAvaluestable[which(NAvaluestable$Freq>MaxNAPerDay),1] ))
   
-  value_agg <- setDT(as.data.frame(timeselec))[,lapply(.SD,sum, na.rm=T),by=.(time_agg)]$timeselec
+  value_agg <- setDT(as.data.table(timeselec))[,lapply(.SD,sum, na.rm=T),by=.(time_agg)]$timeselec
   value_agg[days_with_over20percent_NAvalues] <- NA
   
   aggregated_data <- hourly[seq((first_timestep + 23 ), last_timestep, by = 24), 1]

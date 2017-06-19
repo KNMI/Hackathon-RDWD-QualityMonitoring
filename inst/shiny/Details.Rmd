@@ -5,5 +5,16 @@ date: "6/16/2017"
 output: html_document
 ---
 
-![Yearly break detection](www/figures/hackathon_NL_AWSvsMAN_y.png)
+| First Header  | Second Header |
+| ------------- | ------------- |
+| Content Cell  | ![Yearly break detection](www/figures/hackathon_NL_AWSvsMAN_y.png)  |
+| ![Winter break detection](www/figures/hackathon_NL_AWSvsMAN_djf.png) | ![Spring break detection](www/figures/hackathon_NL_AWSvsMAN_mam.png)  |
+| ![Summer break detection](www/figures/hackathon_NL_AWSvsMAN_jja.png) | ![Autumn break detection](www/figures/hackathon_NL_AWSvsMAN_son.png)  |
+
+
+
+
+
+
+
 

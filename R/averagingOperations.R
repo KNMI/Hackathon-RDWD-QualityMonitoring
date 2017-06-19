@@ -1,5 +1,5 @@
-library(data.table)
-library(config)
+# library(data.table)
+# library(config)
 
 #' @title Create an average over several stations
 #' @param timeseries A list of data.tables, each a timeseries of structure <datetime, value>
@@ -11,14 +11,12 @@ average.spatial <- function(timeseries) {
   cfg <- config::get(file = "config/config.yml")
   nstations <- length(timeseries)
   
-  #combined <- Reduce(function(X,Y) X[Y], timeseries)
-  
-  combined <- timeseries[[1]]
-  names(combined)[2] <- "col.1" 
-  for(i in 2:(length(timeseries))){
-   combined <- base::merge(combined, timeseries[[i]], by="datetime", all=T)
-   names(combined)[i+1] <- paste0("col.",i)
+  # Give station values unique names so we can merge them
+  for(i in 1:nstations) {
+    names(timeseries[[i]])[2] <- paste0("value", ".", i)
   }
+  # Merge all stations
+  combined <- Reduce(function(X, Y) base::merge(X, Y, by = "datetime", all = T), timeseries)
   
   dt <- data.table(datetime = combined$datetime, value = rowMeans(combined[,-1], na.rm = T))
   dt$value[1 - rowSums(is.na(combined)) / nstations < cfg$data.availability.threshold.averaging] <- NA
