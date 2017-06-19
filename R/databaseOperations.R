@@ -34,27 +34,37 @@ db.close <- function(db) {
 #' @author Jurian and Hidde
 db.select.all <- function(db, time.period, station.type, element.name) {
   
+  if(!station.type %in% supported.station.types) stop(paste("Unsupported station type:", station.type))
   supported.station.types <- c("validated", "derived")
   supported.time.periods <- c("hour", "day", "month", "year")
   
-  if(!station.type %in% supported.station.types) stop(paste("Unsupported station type:", station.type))
   if(!time.period %in% supported.time.periods) stop(paste("Unuspported time period:", time.period))
-  
+ 
+  if(time.period == "hour") {
+    time.period <- "1hour"
+  }
+  if(time.period == "day") {
+    time.period <- "1day"
+  }
+   
   cfg <- config::get(file = "config/config.yml")
   
   max.qc <- cfg$qc.threshold
   na.value <- cfg$database.na.value
 
+  print("TEMPORARILY ONLY 100 RESULTS (instead of all xx milion)")
+  
   query <- sprintf (
     paste("SELECT",
           "data.data_id AS data_id, types.type_id AS type_id, elements.element_id AS element_id, stations.code AS code,",
           "DATE_FORMAT(date, %%s) AS date, value, qc, aggregation, type, name, latitude, longitude, elevation, element_group, elements.description AS element_desc, types.description AS type_desc, element, scale, unit",
-          "FROM 1%s_%s_%s AS data",
+          "FROM %s_%s_%s AS data",
           "INNER JOIN series ON data.data_id = series.data_id",
           "INNER JOIN stations ON series.type_id = stations.type_id AND series.code = stations.code",
           "INNER JOIN types ON series.type_id = types.type_id",
           "INNER JOIN elements ON series.element_id = elements.element_id",
-          ";"
+          "limit 100;"
+#          ";"
           ),
     time.period,
     station.type,
@@ -145,7 +155,9 @@ db.select.all <- function(db, time.period, station.type, element.name) {
   return(obj)
 }
 
-db.select.timeseries <- function(db, stationIDs, time.period, station.type, element.name) {
+db.select.timeseries <- function(db, stationIDs, time.period, typeIDs, element.name) {
+  # EvdB typeIDs is array with type_ids that correspond to the stationIDs of the station 
+  # that you need (code+type_id together are unique)
   
   #--------------------------------------#
   ### Check the arguments for validity ###
@@ -154,9 +166,20 @@ db.select.timeseries <- function(db, stationIDs, time.period, station.type, elem
   supported.station.types <- c("validated", "derived")
   supported.time.periods <- c("hour", "day", "month", "year")
   
+  # EvdB typeIDs should be array with as many entries as stationIDs, since code+type is unique in DB
+  if(length(stationIDs) != length(typeIDs)) stop(paste("Number of station IDs is not equal to number of type IDs"))
+  
   if(!station.type %in% supported.station.types) stop(paste("Unsupported station type:", station.type))
   if(!time.period %in% supported.time.periods) stop(paste("Unuspported time period:", time.period))
   if(length(stationIDs) == 0) stop("No station ID(s) given")
+  
+  if(time.period == "hour") {
+    time.period <- "1hour"
+  }
+  if(time.period == "day") {
+    time.period <- "1day"
+  }
+  
   
   cfg <- config::get(file = "config/config.yml")
   
@@ -166,17 +189,54 @@ db.select.timeseries <- function(db, stationIDs, time.period, station.type, elem
   #-------------------------------------------------------------#
   ### Query the DB for timeseries data from specific stations ###
   #-------------------------------------------------------------#
+
+  # Updated query since code and type_id should be used together
   
+  i_in = 1
   query <- sprintf(paste(
+    "SELECT data_id ",
+    "FROM series, elements ",
+    "WHERE (series.code = %i and series.type_id = %i) and elements.element_id = series.element_id"),
+    "and element = %s ",
+    stationIDs[i_in],
+    typeIDs[i_in],
+element.name
+        )
+  i_in = i_in+1;
+  
+  while(i_in <= length(stationIDs)) {
+    query <- sprintf(paste("%s OR (series.code = %i and series.type_id = %i) ") ,
+                     query, stationIDs[i_in],typeIDs[i_in]                
+    )
+    i_in = i_in+1;
+  }
+  query <- sprintf(paste("%s ;"),query)
+  query.safe <- dbEscapeStrings(db, query)
+  
+  # TO BE DONE!!!!
+  # RUN THIS QUERY TO GET LIST OF DATA_IDS BACK, THAT IS USED BELOW
+  # e.g. (1, 2, 3)
+  #============
+  
+   query <- sprintf(paste(
     "SELECT data.data_id AS id, DATE_FORMAT(data.date, %%s) AS datetime, data.value, data.qc",
     "FROM series",
-    "INNER JOIN 1%s_%s_%s AS data ON data.data_id = series.data_id",
-    "INNER JOIN stations ON ",
-    "WHERE stations.code IN (%s) "),
-    time.period,
-    station.type,
-    element.name,
-    paste(stationIDs, collapse = ","))
+    "WHERE data_id in (%s)"),
+    paste(dataIDs, collapse = ",")
+  )
+  
+  query <- sprintf(paste("%s ;"),query)
+       
+  # query <- sprintf(paste(
+  #   "SELECT data.data_id AS id, DATE_FORMAT(data.date, %%s) AS datetime, data.value, data.qc",
+  #   "FROM series",
+  #   "INNER JOIN %s_%s_%s AS data ON data.data_id = series.data_id",
+  #   "INNER JOIN stations ON ",
+  #   "WHERE stations.code IN (%s) "),
+  #   time.period,
+  #   station.type,
+  #   element.name,
+  #   paste(stationIDs, collapse = ","))
   
   query.safe <- dbEscapeStrings(db, query)
   query.safe <- sprintf(query.safe, "'%Y%m%d%H%i%s'")
@@ -235,6 +295,9 @@ db.select.timeseries <- function(db, stationIDs, time.period, station.type, elem
   #--------------------------------#
   ### Query the DB for meta data ###
   #--------------------------------#
+  
+  # CHECK IF seriesID is same as my dataID above
+  # EvdB query below not checked
   
   query <- sprintf(paste(
     "SELECT",
