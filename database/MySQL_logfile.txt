@@ -25,4 +25,8 @@
               precipitation, including the corresponding station 
               and series metadata.
               
-  
+20170619 EvdB Created tables nearby_stations and 10min for temperature
+              nearby_stations filled
+              
+              
+
