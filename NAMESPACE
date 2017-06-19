@@ -3,3 +3,4 @@
 S3method(aggregate,to.88)
 S3method(aggregate,to.seasonal)
 export(average.spatial)
+export(station.info)

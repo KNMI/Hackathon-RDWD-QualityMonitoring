@@ -6,19 +6,7 @@ library(data.table)
 library(lubridate)
 library(stringr)
 
-
-station.info<-function(){
-  db<-db.setup()
-  query<-"SELECT * FROM stations"
-  
-  db<-dbSendQuery(db,query)
-  results<-dbFetch(db)
-  
-  
-  dbClearResult(db)
-  return(results)
-  
-}
+stations<-station.info()
 
 #datafiles<-list.files("/home/dirksen/Hackathon-RDWD-QualityMonitoring/data/testdata/",pattern="daily",full.names = TRUE)
 # datafiles<-list.files("/home/dirksen/Hackathon-RDWD-QualityMonitoring/data/testdata/",pattern="hourly",full.names = TRUE)
@@ -53,7 +41,10 @@ server<-function(input, output, session){
   }
   
   observeEvent(input$showDetailsNL, setDetails(TRUE, "NL"))
+  observeEvent(input$showDetailsNLa, setDetails(TRUE, "NL"))
+  observeEvent(input$showDetails260a, setDetails(TRUE, "260"))
   observeEvent(input$showDetails280, setDetails(TRUE, "280"))
+  observeEvent(input$showDetails280a, setDetails(TRUE, "280"))
   observeEvent(input$hideDetails, setDetails(FALSE))
   
   output$showDetails <- renderText(rv$showDetails)
