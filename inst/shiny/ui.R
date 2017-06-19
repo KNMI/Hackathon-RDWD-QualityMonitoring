@@ -4,6 +4,8 @@ library(shiny)
 # runApp("~/Hackathon-RDWD-QualityMonitoring/inst/shiny")
 
 fluidPage(
+
+
   title = "MQM - Inhomogeneity detection",
   theme = "mqm_style.css",
   
@@ -169,7 +171,8 @@ fluidPage(
                                   class = "row",
                                   div(class = "col-xs-4",
                                       textOutput("stationId"),
-                                      div(plotOutput("plot")))
+                                      div(plotOutput("plot")),
+                                      includeMarkdown("Details.Rmd"))
                                 ))
                      ))
   )

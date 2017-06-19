@@ -12,6 +12,7 @@ library(config)
 #' @param sta_id defines the string of sta_id's that need to be aggregated. Only applies when all.stations = FALSE. 
 #' @example aggregated.seasonal <- aggregate.to.seasonal(obj)
 #' @author Jurian and Lotte
+#' @export
 
 aggregate.to.seasonal <- function(obj, all.stations=TRUE, sta_type="AWS", var_id="RD", sta_id=NULL) {
   cfg <- config::get(file = "config/config.yml")
@@ -181,6 +182,8 @@ aggregate.to.seasonal <- function(obj, all.stations=TRUE, sta_type="AWS", var_id
 #' @param sta_id defines the string of sta_id's that need to be aggregated. Only applies when all.stations = FALSE. 
 #' @example aggregated88 <- aggregate.to.88(obj=obj)
 #' @author Lotte, Jurian & Hidde
+#' @export
+
 
 #function makes aggregations from all AWS datasets. 
 #default is all.stations=TRUE. if all.stations=FALSE, specify sta_ID. 
