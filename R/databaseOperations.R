@@ -1,5 +1,5 @@
-library(RMySQL)
-library(data.table)
+# library(RMySQL)
+# library(data.table)
 
 #' @title Setup a connection to the MySQL database
 #' @description This function returns a handle which can be used later to query the db.
