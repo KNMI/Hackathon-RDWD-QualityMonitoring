@@ -251,7 +251,7 @@ aggregate.to.88 <- function(obj, all.stations=TRUE, sta_type="AWS", var_id="RH",
   # Add new information to meta in obj.
   
   meta <- obj$meta[[which(names(obj$meta) ==  names(obj$hourly)[[sid]])]]
-  meta$var_period <- "day"
+  meta$var_period <- "1day"
   meta$var_id <- "RD"
   meta$ser_current <- dt$datetime[nrow(dt)] #last timestamp of daily timeseries. 
   obj$meta <- c(obj$meta, list(meta))
