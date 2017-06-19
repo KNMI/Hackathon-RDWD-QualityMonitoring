@@ -39,7 +39,10 @@ server<-function(input, output, session){
   }
   
   observeEvent(input$showDetailsNL, setDetails(TRUE, "NL"))
+  observeEvent(input$showDetailsNLa, setDetails(TRUE, "NL"))
+  observeEvent(input$showDetails260a, setDetails(TRUE, "260"))
   observeEvent(input$showDetails280, setDetails(TRUE, "280"))
+  observeEvent(input$showDetails280a, setDetails(TRUE, "280"))
   observeEvent(input$hideDetails, setDetails(FALSE))
   
   output$showDetails <- renderText(rv$showDetails)

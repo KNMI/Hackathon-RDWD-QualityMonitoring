@@ -48,10 +48,9 @@ fluidPage(
                                           textOutput("datetime"),
                                           div(class = "includeDivider", includeMarkdown("Warning_example.Rmd")),
                                           actionButton(class = "btn-danger", "showDetailsNL",
-                                                       div(
-                                                         icon("arrow-right", lib = "font-awesome"),
-                                                         "details..."
-                                                       ))
+                                                       icon=icon("arrow-right", lib = "font-awesome"),
+                                                       "details..."
+                                          )
                                         )
                                       )),
                                   div(class = "col-xs-2",
@@ -71,10 +70,9 @@ fluidPage(
                                           textOutput("datetime2"),
                                           div(class = "includeDivider", includeMarkdown("Warning_example.Rmd")),
                                           actionButton(class = "btn-danger", "showDetails280",
-                                                       div(
-                                                         icon("arrow-right", lib = "font-awesome"),
-                                                         "details..."
-                                                       ))
+                                                       icon=icon("arrow-right", lib = "font-awesome"),
+                                                       "details..."
+                                                       )
                                         )
                                       ))
                                 ),
@@ -99,10 +97,8 @@ fluidPage(
                                       tags$tbody(
                                         tags$tr(
                                           tags$td("NL",
-                                                  a(
-                                                    href = "#",
-                                                    icon("arrow-right", lib = "font-awesome"),
-                                                    "details..."
+                                                  actionLink("showDetailsNLa", "details...",
+                                                    icon("arrow-right", lib = "font-awesome")
                                                   )),
                                           tags$td(class = "alert alert-danger",
                                                   tags$strong("Break!")),
@@ -117,10 +113,8 @@ fluidPage(
                                         ),
                                         tags$tr(
                                           tags$td("260",
-                                                  a(
-                                                    href = "#",
-                                                    icon("arrow-right", lib = "font-awesome"),
-                                                    "details..."
+                                                  actionLink("showDetails260a", "details...",
+                                                             icon("arrow-right", lib = "font-awesome")
                                                   )),
                                           tags$td(class = "alert alert-success",
                                                   tags$strong("Ok!")),
@@ -135,10 +129,8 @@ fluidPage(
                                         ),
                                         tags$tr(
                                           tags$td("280",
-                                                  a(
-                                                    href = "#",
-                                                    icon("arrow-right", lib = "font-awesome"),
-                                                    "details..."
+                                                  actionLink("showDetails280a", "details...",
+                                                             icon("arrow-right", lib = "font-awesome")
                                                   )),
                                           tags$td(class = "alert alert-success",
                                                   tags$strong("Ok!")),
@@ -164,13 +156,30 @@ fluidPage(
                      navbarPage(
                        actionLink(class = "", "hideDetails",
                                   icon("arrow-left", lib = "font-awesome")),
-                       tabPanel("Details",
+                       tabPanel("Details", div(class="imgWrapper",
                                 div(
                                   class = "row",
                                   div(class = "col-xs-4",
-                                      textOutput("stationId"),
-                                      div(plotOutput("plot")))
-                                ))
+                                      # textOutput("stationId"),
+                                      tags$img(src="figures/hackathon_NL_AWSvsMAN_y.png", maxHeight=100))
+                                  ),
+                                div(
+                                  class = "row",
+                                  div(class = "col-xs-4",
+                                      # textOutput("stationId"),
+                                      tags$img(src="figures/hackathon_NL_AWSvsMAN_djf.png")),
+                                  div(class = "col-xs-4",
+                                      # textOutput("stationId"),
+                                      tags$img(src="figures/hackathon_NL_AWSvsMAN_mam.png"))),
+                                  div(
+                                    class = "row",
+                                    div(class = "col-xs-4",
+                                        # textOutput("stationId"),
+                                        tags$img(src="figures/hackathon_NL_AWSvsMAN_jja.png")),
+                                    div(class = "col-xs-4",
+                                        # textOutput("stationId"),
+                                        tags$img(src="figures/hackathon_NL_AWSvsMAN_son.png"))
+                                )))
                      ))
   )
   

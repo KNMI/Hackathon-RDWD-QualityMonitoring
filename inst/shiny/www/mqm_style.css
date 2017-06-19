@@ -104,6 +104,14 @@ body > .container-fluid {
   justify-content: center;
 }
 
+.tab-pane.active .row div {
+  flex-direction: column;
+}
+
+.imgWrapper {
+  flex-direction: column;
+}
+
 .tab-content {
   width: 100%;
 }
