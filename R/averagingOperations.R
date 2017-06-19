@@ -5,6 +5,7 @@ library(config)
 #' @param timeseries A list of data.tables, each a timeseries of structure <datetime, value>
 #' @return A single timeserie of structure <datetime, value>
 #' @author Hidde and Jurian
+#' @export
 average.spatial <- function(timeseries) {
   
   cfg <- config::get(file = "config/config.yml")

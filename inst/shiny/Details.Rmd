@@ -1,0 +1,9 @@
+---
+title: "Details"
+author: "Team MQM"
+date: "6/16/2017"
+output: html_document
+---
+
+![Yearly break detection](www/figures/hackathon_NL_AWSvsMAN_y.png)
+

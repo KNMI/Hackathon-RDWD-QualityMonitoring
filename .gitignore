@@ -8,3 +8,4 @@ test_Lotte.R
 data/testdata
 config/config.yml
 output/fig
+inst/shiny/www/figures

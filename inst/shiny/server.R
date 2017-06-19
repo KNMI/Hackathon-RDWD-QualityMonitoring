@@ -66,5 +66,5 @@ server<-function(input, output, session){
 
   outputOptions(output, "showDetails", suspendWhenHidden = FALSE)
   outputOptions(output, "stationId", suspendWhenHidden = FALSE)
-  
+
 }
