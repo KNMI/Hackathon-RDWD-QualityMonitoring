@@ -25,6 +25,23 @@ db.close <- function(db) {
   dbDisconnect(db)
 }
 
+#' @title Get station information from database
+#' @description get the metadata for all stations
+#' @return TRUE, invisibly
+#' @author Marieke 
+#' @export
+station.info<-function(){
+  db<-db.setup()
+  query<-"SELECT * FROM stations"
+  
+  db<-dbSendQuery(db,query)
+  results<-dbFetch(db)
+  
+  
+  dbDisconnect(db)
+  return(results)
+}
+
 #' @title Query the database for hourly 
 #' @param db Handle to MySQL database, taken from db.setup()
 #' @param time.period One of {"hour", "day", "month", "year"} NB. Season not supported ATM!

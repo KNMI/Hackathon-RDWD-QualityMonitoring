@@ -6,19 +6,7 @@ library(data.table)
 library(lubridate)
 library(stringr)
 
-
-station.info<-function(){
-  db<-db.setup()
-  query<-"SELECT * FROM stations"
-  
-  db<-dbSendQuery(db,query)
-  results<-dbFetch(db)
-  
-  
-  dbClearResult(db)
-  return(results)
-  
-}
+stations<-station.info()
 
 #datafiles<-list.files("/home/dirksen/Hackathon-RDWD-QualityMonitoring/data/testdata/",pattern="daily",full.names = TRUE)
 # datafiles<-list.files("/home/dirksen/Hackathon-RDWD-QualityMonitoring/data/testdata/",pattern="hourly",full.names = TRUE)
