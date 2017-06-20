@@ -28,6 +28,10 @@ body > .container-fluid {
   margin: 0;
 }
 
+.creedy, .creedy .container-fluid {
+  flex: 1;
+}
+
 .Header .navbar {
     background-color: #d9edf7;
     color: #31708f;
@@ -95,6 +99,7 @@ body > .container-fluid {
 
 .tab-content >.active {
     display: flex;
+    flex: 1;
 }
 
 .tab-content > div, .tab-content .row {
