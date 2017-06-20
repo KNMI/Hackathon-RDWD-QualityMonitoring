@@ -42,6 +42,24 @@ station.info<-function(){
   return(results)
 }
 
+#' @title Get information from nearby stations from the database
+#' @description get the metadata for all stations
+#' @return TRUE, invisibly
+#' @author Marieke 
+#' @export
+station.nearby<-function(){
+  db<-db.setup()
+  query<-"SELECT * FROM nearby_stations"
+  
+  db<-dbSendQuery(db,query)
+  results<-dbFetch(db)
+  
+  
+  dbDisconnect(db)
+  return(results)
+  
+}
+
 #' @title Query the database for hourly 
 #' @param db Handle to MySQL database, taken from db.setup()
 #' @param time.period One of {"hour", "day", "month", "year"} NB. Season not supported ATM!

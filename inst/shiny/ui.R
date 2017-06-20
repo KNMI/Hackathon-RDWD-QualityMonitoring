@@ -175,8 +175,11 @@ fluidPage(
                  ),
                  fluidRow(
                    div(class = "col-xs-offset-2 col-xs-8",
-                       checkboxGroupInput("Type","Station Type",c("AWS"=1,
-                                                           "Manual"=2),selected = "AWS"),
+                       checkboxGroupInput("Type","Station Type",
+                                                         c("AWS"=2,
+                                                           "Manual"=1
+                                                           ),
+                                          selected = c("AWS","Manual")),
                        sliderInput("Radius","Radius",0,100,value=30),
                        sliderInput("nr","Number",0,10,value=3))
                  ),
@@ -188,6 +191,11 @@ fluidPage(
                  fluidRow(
                    div(class = "col-xs-offset-2 col-xs-8",
                        tableOutput("clickedNumber"))
+                 ),
+                 fluidRow(
+                   div(class = "col-xs-offset-2 col-xs-8",
+                       tableOutput("stationsNearby")
+                       )
                  )
                  )
       )

@@ -6,7 +6,12 @@ library(data.table)
 library(lubridate)
 library(stringr)
 
-stations <-readRDS("~/Hackathon-RDWD-QualityMonitoring/data/testdata/stationInfo.rds")
+# stations <-readRDS("~/Hackathon-RDWD-QualityMonitoring/data/testdata/stationInfo.rds")
+# stations.nearby <-readRDS("~/Hackathon-RDWD-QualityMonitoring/data/testdata/stationNearby.rds")
+
+#query from the db
+stations<-station.info()
+stations.nearby<-station.nearby()
 
 #Create a spatialpointsdataframe to calculate distances later in the server
 spdf<-stations
@@ -60,9 +65,25 @@ server <- function(input, output, session) {
       df.number<-head(df,n=input$nr)
     })
     
+    #NOT WORKING!!!
+    dfNearby<-reactive({
+      data$clickedMarker <- markerClickEvent
+      dfNearby<-stations.nearby[which(stations.nearby$code==data$clikedMarker$id),]
+      # if (!is.null(dfNearby)){paste("The station you selected is not on the list")}
+      # dfNearby<-unique(dfNearby$nearby_code)
+      dfNearby
+    })
+    output$stationsNearby<-renderTable({
+      # if (!is.null(dfNearby())){paste("The station you selected is not on the list")}
+      dfNearby()
+    })
+    ##############
+    
     output$clickedMarker <- renderText({
       paste("Station ", data$clickedMarker$id, "has been selected")
     })
+    
+    
     print(data$clickedMarker)
     
     output$clickedDistance <- renderTable({
@@ -72,6 +93,8 @@ server <- function(input, output, session) {
     output$clickedNumber <- renderTable({
       dfNr()
     })
+    
+    
     
   }
   
@@ -117,17 +140,19 @@ server <- function(input, output, session) {
   })
   
   
+  pal <- colorFactor(c("green", "orange"),domain = c("1","2"))
   
   output$map <- renderLeaflet(
     leaflet(stations) %>%
       setView(lng=5.3878, lat=52.1561, zoom=7) %>%
       addProviderTiles(providers$Stamen.TonerLite,
                        options = providerTileOptions(noWrap = TRUE)) %>%
-      addMarkers(
+      addCircleMarkers(
         lat = ~ latitude,
         lng = ~ longitude,
         popup = ~ name,
-        layerId = ~ code
+        layerId = ~ code,
+        color = ~pal(type_id)
       )
   )
   
