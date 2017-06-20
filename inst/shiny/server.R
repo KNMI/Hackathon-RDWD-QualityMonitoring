@@ -29,23 +29,12 @@ server <- function(input, output, session) {
       rv$station <- ""
     }
   }
-  ##########################
-  #This code should find the click coordinates and find the distance to the other stations, 
-  #put it in a data table, ready for print
-  ###################################
-  # sp<-data.frame(unlist(data$clickedMarker))
-  # coordinates(sp)<-~lat+lng
-  # proj4string(sp)<-CRS("+init=epsg:4326")
-  # 
-  # d<-pointDistance(sp,spdf,lonlat=TRUE)
-  # df<-data.table(stations,d)
-  # setkey(df,"d")
-  ###################################
-  
+
   markerClicked <- function(markerClickEvent) {
     print("observed marker click")
     data$clickedMarker <- markerClickEvent
     
+    df<-reactive({
     sp<-data.frame(data$clickedMarker)
     coordinates(sp)<-~lng+lat
     proj4string(sp)<-CRS("+init=epsg:4326")
@@ -54,7 +43,8 @@ server <- function(input, output, session) {
     d<-d/1000
     df<-data.table(stations,d)
     setkey(df,"d")
-    
+    df<-df[which(df$d<input$Radius),]
+    })
     
     output$clickedMarker <- renderText({
       paste("Station ", data$clickedMarker$id, "has been selected")
@@ -62,7 +52,7 @@ server <- function(input, output, session) {
     print(data$clickedMarker)
     
     output$clickedDistance <- renderTable({
-      head(df)
+      df()
     })
     
   }

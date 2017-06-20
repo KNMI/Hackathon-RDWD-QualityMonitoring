@@ -172,7 +172,10 @@ fluidPage(
                  fluidRow(
                    div(class = "col-xs-offset-2 col-xs-8",
                        textOutput("clickedMarker"))
-                 
+                 ),
+                 fluidRow(
+                   div(class = "col-xs-offset-2 col-xs-8",
+                       sliderInput("Radius","Radius",0,100,value=30))
                  ),
                  fluidRow(
                    div(class = "col-xs-offset-2 col-xs-8",
