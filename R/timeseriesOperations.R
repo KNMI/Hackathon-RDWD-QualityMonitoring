@@ -34,8 +34,8 @@ timeseries.relative.difference <- function(timeserie1, timeserie2){
 timeseries.intersection <- function(timeseries) {
   
   # Find the latest start datetime and earliest stop datetime
-  datetime.start <- max(sapply(timeseries, function(ts) min(ts$datetime)))
-  datetime.stop <- min(sapply(timeseries, function(ts) max(ts$datetime)))
+  datetime.start <- min(sapply(timeseries, function(ts) min(ts$datetime)))
+  datetime.stop <- max(sapply(timeseries, function(ts) max(ts$datetime)))
 
   # We make use of data.tables fast fintersect() function
   # The datetime column is already a key, which makes this very fast
