@@ -43,7 +43,21 @@ server <- function(input, output, session) {
     d<-d/1000
     df<-data.table(stations,d)
     setkey(df,"d")
-    df<-df[which(df$d<input$Radius),]
+    df<-df[which(df$type_id==input$Type),]
+    df.radius<-df[which(df$d<input$Radius),]
+    })
+    
+    dfNr<-reactive({
+      sp<-data.frame(data$clickedMarker)
+      coordinates(sp)<-~lng+lat
+      proj4string(sp)<-CRS("+init=epsg:4326")
+      
+      d<-pointDistance(sp,spdf,lonlat=TRUE)
+      d<-d/1000
+      df<-data.table(stations,d)
+      setkey(df,"d")
+      df<-df[which(df$type_id==input$Type),]
+      df.number<-head(df,n=input$nr)
     })
     
     output$clickedMarker <- renderText({
@@ -53,6 +67,10 @@ server <- function(input, output, session) {
     
     output$clickedDistance <- renderTable({
       df()
+    })
+    
+    output$clickedNumber <- renderTable({
+      dfNr()
     })
     
   }
