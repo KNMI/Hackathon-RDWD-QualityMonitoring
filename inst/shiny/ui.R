@@ -27,7 +27,7 @@ fluidPage(
   div(
     class = "MainSection row",
     conditionalPanel(
-      class="creedy",
+      class = "creedy",
       condition = "output.showDetails != 'true'",
       navbarPage(
         "",
@@ -164,32 +164,30 @@ fluidPage(
                  fluidRow(
                    includeMarkdown("Background_info_example.Rmd")
                  )),
-        tabPanel("Map experiments", class="creedy",
-                 fluidRow(class="creedy",
-                   div(class = "col-xs-offset-2 col-xs-8",
-                       leafletOutput("map", width = "100%", height = "100%"))
-                 ),
-                 fluidRow(
-                   div(class = "col-xs-offset-2 col-xs-8",
-                       textOutput("clickedMarker"))
-                 ),
-                 fluidRow(
-                   div(class = "col-xs-offset-2 col-xs-8",
-                       checkboxGroupInput("Type","Station Type",c("AWS"=1,
-                                                           "Manual"=2),selected = "AWS"),
-                       sliderInput("Radius","Radius",0,100,value=30),
-                       sliderInput("nr","Number",0,10,value=3))
-                 ),
-                 fluidRow(
-                   div(class = "col-xs-offset-2 col-xs-8",
-                       tableOutput("clickedDistance"))
-                   
-                 ),
-                 fluidRow(
-                   div(class = "col-xs-offset-2 col-xs-8",
-                       tableOutput("clickedNumber"))
-                 )
-                 )
+        tabPanel(
+          "Map experiments",
+          class = "creedy",
+          fluidRow(
+            class = "creedy",
+            div(class = "col-xs-6",
+                leafletOutput(
+                  "map", width = "100%", height = "100%"
+                )),
+            div(
+              class = "col-xs-6",
+              checkboxGroupInput("Type", "Station Type", c("AWS" =
+                                                             1,
+                                                           "Manual" =
+                                                             2), selected = 2),
+              sliderInput("Radius", "Radius", 0, 100, value = 30),
+              sliderInput("nr", "Number", 0, 10, value = 3),
+              tableOutput("clickedDistance"),
+              tableOutput("clickedNumber")
+            )
+          ),
+          fluidRow(div(class = "col-xs-offset-2 col-xs-8",
+                       textOutput("clickedMarker")))
+        )
       )
     )
   ),
@@ -228,4 +226,3 @@ fluidPage(
                                              )))
                    ))
 )
-
