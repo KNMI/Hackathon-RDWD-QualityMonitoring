@@ -1,5 +1,6 @@
-library(shiny)
 #runApp("~/Hackathon-RDWD-QualityMonitoring/inst/shiny")
+
+library(shiny)
 library(leaflet)
 library(ggplot2)
 library(data.table)

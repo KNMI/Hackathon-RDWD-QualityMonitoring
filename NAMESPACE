@@ -1,1 +1,3 @@
-
+importFrom("grDevices", "rgb")
+importFrom("graphics", "abline", "legend", "lines", "plot", "points")
+importFrom("stats", "aggregate")
