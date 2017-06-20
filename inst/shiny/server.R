@@ -8,21 +8,6 @@ library(data.table)
 library(lubridate)
 library(stringr)
 
-
-station.info <- function() {
-  db <- db.setup()
-  query <- "SELECT * FROM stations"
-  
-  db <- dbSendQuery(db, query)
-  results <- dbFetch(db)
-  
-  
-  dbClearResult(db)
-  print(results)
-  return(results)
-  
-}
-
 stations <-
   readRDS("~/Hackathon-RDWD-QualityMonitoring/data/testdata/stationInfo.rds")
 
