@@ -2,22 +2,26 @@ default:
  data.availability.threshold : 0.8
  data.availability.threshold.averaging : 0.3
  database.na.value : -9999
- obj.base.id.hourly : 10000000
- obj.base.id.daily : 20000000
- obj.base.id.monthly : 30000000
- obj.base.id.yearly : 40000000
- obj.base.id.djf : 50000000
- obj.base.id.mam : 60000000
- obj.base.id.jja : 70000000
- obj.base.id.son : 80000000
- obj.base.id.spatial : 1000000
+ data.container.base.id.hourly : 10000000
+ data.container.base.id.daily : 20000000
+ data.container.base.id.monthly : 30000000
+ data.container.base.id.yearly : 40000000
+ data.container.base.id.djf : 50000000
+ data.container.base.id.mam : 60000000
+ data.container.base.id.jja : 70000000
+ data.container.base.id.son : 80000000
+ data.container.base.id.spatial : 1000000
  qc.threshold : [0, 1]
- obj.main.class : "mqm.data.container"
- obj.timeseries.class : "mqm.data.timeseries"
- obj.timeseries.meta.class : "mqm.meta.timeseries"
+ data.container.main.class : "mqm.data.container"
+ data.container.timeseries.class : "mqm.data.timeseries"
+ data.container.timeseries.meta.class : "mqm.meta.timeseries"
 
 test:
  test.data.dir : "/home/dirksen/Hackathon-RDWD-QualityMonitoring/data/testdata/"
+ database.max.records : -1
 
 production:
  inherits: test
+ database.max.records : -1
+
+
