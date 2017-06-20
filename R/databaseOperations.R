@@ -25,129 +25,158 @@ db.close <- function(db) {
   dbDisconnect(db)
 }
 
+#data.container <- db.select.all(db, "1hour", 2, 1, "rh", "validated")
+
 #' @title Query the database for hourly 
 #' @param db Handle to MySQL database, taken from db.setup()
-#' @param time.interval One of {"hour", "day", "month", "year"} NB. Season not supported ATM!
+#' @param time.interval One of {"1hour", "1day", "month", "year"} NB. Season not supported ATM!
 #' @param station.type One of {"validated", "derived"}
 #' @param element.name Name of type of data; e.g. "rh" for hourly rainfall or "t" for temperature
+#' @example data.container <- db.select.all(db, "1hour", "validated", "rh")
 #' @seealso db.setup()
 #' @author Jurian and Hidde
-db.select.all <- function(db, time.interval, station.type, element.name) {
+db.select.all <- function(db, time.interval, type.id, element.id, element.name, series.type) {
   
   if(!dbIsValid(db)) {
     stop("Invalid database connection")
   }
   
-  supported.station.types <- c("validated", "derived")
-  supported.time.intervals <- c("hour", "day", "month", "year")
+  #supported.station.types <- c("validated", "derived")
+  #supported.time.intervals <- c("1hour", "1day", "month", "year")
   
-  if(!station.type %in% supported.station.types) stop(paste("Unsupported station type:", station.type))
-  if(!time.interval %in% supported.time.intervals) stop(paste("Unuspported time period:", time.interval))
- 
-  if(time.interval == "hour" | time.interval == "day") {
-    time.interval <- paste0("1", time.interval)
-  }
+  #if(!station.type %in% supported.station.types) stop(paste("Unsupported station type:", station.type))
+  #if(!time.interval %in% supported.time.intervals) stop(paste("Unuspported time period:", time.interval))
    
   cfg <- config::get(file = "config/config.yml")
   
+  data.container <- list()
+  class(data.container) <- "mqm.data.container"
+  
   max.qc <- cfg$qc.threshold
-  na.value <- cfg$database.na.value
+  db.na.value <- cfg$database.na.value
 
-  query <- sprintf (
-    paste("SELECT",
-          "data.data_id AS data_id, types.type_id AS type_id, elements.element_id AS element_id, stations.code AS code,",
-          "DATE_FORMAT(date, %%s) AS date, value, qc, aggregation, type, name, latitude, longitude, elevation, element_group, elements.description AS element_desc, types.description AS type_desc, element, scale, unit",
-          "FROM %s_%s_%s AS data",
-          "INNER JOIN series ON data.data_id = series.data_id",
-          "INNER JOIN stations ON series.type_id = stations.type_id AND series.code = stations.code",
-          "INNER JOIN types ON series.type_id = types.type_id",
-          "INNER JOIN elements ON series.element_id = elements.element_id",
-          ";"
-          ),
-    time.interval,
-    station.type,
-    element.name)
+  time.interval.db <- time.interval
+  # Fix time period references for R seq() and difftime() functions
+  if(time.interval.db == "1hour" | time.interval.db == "1day") {
+    time.interval <- substr(time.interval.db, 2, nchar(time.interval.db))
+  }
   
-  query.safe <- dbEscapeStrings(db, query)
-  query.safe <- sprintf(query.safe, "'%Y%m%d%H%i%s'")
-  result.ref <- dbSendQuery(db, query.safe)
+  query <- sprintf(paste(
+    "SELECT",
+      "series.data_id AS data_id,",
+      "stations.code AS station_code,",
+      "name,",
+      "element,",
+      "element_group,",
+      "type,",
+      "types.type_id AS type_id,", 
+      "scale,", 
+      "unit,", 
+      "latitude,", 
+      "longitude,",
+      "elevation,", 
+      "aggregation,", 
+      "elements.element_id AS element_id",
+    "FROM",
+      "series",
+    "INNER JOIN stations ON",
+      "stations.code = series.code AND stations.type_id = series.type_id",
+    "INNER JOIN types ON",
+      "types.type_id = series.type_id",
+    "INNER JOIN elements ON",
+      "elements.element_id = series.element_id",
+    "WHERE",
+      "series.type_id = %i AND series.element_id = %i AND series.aggregation = %s",
+    "GROUP BY",
+      "data_id, station_code, name"
+  ),
+  type.id,
+  element.id,
+  paste0("'", time.interval.db, "'"))
+  
+  result.ref <- dbSendQuery(db, query)
   result <- dbFetch(result.ref, cfg$database.max.records)
+  dbClearResult(result.ref)
   
-  obj <- list()
-  class(obj) <- "mqm.data.container"
-  
-  obj$meta <- by(result, factor(result$data_id), function(x){
-    data.table(
-      sta_id = unique(x$code),
-      sta_name = unique(x$name),
-      sta_lat = unique(x$latitude),
-      sta_lon = unique(x$longitude),
-      sta_elev = unique(x$elevation),
-      sta_type = ifelse(unique(x$type) == "H", "AWS", "MAN"),
-      area_sta_id = unique(x$code),
-      area_lat = unique(x$latitude),
-      area_lon = unique(x$longitude),
+  data.container$meta <- by(result, factor(result$station_code), function(x){
+    
+    meta <- list (
+      dat_id = x$data_id,
+      sta_id = x$station_code,
+      sta_name = tolower(x$name),
+      sta_lat = x$latitude,
+      sta_lon = x$longitude,
+      sta_elev = x$elevation,
+      sta_type = tolower(x$type),
+      sta_type_id = x$type_id,
+      area_sta_id = x$station_code,
+      area_lat = x$latitude,
+      area_lon = x$longitude,
       area_radius = 0,
       area_cat = 0,
-      var_id = unique(x$element),
-      var_name = unique(x$element_group),
-      var_unit = unique(x$unit),
-      var_scale = unique(x$scale),
-      var_period = unique(x$aggregation),
-      ser_current = x[nrow(x), "date"]
+      var_id = x$element_id,
+      var_name = tolower(x$element),
+      var_desc = x$element_group,
+      var_unit = x$unit,
+      var_scale = x$scale,
+      var_period = x$aggregation,
+      ser_type = series.type
     )
+    class(meta) <- cfg$data.container.timeseries.meta.class
+    return(meta)
   })
+
+  #data.IDs <- sapply(data.container$meta, function(x) x$dat_id)
+  data.IDs <- result$data_id
+  names(data.container$meta) <- data.IDs
   
-  # Init empty lists
-  obj$hourly <- list()
-  obj$daily <- list()
-  obj$monthly <- list()
-  obj$yearly <- list()
+  query <- sprintf(paste(
+    "SELECT",
+      "data_id, DATE_FORMAT(date, %%s) AS datetime, value, qc",
+    "FROM",
+      "%s_%s_%s",
+    "WHERE",
+      "data_id IN (%s)"
+  ),
+  time.interval.db,
+  series.type,
+  element.name,
+  paste(data.IDs, collapse = ","))
+ 
+  query <- sprintf(query, "'%Y%m%d%H%i%s'")
+
+  result.ref <- dbSendQuery(db, query)
+  result <- dbFetch(result.ref, cfg$database.max.records)
+  dbClearResult(result.ref)
   
-  # Get the right name for this list of timeseries
-  namely <- c("hourly", "daily", "monthly", "yearly")[which(time.interval == supported.time.periods)]
-  
-  obj[namely] <- list(by(result, factor(result$data_id), function(x) {
-    dt <- data.table(datetime = x$date, value = x$value)
+  data.container[time.interval.db] <- list(by(result, factor(result$data_id), function(x) {
+    
+    dt <- data.table(datetime = x$datetime, value = x$value)
     setkey(dt, datetime)
     
     # Set any observations which do not pass the quality check to NA
     # Set any observations which are missing (-9999) to NA
     qc.idx <- !(x$qc %in% max.qc)
-    missing.idx <- trunc(x$value) <= na.value
+    missing.idx <- trunc(x$value) <= db.na.value
     dt$value[missing.idx | qc.idx] <- NA
     
-    # Check for holes in the timeline and fill them up if necessary
-    begin <- strptime(min(dt$datetime), format = "%Y%m%d%H%M%S", tz="GMT")
-    end <- strptime(max(dt$datetime), format = "%Y%m%d%H%M%S", tz="GMT")
+    # We need the begin and end of the timeseries to check for holes
+    begin <- strptime(min(dt$datetime), format = "%Y%m%d%H%M%S", tz = "GMT")
+    end <- strptime(max(dt$datetime), format = "%Y%m%d%H%M%S", tz = "GMT")
     
-    complete.timeline <- seq(begin, end, by = time.interval)
-    
-    if(length(complete.timeline) != nrow(dt)) {
-      complete.timeline <- data.table( format(complete.timeline, format = "%Y%m%d%H%M%S") )
-      names(complete.timeline) <- "datetime"
+    # If the timeseries has holes, then fill them up with NA's
+    if((difftime(end, begin, tz = "GMT", units = time.interval) + 1) > nrow(dt)) {
+      complete.timeline <- data.table(datetime = format(seq(begin, end, by = time.interval), format = "%Y%m%d%H%M%S"))
       setkey(complete.timeline, datetime)
-      
       dt <- base::merge(dt, complete.timeline, by = "datetime", all = T)
-
     }
     
+    class(dt) <- append(class(dt), cfg$data.container.timeseries.class)
     return(dt)
   }))
-  
-  base.id <- c(
-    cfg$obj.base.id.hourly, 
-    cfg$obj.base.id.daily, 
-    cfg$obj.base.id.monthly, 
-    cfg$obj.base.id.yearly)[which(time.interval == supported.time.periods)]
 
-  names(obj$meta) <- as.character(as.integer(names(obj$meta)) + base.id)
-  names(obj[[namely]]) <- as.character(as.integer(names(obj[[namely]])) + base.id)
-  
-  # Clean up
-  dbClearResult(result.ref)
   rm(result)
-  return(obj)
+  return(data.container)
 }
 
 
@@ -217,7 +246,7 @@ db.select.timeseries <- function(db, station.IDs, type.ID, element.ID, series.ty
   dbClearResult(result.ref)
   
   # Fix time period references for R seq() and difftime() functions
-  if(time.interval.db == "1hour" | time.interval == "1day") {
+  if(time.interval.db == "1hour" | time.interval.db == "1day") {
     time.interval <- substr(time.interval.db, 2, nchar(time.interval.db))
   }
   
@@ -289,6 +318,7 @@ db.select.timeseries <- function(db, station.IDs, type.ID, element.ID, series.ty
   
   query <- sprintf(paste(
     "SELECT",
+      "series.data_id AS data_id,",
       "stations.code AS station_code,",
       "name,",
       "element,",
@@ -313,7 +343,7 @@ db.select.timeseries <- function(db, station.IDs, type.ID, element.ID, series.ty
     "WHERE",
       "series.data_id IN (%s)",
     "GROUP BY",
-      "data_id, station_code"
+      "data_id, station_code, name"
   ),paste(data.IDs, collapse = ","))
   
   result.ref <- dbSendQuery(db, dbEscapeStrings(db, query))
@@ -323,6 +353,7 @@ db.select.timeseries <- function(db, station.IDs, type.ID, element.ID, series.ty
   data.container$meta <- by(result, factor(data.IDs), function(x){
     
     meta <- list (
+      dat_id = x$dat_id,
       sta_id = x$station_code,
       sta_name = tolower(x$name),
       sta_lat = x$latitude,
