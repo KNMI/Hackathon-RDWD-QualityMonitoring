@@ -25,14 +25,12 @@ db.close <- function(db) {
   dbDisconnect(db)
 }
 
-#data.container <- db.select.all(db, "1hour", 2, 1, "rh", "validated")
-
 #' @title Query the database for hourly 
 #' @param db Handle to MySQL database, taken from db.setup()
 #' @param time.interval One of {"1hour", "1day", "month", "year"} NB. Season not supported ATM!
 #' @param station.type One of {"validated", "derived"}
 #' @param element.name Name of type of data; e.g. "rh" for hourly rainfall or "t" for temperature
-#' @example data.container <- db.select.all(db, "1hour", "validated", "rh")
+#' @example data.container <- db.select.all(db, "1hour", 2, 1, "rh", "validated")
 #' @seealso db.setup()
 #' @author Jurian and Hidde
 db.select.all <- function(db, time.interval, type.id, element.id, element.name, series.type) {
