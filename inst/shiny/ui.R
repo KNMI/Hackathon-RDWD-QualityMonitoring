@@ -167,7 +167,7 @@ fluidPage(
         tabPanel("Map experiments", class="creedy",
                  fluidRow(class="creedy",
                    div(class = "col-xs-offset-2 col-xs-8",
-                       leafletOutput("map"))
+                       leafletOutput("map", width = "100%", height = "100%"))
                  ),
                  fluidRow(
                    div(class = "col-xs-offset-2 col-xs-8",
