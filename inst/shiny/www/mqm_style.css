@@ -28,6 +28,10 @@ body > .container-fluid {
   margin: 0;
 }
 
+.creedy, .creedy .container-fluid {
+  flex: 1;
+}
+
 .Header .navbar {
     background-color: #d9edf7;
     color: #31708f;

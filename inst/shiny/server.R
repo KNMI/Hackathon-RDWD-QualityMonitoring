@@ -6,6 +6,7 @@ library(ggplot2)
 library(data.table)
 library(lubridate)
 library(stringr)
+library(raster)
 
 stations <-readRDS("~/Hackathon-RDWD-QualityMonitoring/data/testdata/stationInfo.rds")
 
