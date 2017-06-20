@@ -10,7 +10,7 @@ stations <-readRDS("~/Hackathon-RDWD-QualityMonitoring/data/testdata/stationInfo
 
 #Create a spatialpointsdataframe to calculate distances later in the server
 spdf<-stations
-coordinates(spdf)<-~latitude+longitude
+coordinates(spdf)<-~longitude+latitude
 proj4string(spdf)<-CRS("+init=epsg:4326")
 
 
@@ -34,7 +34,7 @@ server <- function(input, output, session) {
   #put it in a data table, ready for print
   ###################################
   # sp<-data.frame(unlist(data$clickedMarker))
-  # coordinates(sp)<-~x+y
+  # coordinates(sp)<-~lat+lng
   # proj4string(sp)<-CRS("+init=epsg:4326")
   # 
   # d<-pointDistance(sp,spdf,lonlat=TRUE)
@@ -46,14 +46,24 @@ server <- function(input, output, session) {
     print("observed marker click")
     data$clickedMarker <- markerClickEvent
     
+    sp<-data.frame(data$clickedMarker)
+    coordinates(sp)<-~lng+lat
+    proj4string(sp)<-CRS("+init=epsg:4326")
+
+    d<-pointDistance(sp,spdf,lonlat=TRUE)
+    d<-d/1000
+    df<-data.table(stations,d)
+    setkey(df,"d")
     
     
     output$clickedMarker <- renderText({
-      paste("Station ", data$clickedMarker$id, "has been selected ")
+      paste("Station ", data$clickedMarker$id, "has been selected")
     })
     print(data$clickedMarker)
     
-
+    output$clickedDistance <- renderTable({
+      head(df)
+    })
     
   }
   

@@ -172,7 +172,13 @@ fluidPage(
                  fluidRow(
                    div(class = "col-xs-offset-2 col-xs-8",
                        textOutput("clickedMarker"))
-                 ))
+                 
+                 ),
+                 fluidRow(
+                   div(class = "col-xs-offset-2 col-xs-8",
+                       tableOutput("clickedDistance"))
+                 )
+                 )
       )
     )
   ),
