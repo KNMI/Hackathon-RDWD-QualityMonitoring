@@ -10,7 +10,9 @@ Imports:  config,
           data.table,
           ggmap,
           ggplot2,
+          leaflet,
           raster,
-          RMySQL
+          RMySQL,
+          shiny
 License: What license is it under?
 RoxygenNote: 6.0.1.9000

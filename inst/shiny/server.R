@@ -1,35 +1,18 @@
 library(shiny)
 #runApp("~/Hackathon-RDWD-QualityMonitoring/inst/shiny")
-<<<<<<< HEAD
-=======
-
 library(leaflet)
->>>>>>> 1fd3e6f15550edf4b408948bc9cce67154bb6bdb
-
 library(ggplot2)
 library(data.table)
 library(lubridate)
 library(stringr)
 
-stations <-
-  readRDS("~/Hackathon-RDWD-QualityMonitoring/data/testdata/stationInfo.rds")
+stations <-readRDS("~/Hackathon-RDWD-QualityMonitoring/data/testdata/stationInfo.rds")
 
-#datafiles<-list.files("/home/dirksen/Hackathon-RDWD-QualityMonitoring/data/testdata/",pattern="daily",full.names = TRUE)
-# datafiles<-list.files("/home/dirksen/Hackathon-RDWD-QualityMonitoring/data/testdata/",pattern="hourly",full.names = TRUE)
+#Create a spatialpointsdataframe to calculate distances later in the server
+spdf<-stations
+coordinates(spdf)<-~latitude+longitude
+proj4string(spdf)<-CRS("+init=epsg:4326")
 
-testfile <-
-  "/home/dirksen/Hackathon-RDWD-QualityMonitoring/data/testdata//DeBilt_260_H_hourly_precip.csv"
-Bilt <- fread(testfile)
-names(Bilt) <- c("day", "hour", "P")
-
-
-Bilt$hour <- str_pad(as.integer(Bilt$hour), width = 6, pad = "0")
-Bilt$time <- paste0(Bilt$day, " ", Bilt$hour)
-Bilt$time <- as.POSIXct(Bilt$time, format = "%Y%m%d %H%M%S")
-# Bilt$day<-as.Date(Bilt$day,format="%Y%m%d")
-
-p <- ggplot(Bilt, aes(time, P)) +
-  geom_point()
 
 server <- function(input, output, session) {
   detection_datetime <- Sys.time()
@@ -46,14 +29,32 @@ server <- function(input, output, session) {
       rv$station <- ""
     }
   }
+  ##########################
+  #This code should find the click coordinates and find the distance to the other stations, 
+  #put it in a data table, ready for print
+  ###################################
+  # sp<-data.frame(unlist(data$clickedMarker))
+  # coordinates(sp)<-~x+y
+  # proj4string(sp)<-CRS("+init=epsg:4326")
+  # 
+  # d<-pointDistance(sp,spdf,lonlat=TRUE)
+  # df<-data.table(stations,d)
+  # setkey(df,"d")
+  ###################################
   
   markerClicked <- function(markerClickEvent) {
     print("observed marker click")
     data$clickedMarker <- markerClickEvent
+    
+    
+    
     output$clickedMarker <- renderText({
-      paste("Station ", data$clickedMarker$id, "has been selected")
+      paste("Station ", data$clickedMarker$id, "has been selected ")
     })
     print(data$clickedMarker)
+    
+
+    
   }
   
   mapClicked <- function(mapClickEvent) {
