@@ -166,12 +166,20 @@ fluidPage(
                  )),
         tabPanel("Map experiments", class="creedy",
                  fluidRow(
-                   #class="creedy",
-                   #div(class = "col-xs-offset-2 col-xs-8",
+                   class="creedy",
+                   div(class = "col-xs-offset-2 col-xs-8",
                        leafletOutput("map")
-                       ),
+                       )),
                  fluidRow(
                    div(class = "col-xs-offset-2 col-xs-8",
+                       dateInput("date1", "Start:",
+                                      min =  "1981-01-01",
+                                      max = Sys.Date(),
+                                      value = "2000-01-01"),
+                       dateInput("date2", "Stop:",
+                                 min = "1981-01-01",
+                                 max = Sys.Date(),
+                                 value="2010-01-01"),
                        textOutput("clickedMarker"))),
                 fluidRow(
                    div(class = "col-xs-offset-2 col-xs-8",

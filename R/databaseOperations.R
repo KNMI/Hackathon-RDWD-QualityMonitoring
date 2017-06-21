@@ -66,21 +66,33 @@ station.info<-function(){
 }
 
 #' @title Get information from nearby stations from the database
-#' @description get the metadata for all stations
+#' @description get the metadata for all stations, input looks like code_real="260_H"
 #' @return TRUE, invisibly
 #' @author Marieke 
 #' @export
-station.nearby<-function(code,type_id){
+#' 
+station.nearby<-function(code_real){
+
+split<-unlist(strsplit(code_real,"_"))
+  
+code=split[1]
+type=split[2]
+
+
+  
   db<-db.setup()
   query<-"SELECT * FROM nearby_stations"
   
-  query_new<-sprintf("SELECT * FROM nearby_stations WHERE code=%i and type_id=%i;",code,type_id)
+  query_new<-sprintf("SELECT nearby_stations.code,nearby_stations.type_id,nearby_stations.nearby_code,nearby_stations.nearby_type_id 
+                     FROM nearby_stations,types WHERE nearby_stations.type_id=types.type_id and nearby_stations.code=%s and types.type='%s';",code,type)
   
   db.q<-dbSendQuery(db,query_new)
   results<-dbFetch(db.q,n=-1)
-  
-  
   dbDisconnect(db)
+  
+  if (is.null(results)){warning("No reference station found in the database")
+    return(FALSE)}
+  
   return(results)
 }
 

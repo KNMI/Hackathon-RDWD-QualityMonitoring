@@ -10,7 +10,7 @@ library(stringr)
 # stations.nearby <-readRDS("~/Hackathon-RDWD-QualityMonitoring/data/testdata/stationNearby.rds")
 
 #query from the db
-stations<-station.info()
+stations.all<-station.info()
 # stations.nearby<-station.nearby()
 
 #Create a spatialpointsdataframe to calculate distances later in the server
@@ -20,10 +20,13 @@ proj4string(spdf)<-CRS("+init=epsg:4326")
 
 
 server <- function(input, output, session) {
+  
+  stations<-reactive({stations.all[which(stations.all$start<=input$date1 & stations.all$stop>=input$date2 & stations.all$type_id==input$Type),] })
   detection_datetime <- Sys.time()
   
   rv <- reactiveValues(showDetails = "false", station = "")
   data <- reactiveValues(clickedMarker = NULL)
+  
   
   setDetails <- function(detailVisible, station) {
     if (detailVisible) {
@@ -68,9 +71,7 @@ server <- function(input, output, session) {
     #NOT WORKING!!!
     dfNearby<-reactive({
       data$clickedMarker <- markerClickEvent
-      dfNearby<-station.nearby(data$clickedMarker$code,data$clikedMarker$id) #function making a connection to the db
-      # if (!is.null(dfNearby)){paste("The station you selected is not on the list")}
-      # dfNearby<-unique(dfNearby$nearby_code)
+      dfNearby<-station.nearby(data$clickedMarker$id,2) #function making a connection to the db
       dfNearby
     })
     output$stationsNearby<-renderTable({
@@ -132,18 +133,10 @@ server <- function(input, output, session) {
     paste(format(detection_datetime - 363421), ": 280 - MAM")
   })
   
-  output$plot <- renderPlot({
-    if (input$go == 0)
-      return()
-    
-    isolate(p)
-  })
-  
-  
   pal <- colorFactor(c("green", "orange"),domain = c("1","2"))
   
   output$map <- renderLeaflet(
-    leaflet(stations) %>%
+    leaflet(data=stations()) %>%
       setView(lng=5.3878, lat=52.1561, zoom=7) %>%
       addProviderTiles(providers$Stamen.TonerLite,
                        options = providerTileOptions(noWrap = TRUE)) %>%
@@ -151,13 +144,13 @@ server <- function(input, output, session) {
         lat = ~ latitude,
         lng = ~ longitude,
         popup = ~ name,
-        layerId = ~ code,
+        layerId = ~ code_real,
+        label = ~type_id,
         color = ~pal(type_id)
       )
   )
   
   output$clickedMarker <- renderText("Please select a station")
-  
   outputOptions(output, "showDetails", suspendWhenHidden = FALSE)
   outputOptions(output, "stationId", suspendWhenHidden = FALSE)
   
