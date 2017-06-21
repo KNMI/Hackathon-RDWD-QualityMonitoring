@@ -28,9 +28,9 @@ db.close <- function(db) {
 #' @title Query the database for hourly 
 #' @param db Handle to MySQL database, taken from db.setup()
 #' @param time.interval One of {"1hour", "1day", "month", "year"} NB. Season not supported ATM!
-#' @param type One of {"N", "H"}
-#' @param element One of {"RH", "RD", "RR"}
-#' @example data.container <- db.select.all(db, "1hour", "N", "RH")
+#' @param type One of {"N", "H"} Case insensitive
+#' @param element One of {"RH", "RD", "RR"} Case insensitive
+#' @example data.container <- db.select.all(db, "1hour", "N", "RH") 
 #' @seealso db.setup()
 #' @author Jurian and Hidde
 db.select.all <- function(db, time.interval, type, element) {
@@ -46,6 +46,8 @@ db.select.all <- function(db, time.interval, type, element) {
   max.qc <- cfg$qc.threshold
   db.na.value <- cfg$database.na.value
   
+  type <- tolower(type)
+  element <- tolower(element)
   
   # Find the correct element ID and type ID in the database
   ref <- dbSendQuery(db, sprintf(
@@ -109,7 +111,6 @@ db.select.all <- function(db, time.interval, type, element) {
   result <- dbFetch(result.ref, cfg$database.max.records)
   dbClearResult(result.ref)
   
-  return(result)
   data.container$meta <- by(result, factor(result$station_code), function(x){
     
     meta <- list (
@@ -159,6 +160,7 @@ db.select.all <- function(db, time.interval, type, element) {
   result <- dbFetch(result.ref, cfg$database.max.records)
   dbClearResult(result.ref)
   
+  return(result)
   data.container[time.interval.db] <- list(by(result, factor(result$data_id), function(x) {
     
     dt <- data.table(datetime = x$datetime, value = x$value)
