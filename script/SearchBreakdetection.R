@@ -14,16 +14,35 @@ Sys.setenv(R_CONFIG_ACTIVE = "test")
 label_list <-  c("NL", etc...)    # AWS name list e.g. 260_H
                   
 for(label in label_list){
+  singleAWS ## based on database query reads which stations are related to this
+  related_MAN ## based on database query reads which stations are related to this 
   
+  # Input data #
   if(label == "NL"){
+    db <- db.setup()
     subset1 <- db.select.all(db, "hour", "validated", "rh")         # list of time series data.tables, dependent on label.  
     subset2 <- db.select.all(db, "day", "derived", "rd")  
   }else{    
-  # Input data #
-  subset1 <-          # list of time series data.tables, dependent on label.  
-  subset2 <-  
+    db <- db.setup()
+    subset1 <- db.select.timeseries(db, stationIDs=singleAWS, typeID="H", elementID=1, series.type="validated")          # list of time series data.tables, dependent on label.  
+    subset2 <- db.select.timeseries(db, stationIDs=related_MAN, typeID="N", elementID=2, series.type="derived")    
+    db.close(db)
   }
-    
+   
+# notes from else branch.   
+  #' @title Query the database for timeseries data and metadata
+  #' @param db Handle to MySQL database, taken from db.setup()
+  #' @param stationIDs A vector of unique station ID's (called "codes" in the DB)
+  #' @param typeID Unique identifier for type (e.g. 1 for "N", 2 for "H")
+  #' @param elementID Unique identifier for element (e.g. 1 for "RH", 2 for "RD")
+  #' @param series.type One of {"validated", "derived", "series"}
+  #' @return An object of type "mqm.data.container" which contains a list of timeseries and metadata on those series.
+  #' @example data.container <- db.select.timeseries(db, c(260, 324, 343, 340), 2, 1, "validated")
+  #' @author Jurian
+  #' @seealso db.setup()
+  db.select.timeseries <-
+  
+   
   StartTime <- proc.time()
   db <- db.setup()
   obj <- db.select.all(db, "hour", "validated", "rh")
