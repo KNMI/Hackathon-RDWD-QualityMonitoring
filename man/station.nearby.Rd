@@ -4,7 +4,7 @@
 \alias{station.nearby}
 \title{Get information from nearby stations from the database}
 \usage{
-station.nearby()
+station.nearby(code, type_id)
 }
 \value{
 TRUE, invisibly

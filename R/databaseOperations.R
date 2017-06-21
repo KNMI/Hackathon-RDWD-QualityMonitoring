@@ -69,7 +69,7 @@ station.nearby<-function(code,type_id){
   db<-db.setup()
   query<-"SELECT * FROM nearby_stations"
   
-  query_new<-sprintf("SELECT * FROM nearby_stations WHERE code=%i and type_id=%i;",code,type_id)
+  #query_new<-sprintf("SELECT * FROM nearby_stations WHERE code=%i and type_id=%i;",code,type_id)
   
   db.q<-dbSendQuery(db,query)
   results<-dbFetch(db.q, n=-1)
