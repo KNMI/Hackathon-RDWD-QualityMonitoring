@@ -4,6 +4,8 @@ Sys.setenv(R_CONFIG_ACTIVE = "test")
 
  # Functions # 
 library(R.utils)
+library(DMI)
+library(RMySQL)
 sourceDirectory("R")
 # source("R/databaseOperations.R")
 # source("R/aggregateOperations.R")
