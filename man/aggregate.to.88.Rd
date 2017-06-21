@@ -4,8 +4,8 @@
 \alias{aggregate.to.88}
 \title{Aggregate hourly data to daily from 8am to 8am the next day}
 \usage{
-\method{aggregate}{to.88}(obj, all.stations = TRUE, sta_type = "AWS",
-  var_id = "RH", sta_id = NULL)
+aggregate.to.88(obj, all.stations = TRUE, sta_type = "AWS", var_id = "RH",
+  sta_id = NULL)
 }
 \arguments{
 \item{obj}{The R object containing all timeseries and metadata}

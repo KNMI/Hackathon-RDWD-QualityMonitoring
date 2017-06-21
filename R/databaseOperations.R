@@ -34,10 +34,26 @@ db.close <- function(db) {
 #' @export
 station.info<-function(){
   db<-db.setup()
-  query<-"SELECT * FROM stations"
+  query<-"SELECT * FROM stations" 
+  
+  query_new<-"SELECT stations.name, 
+                 stations.latitude, 
+                 stations.longitude, 
+                 CONCAT(stations.code, '_', types.type) as code_real, 
+                 stations.code, 
+                 stations.type_id, 
+                 elements.element,
+                 start,
+                 stop 
+          FROM stations, types, elements, series, series_derived 
+          WHERE stations.type_id=types.type_id and 
+                stations.type_id=series.type_id and 
+                stations.code=series.code and 
+                series.element_id=elements.element_id and 
+                series.data_id=series_derived.data_id ;"
   
   db.q<-dbSendQuery(db,query)
-  results<-dbFetch(db.q)
+  results<-dbFetch(db.q,n=-1)
   
   
   dbDisconnect(db)
@@ -54,9 +70,8 @@ station.nearby<-function(){
   query<-"SELECT * FROM nearby_stations"
   
   db.q<-dbSendQuery(db,query)
-  results<-dbFetch(db)
-  
-  
+  results<-dbFetch(db.q, n=-1)
+
   dbDisconnect(db)
   return(results)
   
