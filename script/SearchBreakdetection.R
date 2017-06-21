@@ -16,8 +16,8 @@ label_list <-  c("NL", etc...)    # AWS name list e.g. 260_H
 for(label in label_list){
   
   if(label == "NL"){
-    subset1 <-          # list of time series data.tables, dependent on label.  
-    subset2 <-  
+    subset1 <- db.select.all(db, "hour", "validated", "rh")         # list of time series data.tables, dependent on label.  
+    subset2 <- db.select.all(db, "day", "derived", "rd")  
   }else{    
   # Input data #
   subset1 <-          # list of time series data.tables, dependent on label.  
