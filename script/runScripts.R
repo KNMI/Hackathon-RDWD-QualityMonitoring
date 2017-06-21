@@ -3,12 +3,13 @@ setwd("~/Hackathon-RDWD-QualityMonitoring/")
 Sys.setenv(R_CONFIG_ACTIVE = "test")
 
  # Functions # 
-
-source("R/databaseOperations.R")
-source("R/aggregateOperations.R")
-source("R/averagingOperations.R")
-source("R/timeseriesOperations.R")
-source("R/breakDetection.R")
+library(R.utils)
+sourceDirectory("R")
+# source("R/databaseOperations.R")
+# source("R/aggregateOperations.R")
+# source("R/averagingOperations.R")
+# source("R/timeseriesOperations.R")
+# source("R/breakDetection.R")
 
 
  # Input data #

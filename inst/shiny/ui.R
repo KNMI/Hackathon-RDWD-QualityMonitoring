@@ -165,28 +165,28 @@ fluidPage(
                    includeMarkdown("Background_info_example.Rmd")
                  )),
         tabPanel("Map experiments", class="creedy",
-                 fluidRow(class="creedy",
-                   div(class = "col-xs-offset-2 col-xs-8",
-                       leafletOutput("map", width = "100%", height = "100%"))
-                 ),
+                 fluidRow(
+                   #class="creedy",
+                   #div(class = "col-xs-offset-2 col-xs-8",
+                       leafletOutput("map")
+                       ),
                  fluidRow(
                    div(class = "col-xs-offset-2 col-xs-8",
-                       textOutput("clickedMarker"))
-                 ),
-                 fluidRow(
+                       textOutput("clickedMarker"))),
+                fluidRow(
                    div(class = "col-xs-offset-2 col-xs-8",
                        checkboxGroupInput("Type","Station Type",
                                                          c("AWS"=2,
                                                            "Manual"=1
                                                            ),
-                                          selected = c("AWS","Manual")),
+                                          selected = c(1,2)),
                        sliderInput("Radius","Radius",0,100,value=30),
                        sliderInput("nr","Number",0,10,value=3))
                  ),
                  fluidRow(
                    div(class = "col-xs-offset-2 col-xs-8",
                        tableOutput("clickedDistance"))
-                   
+
                  ),
                  fluidRow(
                    div(class = "col-xs-offset-2 col-xs-8",
