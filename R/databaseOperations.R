@@ -41,6 +41,7 @@ station.info<-function(){
   
   
   dbDisconnect(db)
+  
   return(results)
 }
 
@@ -59,7 +60,6 @@ station.nearby<-function(){
   
   dbDisconnect(db)
   return(results)
-  
 }
 
 #' @title Query the database for hourly 
@@ -179,6 +179,7 @@ db.select.all <- function(db, time.period, station.type, element.name) {
   # Clean up
   dbClearResult(data.ref)
   rm(result)
+ 
   return(obj)
 }
 
@@ -318,7 +319,7 @@ db.select.timeseries <- function(db, stationIDs, time.period, station.type, elem
   })
   
 
-  
+  # dbDisconnect(db)
   return(obj)
 }
 
