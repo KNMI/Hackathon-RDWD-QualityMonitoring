@@ -171,14 +171,19 @@ fluidPage(
                        leafletOutput("map")
                        )),
                  fluidRow(
-                   column(4,div(class = "col-xs-offset-2 col-xs-8",
+                 
+                   div(class="row",
+                          div(class = "col-xl-4",
+                              
                                 textOutput("clickedMarker"),
                                 checkboxGroupInput("Type","Station Type",
                                                    c("AWS"=2,
                                                      "Manual"=1
                                                    ),
                                                    selected = c(1,2)))),
-                   column(4,div(class = "col-xs-offset-2 col-xs-8",
+                 
+                   div(class="row",
+                       div(class = "col-l-4",
                        
                        sliderInput("date1", "Start:",
                                       min =  as.Date("1981-01-01"),
@@ -189,25 +194,26 @@ fluidPage(
                                  max = Sys.Date(),
                                  value=as.Date("2010-01-01"))
                        )),
-                   column(4, div(class = "col-xs-offset-2 col-xs-8",
+                   div(class="row",
+                       div(class = "col-l-4",
                                  
                                  sliderInput("Radius","Radius",0,100,value=30),
                                  sliderInput("nr","Number",0,10,value=3)))
                   ),
               
-                tabsetPanel(
+                navlistPanel(
                  tabPanel("Radius",
-                   # div(class = "col-xs-offset-2 col-xs-8",
-                       tableOutput("clickedDistance")
+                   div(class = "col-xs-offset-2 col-xs-8",
+                       tableOutput("clickedDistance"))
 
                  ),
                  tabPanel("Number",
-                   # div(class = "col-xs-offset-2 col-xs-8",
-                       tableOutput("clickedNumber")
+                   div(class = "col-xs-offset-2 col-xs-8",
+                       tableOutput("clickedNumber"))
                  ),
                  tabPanel("Data Base",
-                   # div(class = "col-xs-offset-2 col-xs-8",
-                       tableOutput("stationsNearby")
+                   div(class = "col-xs-offset-2 col-xs-8",
+                       tableOutput("stationsNearby"))
                        ))
                  ))
                  )

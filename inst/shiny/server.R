@@ -11,17 +11,25 @@ library(stringr)
 
 #query from the db
 stations.all<-station.info()
+stations.all<-subset(stations.all,select=c("name",
+                             "latitude",
+                             "longitude",
+                             "code_real",
+                             "type_id",
+                             "element",
+                             "start",
+                             "stop" ))
 # stations.nearby<-station.nearby()
 
 #Create a spatialpointsdataframe to calculate distances later in the server
-spdf<-stations
-coordinates(spdf)<-~longitude+latitude
-proj4string(spdf)<-CRS("+init=epsg:4326")
+
 
 
 server <- function(input, output, session) {
   
-  stations<-reactive({stations.all[which(stations.all$start<=input$date1 & stations.all$stop>=input$date2 & stations.all$type_id==input$Type),] })
+  stations<-reactive({stations.all[which(stations.all$start<=input$date1 & 
+                                           stations.all$stop>=input$date2 & 
+                                           stations.all$type_id==input$Type),]})
   detection_datetime <- Sys.time()
   
   rv <- reactiveValues(showDetails = "false", station = "")
@@ -41,8 +49,12 @@ server <- function(input, output, session) {
   markerClicked <- function(markerClickEvent) {
     print("observed marker click")
     data$clickedMarker <- markerClickEvent
-    
+  
     df<-reactive({
+      spdf<-stations()
+      coordinates(spdf)<-~longitude+latitude
+      proj4string(spdf)<-CRS("+init=epsg:4326")  
+      
     sp<-data.frame(data$clickedMarker)
     coordinates(sp)<-~lng+lat
     proj4string(sp)<-CRS("+init=epsg:4326")
@@ -56,7 +68,11 @@ server <- function(input, output, session) {
     })
     
     dfNr<-reactive({
+      spdf<-stations()
+      coordinates(spdf)<-~longitude+latitude
+      proj4string(spdf)<-CRS("+init=epsg:4326")
       sp<-data.frame(data$clickedMarker)
+   
       coordinates(sp)<-~lng+lat
       proj4string(sp)<-CRS("+init=epsg:4326")
       
@@ -78,24 +94,16 @@ server <- function(input, output, session) {
       dfNearby()
     })
     ##############
-    
     output$clickedMarker <- renderText({
       paste("Station ", data$clickedMarker$id, "has been selected")
     })
-    
-    
-    print(data$clickedMarker)
-    
     output$clickedDistance <- renderTable({
       df()
     })
-    
     output$clickedNumber <- renderTable({
       dfNr()
     })
-    
-    
-    
+    print(data$clickedMarker)
   }
   
   mapClicked <- function(mapClickEvent) {
@@ -134,11 +142,27 @@ server <- function(input, output, session) {
   
   pal <- colorFactor(c("green", "orange"),domain = c("1","2"))
   
+  #Leaflet update not always correct...stations() not always updated 
+  #This could be a solution: https://www.r-bloggers.com/r-shiny-leaflet-using-observers/
   output$map <- renderLeaflet(
     leaflet(data=stations()) %>%
       setView(lng=5.3878, lat=52.1561, zoom=7) %>%
       addProviderTiles(providers$Stamen.TonerLite,
-                       options = providerTileOptions(noWrap = TRUE)) %>%
+                       options = providerTileOptions(noWrap = TRUE))  %>%
+      addCircleMarkers(
+        lat = ~ latitude,
+        lng = ~ longitude,
+        popup = ~ name,
+        layerId = ~ code_real,
+        label = ~type_id,
+        color = ~pal(type_id)
+      ))
+  
+  
+  observe({
+    input$date1
+    leafletProxy("map", data = stations()) %>%
+      clearShapes() %>%
       addCircleMarkers(
         lat = ~ latitude,
         lng = ~ longitude,
@@ -147,7 +171,37 @@ server <- function(input, output, session) {
         label = ~type_id,
         color = ~pal(type_id)
       )
-  )
+  })
+  
+  observe({
+    input$date2
+    leafletProxy("map", data = stations()) %>%
+      clearShapes() %>%
+      addCircleMarkers(
+        lat = ~ latitude,
+        lng = ~ longitude,
+        popup = ~ name,
+        layerId = ~ code_real,
+        label = ~type_id,
+        color = ~pal(type_id)
+      )
+  })
+  
+  observe({
+    input$Type
+    leafletProxy("map", data = stations()) %>%
+      clearShapes() %>%
+      addCircleMarkers(
+        lat = ~ latitude,
+        lng = ~ longitude,
+        popup = ~ name,
+        layerId = ~ code_real,
+        label = ~type_id,
+        color = ~pal(type_id)
+      )
+  })
+  
+  
   
   output$clickedMarker <- renderText("Please select a station")
   outputOptions(output, "showDetails", suspendWhenHidden = FALSE)
