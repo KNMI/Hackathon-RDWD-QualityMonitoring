@@ -85,8 +85,10 @@ server <- function(input, output, session) {
       df<-data.table(stations(),d)
       setkey(df,"d")
       df<-df[which(df$type_id==input$Type),]
-      df.number<-head(df,n=input$nr)
+      df.number<-head(df,n=input$nr+1)
     })
+    
+
     
     #NOT WORKING!!!
     dfNearby<-reactive({
@@ -159,8 +161,8 @@ server <- function(input, output, session) {
         popup = ~ name,
         layerId = ~ code_real,
         label = ~type_id,
-        color = ~pal(type_id)
-      ))
+        color = ~pal(type_id))
+      )
   
   
   observe({
