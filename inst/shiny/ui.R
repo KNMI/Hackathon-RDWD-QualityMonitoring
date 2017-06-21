@@ -166,40 +166,53 @@ fluidPage(
                  )),
         tabPanel("Map experiments", class="creedy",
                  fluidRow(
-                   #class="creedy",
-                   #div(class = "col-xs-offset-2 col-xs-8",
+                   class="creedy",
+                   div(class = "col-xs-offset-2 col-xs-8",
                        leafletOutput("map")
-                       ),
+                       )),
                  fluidRow(
-                   div(class = "col-xs-offset-2 col-xs-8",
-                       textOutput("clickedMarker"))),
-                fluidRow(
-                   div(class = "col-xs-offset-2 col-xs-8",
-                       checkboxGroupInput("Type","Station Type",
-                                                         c("AWS"=2,
-                                                           "Manual"=1
-                                                           ),
-                                          selected = c(1,2)),
-                       sliderInput("Radius","Radius",0,100,value=30),
-                       sliderInput("nr","Number",0,10,value=3))
-                 ),
-                 fluidRow(
-                   div(class = "col-xs-offset-2 col-xs-8",
-                       tableOutput("clickedDistance"))
+                   column(4,div(class = "col-xs-offset-2 col-xs-8",
+                                textOutput("clickedMarker"),
+                                checkboxGroupInput("Type","Station Type",
+                                                   c("AWS"=2,
+                                                     "Manual"=1
+                                                   ),
+                                                   selected = c(1,2)))),
+                   column(4,div(class = "col-xs-offset-2 col-xs-8",
+                       
+                       sliderInput("date1", "Start:",
+                                      min =  as.Date("1981-01-01"),
+                                      max = Sys.Date(),
+                                      value = as.Date("2000-01-01")),
+                       sliderInput("date2", "Stop:",
+                                 min = as.Date("1981-01-01"),
+                                 max = Sys.Date(),
+                                 value=as.Date("2010-01-01"))
+                       )),
+                   column(4, div(class = "col-xs-offset-2 col-xs-8",
+                                 
+                                 sliderInput("Radius","Radius",0,100,value=30),
+                                 sliderInput("nr","Number",0,10,value=3)))
+                  ),
+              
+                tabsetPanel(
+                 tabPanel("Radius",
+                   # div(class = "col-xs-offset-2 col-xs-8",
+                       tableOutput("clickedDistance")
 
                  ),
-                 fluidRow(
-                   div(class = "col-xs-offset-2 col-xs-8",
-                       tableOutput("clickedNumber"))
+                 tabPanel("Number",
+                   # div(class = "col-xs-offset-2 col-xs-8",
+                       tableOutput("clickedNumber")
                  ),
-                 fluidRow(
-                   div(class = "col-xs-offset-2 col-xs-8",
+                 tabPanel("Data Base",
+                   # div(class = "col-xs-offset-2 col-xs-8",
                        tableOutput("stationsNearby")
-                       )
+                       ))
+                 ))
                  )
-                 )
-      )
-    )
+      
+    
   ),
   conditionalPanel(condition = "output.showDetails == 'true'",
                    navbarPage(
