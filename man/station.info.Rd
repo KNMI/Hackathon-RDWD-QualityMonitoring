@@ -6,6 +6,9 @@
 \usage{
 station.info()
 }
+\value{
+TRUE, invisibly
+}
 \description{
 get the metadata for all stations
 }
