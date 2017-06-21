@@ -4,7 +4,7 @@
 \alias{aggregate.to.seasonal}
 \title{Aggregate 8am to 8am data to yearly sums and seasonal sums}
 \usage{
-\method{aggregate}{to.seasonal}(obj, all.stations = TRUE, sta_type = "AWS",
+aggregate.to.seasonal(obj, all.stations = TRUE, sta_type = "AWS",
   var_id = "RD", sta_id = NULL)
 }
 \arguments{
