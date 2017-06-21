@@ -5,9 +5,10 @@
 #' @description This function returns a handle which can be used later to query the db.
 #' @return An object of class "MySQLConnection" and "RMySQL"
 #' @author Jurian and Hidde
+#' @export
 db.setup <- function() {
   
-  cfg <- config::get(file = "config/config.db.yml")
+  cfg <- config::get(file = "~/Hackathon-RDWD-QualityMonitoring/config/config.db.yml")
   
   dbConnect(RMySQL::MySQL(), 
             dbname = cfg$dbname, 
@@ -21,6 +22,7 @@ db.setup <- function() {
 #' @description This closes the connection, discards all pending work, and frees resources (e.g., memory, sockets). 
 #' @return TRUE, invisibly
 #' @author Jurian and Hidde
+#' @export
 db.close <- function(db) {
   dbDisconnect(db)
 }
@@ -34,8 +36,8 @@ station.info<-function(){
   db<-db.setup()
   query<-"SELECT * FROM stations"
   
-  db<-dbSendQuery(db,query)
-  results<-dbFetch(db)
+  db.q<-dbSendQuery(db,query)
+  results<-dbFetch(db.q)
   
   
   dbDisconnect(db)
@@ -51,8 +53,8 @@ station.nearby<-function(){
   db<-db.setup()
   query<-"SELECT * FROM nearby_stations"
   
-  db<-dbSendQuery(db,query)
-  results<-dbFetch(db)
+  db.q<-dbSendQuery(db,query)
+  results<-dbFetch(db.q)
   
   
   dbDisconnect(db)
