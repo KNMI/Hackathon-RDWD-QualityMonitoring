@@ -28,31 +28,42 @@ db.close <- function(db) {
 #' @title Query the database for hourly 
 #' @param db Handle to MySQL database, taken from db.setup()
 #' @param time.interval One of {"1hour", "1day", "month", "year"} NB. Season not supported ATM!
-#' @param station.type One of {"validated", "derived"}
-#' @param element.name Name of type of data; e.g. "rh" for hourly rainfall or "t" for temperature
-#' @example data.container <- db.select.all(db, "1hour", 2, 1, "rh", "validated")
+#' @param type One of {"N", "H"}
+#' @param element One of {"RH", "RD", "RR"}
+#' @example data.container <- db.select.all(db, "1hour", "N", "RH")
 #' @seealso db.setup()
 #' @author Jurian and Hidde
-db.select.all <- function(db, time.interval, type.id, element.id, element.name, series.type) {
+db.select.all <- function(db, time.interval, type, element) {
   
   if(!dbIsValid(db)) {
     stop("Invalid database connection")
   }
   
-  #supported.station.types <- c("validated", "derived")
-  #supported.time.intervals <- c("1hour", "1day", "month", "year")
+  supported.time.intervals <- c("1hour", "1day", "month", "year")
+  if(!time.interval %in% supported.time.intervals) stop(paste("Unuspported time period:", time.interval))
   
-  #if(!station.type %in% supported.station.types) stop(paste("Unsupported station type:", station.type))
-  #if(!time.interval %in% supported.time.intervals) stop(paste("Unuspported time period:", time.interval))
-   
   cfg <- config::get(file = "config/config.yml")
+  max.qc <- cfg$qc.threshold
+  db.na.value <- cfg$database.na.value
   
+  
+  # Find the correct element ID and type ID in the database
+  ref <- dbSendQuery(db, sprintf(
+    "SELECT type_id, element_id FROM types, elements WHERE type = %s AND element = %s;", paste0("'", type, "'"), paste0("'", element, "'")))
+  type.element <- dbFetch(ref, n = 1)
+  dbClearResult(ref)
+  
+  if(nrow(type.element) == 0) {
+    stop("Error finding the correct type and/or element in the database")
+  }
+  
+  type.ID <- type.element$type_id
+  element.ID <- type.element$element_id
+  rm(type.element)
+
   data.container <- list()
   class(data.container) <- "mqm.data.container"
   
-  max.qc <- cfg$qc.threshold
-  db.na.value <- cfg$database.na.value
-
   time.interval.db <- time.interval
   # Fix time period references for R seq() and difftime() functions
   if(time.interval.db == "1hour" | time.interval.db == "1day") {
@@ -83,19 +94,22 @@ db.select.all <- function(db, time.interval, type.id, element.id, element.name, 
       "types.type_id = series.type_id",
     "INNER JOIN elements ON",
       "elements.element_id = series.element_id",
+    "INNER JOIN series_derived ON",
+      "series.data_id = series_derived.data_id",
     "WHERE",
       "series.type_id = %i AND series.element_id = %i AND series.aggregation = %s",
     "GROUP BY",
-      "data_id, station_code, name"
+      "data_id, station_code"
   ),
-  type.id,
-  element.id,
+  type.ID,
+  element.ID,
   paste0("'", time.interval.db, "'"))
-  
+
   result.ref <- dbSendQuery(db, query)
   result <- dbFetch(result.ref, cfg$database.max.records)
   dbClearResult(result.ref)
   
+  return(result)
   data.container$meta <- by(result, factor(result$station_code), function(x){
     
     meta <- list (
@@ -117,8 +131,7 @@ db.select.all <- function(db, time.interval, type.id, element.id, element.name, 
       var_desc = x$element_group,
       var_unit = x$unit,
       var_scale = x$scale,
-      var_period = x$aggregation,
-      ser_type = series.type
+      var_period = x$aggregation
     )
     class(meta) <- cfg$data.container.timeseries.meta.class
     return(meta)
@@ -132,13 +145,12 @@ db.select.all <- function(db, time.interval, type.id, element.id, element.name, 
     "SELECT",
       "data_id, DATE_FORMAT(date, %%s) AS datetime, value, qc",
     "FROM",
-      "%s_%s_%s",
+      "%s_series_%s",
     "WHERE",
       "data_id IN (%s)"
   ),
   time.interval.db,
-  series.type,
-  element.name,
+  element,
   paste(data.IDs, collapse = ","))
  
   query <- sprintf(query, "'%Y%m%d%H%i%s'")
@@ -181,14 +193,13 @@ db.select.all <- function(db, time.interval, type.id, element.id, element.name, 
 #' @title Query the database for timeseries data and metadata
 #' @param db Handle to MySQL database, taken from db.setup()
 #' @param stationIDs A vector of unique station ID's (called "codes" in the DB)
-#' @param typeID Unique identifier for type (e.g. 1 for "N", 2 for "H")
-#' @param elementID Unique identifier for element (e.g. 1 for "RH", 2 for "RD")
-#' @param series.type One of {"validated", "derived", "series"}
+#' @param type One of {"N", "H"}
+#' @param element One of {"RH", "RD", "RR"}
 #' @return An object of type "mqm.data.container" which contains a list of timeseries and metadata on those series.
-#' @example data.container <- db.select.timeseries(db, c(260, 324, 343, 340), 2, 1, "validated")
+#' @example data.container <- db.select.timeseries(db, c(260, 324, 343, 340), "H", "RH")
 #' @author Jurian
 #' @seealso db.setup()
-db.select.timeseries <- function(db, station.IDs, type.ID, element.ID, series.type) {
+db.select.timeseries <- function(db, station.IDs, type, element) {
 
   #--------------------------------------#
   ### Check the arguments for validity ###
@@ -198,10 +209,22 @@ db.select.timeseries <- function(db, station.IDs, type.ID, element.ID, series.ty
     stop("Invalid database connection")
   }
   
-  supported.series.types <- c("validated", "derived", "series")
-
-  if(!series.type %in% supported.series.types) stop(paste("Unsupported series type:", station.type))
   if(length(station.IDs) == 0) stop("No station ID(s) given")
+  
+  
+  # Find the correct element ID and type ID in the database
+  ref <- dbSendQuery(db, sprintf(
+    "SELECT type_id, element_id FROM types, elements WHERE type = %s AND element = %s;", paste0("'", type, "'"), paste0("'", element, "'")))
+  type.element <- dbFetch(ref, n = 1)
+  dbClearResult(ref)
+  
+  if(nrow(type.element) == 0) {
+    stop("Error finding the correct type and/or element in the database")
+  }
+  
+  type.ID <- type.element$type_id
+  element.ID <- type.element$element_id
+  rm(type.element)
   
   cfg <- config::get(file = "config/config.yml")
   
@@ -237,12 +260,12 @@ db.select.timeseries <- function(db, station.IDs, type.ID, element.ID, series.ty
   }
   
   data.IDs <- result$data_id
-  time.interval <- unique(result$aggregation)
-  time.interval.db <- time.interval
+  time.interval.db <- unique(result$aggregation)
   element.name <- tolower(unique(result$element))
   rm(result)
   dbClearResult(result.ref)
   
+  time.interval <- time.interval.db
   # Fix time period references for R seq() and difftime() functions
   if(time.interval.db == "1hour" | time.interval.db == "1day") {
     time.interval <- substr(time.interval.db, 2, nchar(time.interval.db))
@@ -256,12 +279,11 @@ db.select.timeseries <- function(db, station.IDs, type.ID, element.ID, series.ty
     "SELECT",
       "data_id, DATE_FORMAT(date, %%s) AS datetime, value, qc",
     "FROM",
-      "%s_%s_%s",
+      "%s_series_%s",
     "WHERE",
       "data_id IN (%s)",
     ";"),
     time.interval.db,
-    series.type,
     element.name,
     paste(data.IDs, collapse = ","))
   
@@ -369,8 +391,7 @@ db.select.timeseries <- function(db, station.IDs, type.ID, element.ID, series.ty
       var_desc = x$element_group,
       var_unit = x$unit,
       var_scale = x$scale,
-      var_period = x$aggregation,
-      ser_type = series.type
+      var_period = x$aggregation
     )
     class(meta) <- cfg$data.container.timeseries.meta.class
     return(meta)
@@ -394,6 +415,8 @@ db.insert.update.timeseries <- function(db, meta, timeseries) {
     stop("Invalid database connection")
   }
   
+  cfg <- config::get(file = "config/config.yml")
+  
   if(class(meta) != cfg$data.container.timeseries.meta.class) {
     stop(paste("Metadata not of class", cfg$data.container.timeseries.meta.class))
   }
@@ -410,8 +433,7 @@ db.insert.update.timeseries <- function(db, meta, timeseries) {
       "SELECT data_id FROM", 
         "series", 
       "WHERE",
-        "code = %i AND type_id = %i AND element_id = %i AND aggregation = %s",
-      "LIMIT 1"), 
+        "code = %i AND type_id = %i AND element_id = %i AND aggregation = %s"), 
   meta$sta_id,
   meta$sta_type_id,
   meta$var_id,
@@ -474,12 +496,11 @@ db.insert.update.timeseries <- function(db, meta, timeseries) {
     
     query <- sprintf(paste(
       "DELETE FROM",
-        "TEST_%s_%s_%s",
+        "%s_series_%s",
       "WHERE",
         "data_id = %i"
     ), 
     meta$var_period,
-    meta$ser_type,
     meta$var_name,
     new.data.ID)
     
@@ -504,13 +525,12 @@ db.insert.update.timeseries <- function(db, meta, timeseries) {
   
   query <- sprintf(paste(
     "INSERT INTO",
-    "TEST_%s_%s_%s",
+    "%s_series_%s",
     "(data_id, date, value)",
     "VALUES",
     "%s"
   ),
   meta$var_period,
-  meta$ser_type,
   meta$var_name,
   timeseries)
   
