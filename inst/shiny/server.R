@@ -10,7 +10,7 @@ library(stringr)
 # stations.nearby <-readRDS("~/Hackathon-RDWD-QualityMonitoring/data/testdata/stationNearby.rds")
 
 # change name of DB_output file if required. DB's are constructed in runScripts.R
-DB_output <- read.table("output/text/BD_output_NL_AWSvsMAN.txt", sep=",", header=T)  
+DB_output <- read.table("~/Hackathon-RDWD-QualityMonitoring/output/text/BD_output_NL_AWSvsMAN.txt", sep=",", header=T)  
 
 
 #query from the db
