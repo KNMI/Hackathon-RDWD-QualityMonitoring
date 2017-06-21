@@ -49,7 +49,7 @@ server <- function(input, output, session) {
 
     d<-pointDistance(sp,spdf,lonlat=TRUE)
     d<-d/1000
-    df<-data.table(stations,d)
+    df<-data.table(stations(),d)
     setkey(df,"d")
     df<-df[which(df$type_id==input$Type),]
     df.radius<-df[which(df$d<input$Radius),]
@@ -62,7 +62,7 @@ server <- function(input, output, session) {
       
       d<-pointDistance(sp,spdf,lonlat=TRUE)
       d<-d/1000
-      df<-data.table(stations,d)
+      df<-data.table(stations(),d)
       setkey(df,"d")
       df<-df[which(df$type_id==input$Type),]
       df.number<-head(df,n=input$nr)
@@ -71,8 +71,7 @@ server <- function(input, output, session) {
     #NOT WORKING!!!
     dfNearby<-reactive({
       data$clickedMarker <- markerClickEvent
-      dfNearby<-station.nearby(data$clickedMarker$id,2) #function making a connection to the db
-      dfNearby
+      dfNearby<-station.nearby(data$clickedMarker$id) #function making a connection to the db
     })
     output$stationsNearby<-renderTable({
       # if (!is.null(dfNearby())){paste("The station you selected is not on the list")}
