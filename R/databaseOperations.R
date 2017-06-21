@@ -54,7 +54,7 @@ station.nearby<-function(){
   query<-"SELECT * FROM nearby_stations"
   
   db.q<-dbSendQuery(db,query)
-  results<-dbFetch(db.q)
+  results<-dbFetch(db)
   
   
   dbDisconnect(db)
