@@ -98,7 +98,10 @@ BD_jja <- break.detection(series1=rd_AWS_MAN_jja)
 BD_son <- break.detection(series1=rd_AWS_MAN_son)
     cat(sprintf("Finished calculating break detections. (%.1f seconds)\n",round((proc.time()-StartTime)[3],digits=1)))
 
-compareName <-  "NL_AWSvsMAN"   
+    #comparename should be identified automatically where the choises are made concerning which subset is compared with which other subset. 
+    #In this case a name for all AWS vs all MAN in NL are considered. 
+    #If multiple comparisons are done, loop the BD calculation selection and rbind the BD output. A different compareName should be constructed for each loop.     
+compareName <-  "NL_AWSvsMAN"   # temporary compareName. 
   
   # Output for  shiny overview #
   BDs <- sort(unique(c(BD_y, BD_djf, BD_mam, BD_jja, BD_son)))
@@ -111,8 +114,14 @@ if(l < 1){
   BD_output$djf[which(BDs %in% BD_djf)] <- "Break!"
   BD_output$mam[which(BDs %in% BD_mam)] <- "Break!"
   BD_output$jja[which(BDs %in% BD_jja)] <- "Break!"
-  BD_output$son[which(BDs %in% BD_son)] <- "Break!"
-}  
+  BD_output$son[which(BDs %in% BD_son)] <- "Break!" }
+  
+if(exists("BD_complete_output")){
+  rbind(BD_complete_output, BD_output)
+}else{ BD_complete_output <- BD_output}
+#} end of loop that calculated BD for various subsets. 
+  
+write.table(BD_complete_output, paste0("output/text/BD_output_NL_AWSvsMAN.txt"), sep=",", row.names=F, quote=F)  
       
   # Visualisation # 
 png(paste0("output/fig/hackathon_",compareName,"_y.png"))
