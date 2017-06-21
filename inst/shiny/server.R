@@ -11,7 +11,7 @@ library(stringr)
 
 #query from the db
 stations<-station.info()
-stations.nearby<-station.nearby()
+# stations.nearby<-station.nearby()
 
 #Create a spatialpointsdataframe to calculate distances later in the server
 spdf<-stations
@@ -68,7 +68,7 @@ server <- function(input, output, session) {
     #NOT WORKING!!!
     dfNearby<-reactive({
       data$clickedMarker <- markerClickEvent
-      dfNearby<-stations.nearby[which(stations.nearby$code==data$clikedMarker$id),]
+      dfNearby<-station.nearby(data$clickedMarker$code,data$clikedMarker$id) #function making a connection to the db
       # if (!is.null(dfNearby)){paste("The station you selected is not on the list")}
       # dfNearby<-unique(dfNearby$nearby_code)
       dfNearby

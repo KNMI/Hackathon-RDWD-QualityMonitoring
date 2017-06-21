@@ -1,5 +1,9 @@
 # library(RMySQL)
 # library(data.table)
+#PROBLEMS WITH OPEN CONNECTIONS?
+#TRY
+# (1) dbListConnections( dbDriver( drv = "MySQL"))
+# (2) lapply( dbListConnections( dbDriver( drv = "MySQL")), dbDisconnect)
 
 #' @title Setup a connection to the MySQL database
 #' @description This function returns a handle which can be used later to query the db.
@@ -52,7 +56,7 @@ station.info<-function(){
                 series.element_id=elements.element_id and 
                 series.data_id=series_derived.data_id ;"
   
-  db.q<-dbSendQuery(db,query)
+  db.q<-dbSendQuery(db,query_new)
   results<-dbFetch(db.q,n=-1)
   
   
@@ -72,7 +76,7 @@ station.nearby<-function(code,type_id){
   
   query_new<-sprintf("SELECT * FROM nearby_stations WHERE code=%i and type_id=%i;",code,type_id)
   
-  db.q<-dbSendQuery(db,query)
+  db.q<-dbSendQuery(db,query_new)
   results<-dbFetch(db.q,n=-1)
   
   

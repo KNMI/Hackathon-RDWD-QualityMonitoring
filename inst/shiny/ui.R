@@ -166,15 +166,14 @@ fluidPage(
                  )),
         tabPanel("Map experiments", class="creedy",
                  fluidRow(
-                   class="creedy",
-                   div(class = "col-xs-offset-2 col-xs-8",
-                       leafletOutput("map", width = "100%", height = "100%"))
-                 ),
+                   #class="creedy",
+                   #div(class = "col-xs-offset-2 col-xs-8",
+                       leafletOutput("map")
+                       ),
                  fluidRow(
                    div(class = "col-xs-offset-2 col-xs-8",
-                       textOutput("clickedMarker"))
-                 ),
-                 fluidRow(
+                       textOutput("clickedMarker"))),
+                fluidRow(
                    div(class = "col-xs-offset-2 col-xs-8",
                        checkboxGroupInput("Type","Station Type",
                                                          c("AWS"=2,
@@ -187,7 +186,7 @@ fluidPage(
                  fluidRow(
                    div(class = "col-xs-offset-2 col-xs-8",
                        tableOutput("clickedDistance"))
-                   
+
                  ),
                  fluidRow(
                    div(class = "col-xs-offset-2 col-xs-8",
