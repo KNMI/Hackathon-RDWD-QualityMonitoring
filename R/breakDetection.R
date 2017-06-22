@@ -10,14 +10,21 @@ break.detection <- function(series1, range = 2, plot.score = FALSE) {
   #range indicates the radius (in years) of the temporal interval that is ysed for the identification of local minima/maxima (see below for more details)
   #Package "climtrends" is needed
   
+  
+  
+  
   #Check if dataset is long enough (if not, return NULL)
   if (length(series1$value) < as.numeric(row.names(Buishand.Critical.Values[1,]))) {
     return(integer(0))
   }
   
+  ### Extract year from datetime
+  
+  series1$year <- year(as.Date(series1$datetime,format= "%Y%m%d%H%M%S")-1)
+  
   ###Buishand test
   #Define data frame that will store the results of Buishand test 
-  bd_buishand <- data.frame(year = series1$datetime)
+  bd_buishand <- data.frame(year = series1$year)
   #Apply Buishand test to the series and store the result in the column "store" 
   bd_buishand$score <- round(BuishandRangeTest(series1$value), digits = 2)
   
