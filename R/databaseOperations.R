@@ -658,16 +658,15 @@ station.nearby<-function(code_real){
   
   
   query_new<-sprintf("SELECT name,
-
-CONCAT(nearby_stations.nearby_code,'_',types.type) as nearby_code_real,
+                             CONCAT(nearby_stations.nearby_code,'_',nearbytypes.type) as nearby_code_real,
                              latitude,
                              longitude
-                      FROM nearby_stations,stations,types
+                      FROM nearby_stations,stations,types nearbytypes, types realtypes
                       WHERE nearby_stations.nearby_code=stations.code and
                             nearby_stations.nearby_type_id=stations.type_id and
-                            nearby_stations.type_id=types.type_id and
-                            nearby_stations.code=%s and types.type='%s';",
-                     code,type)
+                            nearby_stations.nearby_type_id=nearbytypes.type_id and
+                            nearby_stations.code=%s and realtypes.type='%s';",
+                                          code,type)
   
   db.q<-dbSendQuery(db,query_new)
   results<-dbFetch(db.q,n=-1)
