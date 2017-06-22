@@ -196,7 +196,7 @@ aggregate.to.year <- function(data.container) {
       )
       setkey(dt, datetime)
       
-      no.of.NAs <- sum(is.na(s$value))
+      no.of.NAs <- sum(is.na(y$value))
       if(no.of.NAs > MaxNAPerYear) {
         dt$value <- NA
       }
