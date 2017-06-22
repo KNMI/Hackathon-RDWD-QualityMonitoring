@@ -205,15 +205,21 @@ fluidPage(
                 div(class = "col-xs-offset-1 col-xs-11",
                 tabsetPanel(
                   tabPanel("Limit by distance",
-                           div(class = "col-xs-10 heading",
+                           div(id="radiusTabInput", class = "row heading",
+                               div(class = "col-xs-10",
                                sliderInput("Radius", "Stations within a radius (km)", 0, 100, value =
-                                             30),
-                               tableOutput("clickedDistance"))),
+                                             30))),
+                          div(class = "row heading",
+                              div(class = "col-xs-12",                  
+                               tableOutput("clickedDistance")))),
                   tabPanel("Limit by number",
-                           div(class = "col-xs-10 heading",
+                           div(id="numberTabInput", class = "row heading",
+                               div(class = "col-xs-10",
                                sliderInput("nr", "Number of nearest stations (#)", 0, 10, value =
-                                             3),
-                               tableOutput("clickedNumber"))),
+                                             3))),
+                           div(class = "row heading",
+                               div(class = "col-xs-12", 
+                               tableOutput("clickedNumber")))),
                   tabPanel("Limit by associated stations",
                     div(class = "col-xs-8 heading",
                         tableOutput("stationsNearby"))
@@ -222,7 +228,7 @@ fluidPage(
               )),
               div(
                 class = "row",
-                tags$label(class="control-label", "3. Start the analysis...")),
+                tags$label(class="control-label", "3. Start the analysis")),
               div(
                 class = "row",
                 div(class = "col-xs-offset-1 col-xs-6",

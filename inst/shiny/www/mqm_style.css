@@ -68,6 +68,14 @@ body > .container-fluid {
   flex: 1;
 }
 
+#radiusTabInput.row, #radiusTabInput .shiny-input-container, #numberTabInput.row, #numberTabInput .shiny-input-container {
+  flex: initial;
+}
+
+#clickedDistance, #clickedNumber {
+  overflow-y: auto;
+}
+
 .Header .navbar {
     background-color: #d9edf7;
     color: #31708f;

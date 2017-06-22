@@ -90,12 +90,11 @@ server <- function(input, output, session) {
       df.number<-head(df,n=input$nr+1)
     })
     
-
-    
     #NOT WORKING!!!
     dfNearby<-reactive({
       data$clickedStation <- markerClickEvent
-      dfNearby<-station.nearby(data$clickedStation$id) #function making a connection to the db
+      stationId <- str_extract(data$clickedStation$id, "(?<=\\().*(?=\\))")
+      dfNearby<-station.nearby(stationId) #function making a connection to the db
     })
     output$stationsNearby<-renderTable({
       # if (!is.null(dfNearby())){paste("The station you selected is not on the list")}
@@ -148,7 +147,7 @@ server <- function(input, output, session) {
     paste(format(detection_datetime - 363421), ": 280 - MAM")
   })
   
-  pal <- colorFactor(c("#bcdff1", "#d0e9c6"),domain = c("1","2"))
+  pal <- colorFactor(c("#428bca", "#ff7e47"),domain = c("1","2"))
   
   #Leaflet update not always correct...stations() not always updated 
   #This could be a solution: https://www.r-bloggers.com/r-shiny-leaflet-using-observers/
@@ -161,7 +160,7 @@ server <- function(input, output, session) {
         lat = ~ latitude,
         lng = ~ longitude,
         popup = ~ name,
-        layerId = ~ code_real,
+        layerId = ~ paste(name,  "(", code_real, ")"),
         color = ~pal(type_id),
         stroke = FALSE, fillOpacity = 0.9,
         radius = 10)
@@ -175,7 +174,7 @@ server <- function(input, output, session) {
         lat = ~ latitude,
         lng = ~ longitude,
         popup = ~ name,
-        layerId = ~ code_real,
+        layerId = ~ paste(name, "(", code_real, ")"),
         color = ~pal(type_id),
         stroke = FALSE, fillOpacity = 0.9,
         radius = 10
@@ -190,7 +189,7 @@ server <- function(input, output, session) {
         lat = ~ latitude,
         lng = ~ longitude,
         popup = ~ name,
-        layerId = ~ code_real,
+        layerId = ~ paste(name, "(", code_real, ")"),
         color = ~pal(type_id),
         stroke = FALSE, fillOpacity = 0.9,
         radius = 10
