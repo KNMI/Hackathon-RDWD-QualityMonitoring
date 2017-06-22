@@ -452,12 +452,12 @@ db.insert.update.timeseries <- function(db, meta, timeseries) {
   
   cfg <- config::get(file = "config/config.yml")
   
-  if(class(meta) != cfg$data.container.timeseries.meta.class) {
-    stop(paste("Metadata not of class", cfg$data.container.timeseries.meta.class))
+  if(class(meta) != cfg$obj.timeseries.meta.class) {
+    stop(paste("Metadata not of class", cfg$obj.timeseries.meta.class))
   }
   
-  if(!cfg$data.container.timeseries.class %in% class(timeseries)) {
-    stop(paste("Timeseries not of class", cfg$data.container.timeseries.class))
+  if(!cfg$obj.timeseries.class %in% class(timeseries)) {
+    stop(paste("Timeseries not of class", cfg$obj.timeseries.class))
   }
   
   #-----------------------------------------------------#
@@ -516,7 +516,7 @@ db.insert.update.timeseries <- function(db, meta, timeseries) {
     if(rows.affected == 0) {
       stop("No series inserted into database!")
     } else {
-      print(paste0("Inserted", rows.affected, "series"))
+      print(paste("Inserted", rows.affected, "new series"))
     }
     
   } else {
@@ -542,8 +542,19 @@ db.insert.update.timeseries <- function(db, meta, timeseries) {
     if(rows.affected == timeseries.length) {
       print(paste("Deleted", rows.affected, "rows from the database"))
     } else {
-      warning("Warning, not all records were updated")
+      warning(paste("Warning, not all records were updated:", timeseries.length, "inserted,", rows.affected, "deleted."))
     }
+    
+    query <- sprintf(paste(
+      "DELETE FROM",
+      "series_derived",
+      "WHERE",
+      "data_id = %i"
+    ),
+    meta$dat_id)
+    
+    rows.affected <- dbExecute(db, query)
+    
     
   }
   
@@ -551,6 +562,20 @@ db.insert.update.timeseries <- function(db, meta, timeseries) {
   ### Insert the new timeseries ###
   #-------------------------------#
   
+  query <- sprintf(paste(
+    "INSERT INTO",
+    "series_derived",
+    "(data_id, start, stop)",
+    "VALUES",
+    "(%i, %s, %s)"
+  ),
+  meta$dat_id,
+  min(timeseries$datetime),
+  max(timeseries$datetime))
+  
+  rows.affected <- dbExecute(db, query)
+  
+  timeseries$value[is.na(timeseries$value)] <- cfg$database.na.value
   timeseries <- data.table(data_id = meta$dat_id, timeseries)
   timeseries <- apply(timeseries, 1, paste, collapse = ",")
   timeseries <- paste0("(", timeseries, ")")
@@ -569,7 +594,7 @@ db.insert.update.timeseries <- function(db, meta, timeseries) {
   
   rows.affected <- dbExecute(db, query)
   
-  print(paste("Inserted", rows.affected, "rows into the database"))
+  print(sprintf(paste("Inserted", rows.affected, "rows into", "%s_series_%s"), meta$var_interval, meta$var_name))
   
   return(rows.affected == timeseries.length)
 }
@@ -620,8 +645,8 @@ db.execute <- function(FUN, ...) {
 #' @description get the metadata for all stations
 #' @author Marieke 
 #' @export
-station.info<-function(){
-  db<-db.setup()
+station.info <- function(db){
+
   query<-"SELECT * FROM stations" 
   
   query_new<-"SELECT stations.name, 
@@ -642,9 +667,7 @@ station.info<-function(){
   
   db.q<-dbSendQuery(db,query_new)
   results<-dbFetch(db.q,n=-1)
-  
-  
-  dbDisconnect(db)
+  dbClearResult(db.q)
   
   return(results)
 }
@@ -655,13 +678,12 @@ station.info<-function(){
 #' @param code_real code like 260_H
 #' @export
 #' 
-station.nearby<-function(code_real){
+station.nearby<-function(db, code_real) {
   
   split<-unlist(strsplit(code_real,"_"))
   code=split[1]
   type=split[2]
   
-  db<-db.setup()
   query<-"SELECT * FROM nearby_stations"
   
   
@@ -677,8 +699,9 @@ CONCAT(nearby_stations.nearby_code,'_',types.type) as nearby_code_real,
                             nearby_stations.code=%s and types.type='%s';",
                      code,type)
   
-  db.q<-dbSendQuery(db,query_new)
-  results<-dbFetch(db.q,n=-1)
-  dbDisconnect(db)
+  db.q <- dbSendQuery(db,query_new)
+  results <- dbFetch(db.q, n=-1)
+  dbClearResult(db.q)
+
   return(results)
 }
