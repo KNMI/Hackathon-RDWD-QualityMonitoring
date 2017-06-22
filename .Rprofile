@@ -1,6 +1,5 @@
 .First <- function(){
  library(shiny)
- library(QualityMonitoR)
  cat("\nWelcome at", date(), "\n") 
 }
 
