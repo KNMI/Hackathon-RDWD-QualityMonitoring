@@ -187,10 +187,11 @@ aggregateTo.year <- function(data.container) {
     
     timeseries <- rbindlist(by(timeseries, years, function(y) {
       dt <- data.table (
-        datetime = as.character(
-          as.Date(paste(year(y$datetime)[1], "01", "01", sep = "-"), format="%Y-%m-%d"),
-          format = "%Y%m%d%H%M%S"
-        ),
+        datetime = paste0(year((y$datetime)[1]) + 1, "01", "01", "08", "0000"),
+        #datetime = as.character(
+        #  as.Date(paste(year(y$datetime)[1], "01", "01", sep = "-"), format="%Y-%m-%d"),
+        #  format = "%Y%m%d%H%M%S"
+        #),
         value = sum(y$value, na.rm = T)
       )
       setkey(dt, datetime)
