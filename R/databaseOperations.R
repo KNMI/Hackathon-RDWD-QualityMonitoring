@@ -27,7 +27,7 @@ db.close <- function(db) {
 
 #' @title Query the database for hourly 
 #' @param db Handle to MySQL database, taken from db.setup()
-#' @param time.interval One of {"1hour", "1day", "month", "year"} NB. Season not supported ATM!
+#' @param time.interval One of {"1hour", "1day", "month", "season, "year"}
 #' @param type One of {"N", "H"} Case insensitive
 #' @param element One of {"RH", "RD", "RR"} Case insensitive
 #' @example data.container <- db.select.all(db, "1hour", "N", "RH") 
@@ -35,12 +35,16 @@ db.close <- function(db) {
 #' @author Jurian and Hidde
 db.select.all <- function(db, time.interval, type, element) {
   
+  #--------------------------------------#
+  ### Check the arguments for validity ###
+  #--------------------------------------#
+  
   if(!dbIsValid(db)) {
     stop("Invalid database connection")
   }
   
-  supported.time.intervals <- c("1hour", "1day", "month", "year")
-  if(!time.interval %in% supported.time.intervals) stop(paste("Unuspported time period:", time.interval))
+  supported.time.intervals <- c("1hour", "1day", "month", "season", "year")
+  if(!time.interval %in% supported.time.intervals) stop(paste("Unsupported time interval:", time.interval))
   
   cfg <- config::get(file = "config/config.yml")
   max.qc <- cfg$qc.threshold
@@ -63,14 +67,15 @@ db.select.all <- function(db, time.interval, type, element) {
   element.ID <- type.element$element_id
   rm(type.element)
 
-  data.container <- list()
-  class(data.container) <- "mqm.data.container"
-  
   time.interval.db <- time.interval
-  # Fix time period references for R seq() and difftime() functions
+  # Fix time interval references for R seq() and difftime() functions
   if(time.interval.db == "1hour" | time.interval.db == "1day") {
     time.interval <- substr(time.interval.db, 2, nchar(time.interval.db))
   }
+  
+  data.container <- list()
+  class(data.container) <- "mqm.data.container"
+  data.container[[time.interval.db]] <- list()
   
   query <- sprintf(paste(
     "SELECT",
@@ -111,7 +116,7 @@ db.select.all <- function(db, time.interval, type, element) {
   result <- dbFetch(result.ref, cfg$database.max.records)
   dbClearResult(result.ref)
   
-  data.container$meta <- by(result, factor(result$station_code), function(x){
+  data.container[[time.interval.db]]$meta <- by(result, factor(result$station_code), function(x){
     
     meta <- list (
       dat_id = x$data_id,
@@ -132,15 +137,18 @@ db.select.all <- function(db, time.interval, type, element) {
       var_desc = x$element_group,
       var_unit = x$unit,
       var_scale = x$scale,
-      var_period = x$aggregation
+      var_interval = x$aggregation
     )
     class(meta) <- cfg$data.container.timeseries.meta.class
     return(meta)
   })
+  
+  if(nrow(result) == 0) {
+    stop("No stations match this description")
+  }
 
-  #data.IDs <- sapply(data.container$meta, function(x) x$dat_id)
   data.IDs <- result$data_id
-  names(data.container$meta) <- data.IDs
+  names(data.container[[time.interval.db]]$meta) <- data.IDs
   
   query <- sprintf(paste(
     "SELECT",
@@ -160,8 +168,8 @@ db.select.all <- function(db, time.interval, type, element) {
   result <- dbFetch(result.ref, cfg$database.max.records)
   dbClearResult(result.ref)
   
-  return(result)
-  data.container[time.interval.db] <- list(by(result, factor(result$data_id), function(x) {
+ 
+  data.container[[time.interval.db]]$data <- by(result, factor(result$data_id), function(x) {
     
     dt <- data.table(datetime = x$datetime, value = x$value)
     setkey(dt, datetime)
@@ -185,7 +193,7 @@ db.select.all <- function(db, time.interval, type, element) {
     
     class(dt) <- append(class(dt), cfg$data.container.timeseries.class)
     return(dt)
-  }))
+  })
 
   rm(result)
   return(data.container)
@@ -195,13 +203,14 @@ db.select.all <- function(db, time.interval, type, element) {
 #' @title Query the database for timeseries data and metadata
 #' @param db Handle to MySQL database, taken from db.setup()
 #' @param stationIDs A vector of unique station ID's (called "codes" in the DB)
-#' @param type One of {"N", "H"}
-#' @param element One of {"RH", "RD", "RR"}
+#' @param time.interval One of {"1hour", "1day", "month", "season, "year"}
+#' @param type One of {"N", "H"} (case insensitive)
+#' @param element One of {"RH", "RD", "RR"} (case insensitive)
 #' @return An object of type "mqm.data.container" which contains a list of timeseries and metadata on those series.
-#' @example data.container <- db.select.timeseries(db, c(260, 324, 343, 340), "H", "RH")
+#' @example data.container <- db.select.timeseries(db, c(260, 324, 343, 340), "1hour", "H", "RH")
 #' @author Jurian
 #' @seealso db.setup()
-db.select.timeseries <- function(db, station.IDs, type, element) {
+db.select.timeseries <- function(db, station.IDs, time.interval, type, element) {
 
   #--------------------------------------#
   ### Check the arguments for validity ###
@@ -213,8 +222,16 @@ db.select.timeseries <- function(db, station.IDs, type, element) {
   
   if(length(station.IDs) == 0) stop("No station ID(s) given")
   
+  supported.time.intervals <- c("1hour", "1day", "month", "season", "year")
+  if(!time.interval %in% supported.time.intervals) stop(paste("Unsupported time interval:", time.interval))
   
-  # Find the correct element ID and type ID in the database
+  #-------------------------------------------------------------#
+  ### Find the correct element ID and type ID in the database ###
+  #--------------------------------------------------------------#
+  
+  type <- tolower(type)
+  element <- tolower(element)
+  
   ref <- dbSendQuery(db, sprintf(
     "SELECT type_id, element_id FROM types, elements WHERE type = %s AND element = %s;", paste0("'", type, "'"), paste0("'", element, "'")))
   type.element <- dbFetch(ref, n = 1)
@@ -233,28 +250,39 @@ db.select.timeseries <- function(db, station.IDs, type, element) {
   max.qc <- cfg$qc.threshold
   db.na.value <- cfg$database.na.value
   
+  time.interval.db <- time.interval
+  # Fix time interval references for R seq() and difftime() functions
+  if(time.interval.db == "1hour" | time.interval.db == "1day") {
+    time.interval <- substr(time.interval.db, 2, nchar(time.interval.db))
+  }
+  
   #-------------------------------------------------------------#
   ### Query the DB for timeseries info from specific stations ###
   #-------------------------------------------------------------#
 
   query <- sprintf(paste(
     "SELECT",
-      "data_id, aggregation, element",
+      "series.data_id AS data_id, aggregation, element",
     "FROM",
-      "series, elements",
+      "series, elements, series_derived",
     "WHERE",
       "series.code IN (%s) AND series.type_id = %i",
     "AND",
       "elements.element_id = series.element_id",
     "AND",
+      "series.data_id = series_derived.data_id",
+    "AND",
       "elements.element_id = %i",
+    "AND",
+      "series.aggregation = %s",
     ";"),
     paste(station.IDs, collapse = ","),
     type.ID,
-    element.ID)
+    element.ID,
+    paste0("'", time.interval.db, "'"))
   
   # Fetch from DB and store results
-  result.ref <- dbSendQuery(db, dbEscapeStrings(db, query))
+  result.ref <- dbSendQuery(db, query)
   result <- dbFetch(result.ref, n = -1)
   
   if(nrow(result) == 0) {
@@ -267,11 +295,15 @@ db.select.timeseries <- function(db, station.IDs, type, element) {
   rm(result)
   dbClearResult(result.ref)
   
-  time.interval <- time.interval.db
-  # Fix time period references for R seq() and difftime() functions
-  if(time.interval.db == "1hour" | time.interval.db == "1day") {
-    time.interval <- substr(time.interval.db, 2, nchar(time.interval.db))
-  }
+  #------------------------------#
+  ### Create the master object ###
+  #------------------------------#
+  
+  # Init god object...
+  # ALL HAIL data.container, MASTER OF THE OBJECTS
+  data.container <- list()
+  class(data.container) <- cfg$data.container.main.class
+  data.container[[time.interval.db]] <- list()
   
   #---------------------------------------------#
   ### Query the DB for actual timeseries data ###
@@ -297,16 +329,7 @@ db.select.timeseries <- function(db, station.IDs, type, element) {
   setkey(result, datetime)
   dbClearResult(result.ref)
   
-  #------------------------------#
-  ### Create the master object ###
-  #------------------------------#
-  
-  # Init god object...
-  # ALL HAIL data.container, MASTER OF THE OBJECTS
-  data.container <- list()
-  class(data.container) <- cfg$data.container.main.class
-  
-  data.container[time.interval.db] <- list(by(result, factor(result$data_id), function(x) {
+  data.container[[time.interval.db]]$data <- by(result, factor(result$data_id), function(x) {
     
     dt <- data.table(datetime = x$datetime, value = x$value)
     setkey(dt, datetime)
@@ -330,7 +353,7 @@ db.select.timeseries <- function(db, station.IDs, type, element) {
     
     class(dt) <- append(class(dt), cfg$data.container.timeseries.class)
     return(dt)
-  }))
+  })
   
   rm(result)
   
@@ -362,20 +385,22 @@ db.select.timeseries <- function(db, station.IDs, type, element) {
       "types.type_id = series.type_id",
     "INNER JOIN elements ON",
       "elements.element_id = series.element_id",
+    "INNER JOIN series_derived ON",
+      "series.data_id = series_derived.data_id",
     "WHERE",
       "series.data_id IN (%s)",
     "GROUP BY",
-      "data_id, station_code, name"
+      "data_id, station_code"
   ),paste(data.IDs, collapse = ","))
   
   result.ref <- dbSendQuery(db, dbEscapeStrings(db, query))
   result <- dbFetch(result.ref, n = -1)
   dbClearResult(result.ref)
-  
-  data.container$meta <- by(result, factor(data.IDs), function(x){
+
+  data.container[[time.interval.db]]$meta <- by(result, factor(data.IDs), function(x) {
     
     meta <- list (
-      dat_id = x$dat_id,
+      dat_id = x$data_id,
       sta_id = x$station_code,
       sta_name = tolower(x$name),
       sta_lat = x$latitude,
@@ -393,7 +418,7 @@ db.select.timeseries <- function(db, station.IDs, type, element) {
       var_desc = x$element_group,
       var_unit = x$unit,
       var_scale = x$scale,
-      var_period = x$aggregation
+      var_interval = x$aggregation
     )
     class(meta) <- cfg$data.container.timeseries.meta.class
     return(meta)
@@ -439,7 +464,7 @@ db.insert.update.timeseries <- function(db, meta, timeseries) {
   meta$sta_id,
   meta$sta_type_id,
   meta$var_id,
-  paste0("'", meta$var_period, "'"))
+  paste0("'", meta$var_interval, "'"))
   
   result.ref <- dbSendQuery(db, query)
   result <- dbFetch(result.ref)
@@ -455,17 +480,15 @@ db.insert.update.timeseries <- function(db, meta, timeseries) {
     #--------------------------------------------------------------------------#
     
     # Fetch the maximum data_id from the database
-    result.ref <- dbSendQuery(db, "SELECT MAX(data_id) AS max_data_id FROM series")
-    new.data.ID <- dbFetch(result.ref, n = 1)$max_data_id + 1
-    dbClearResult(result.ref)
+    meta$dat_id <- db.new.data.id(db)
     
     # Create data to insert into database
     insert.data <- data.table(
-      data_id = new.data.ID,
+      data_id = meta$dat_id,
       code = meta$sta_id, 
       type_id = meta$sta_type_id, 
       element_id = meta$var_id, 
-      aggregation = paste0("'", meta$var_period,"'"))
+      aggregation = paste0("'", meta$var_interval,"'"))
     
     # Combine data into strings
     insert.data <- apply(insert.data, 1, function(x) {
@@ -494,7 +517,7 @@ db.insert.update.timeseries <- function(db, meta, timeseries) {
     ### The timeseries already exist. So we delete it and insert a new one ###
     #------------------------------------------------------------------------#
     
-    new.data.ID <- result$data_id
+    meta$dat_id <- result$data_id
     
     query <- sprintf(paste(
       "DELETE FROM",
@@ -502,9 +525,9 @@ db.insert.update.timeseries <- function(db, meta, timeseries) {
       "WHERE",
         "data_id = %i"
     ), 
-    meta$var_period,
+    meta$var_interval,
     meta$var_name,
-    new.data.ID)
+    meta$dat_id)
     
     rows.affected <- dbExecute(db, query)
     
@@ -520,7 +543,7 @@ db.insert.update.timeseries <- function(db, meta, timeseries) {
   ### Insert the new timeseries ###
   #-------------------------------#
   
-  timeseries <- data.table(data_id = new.data.ID, timeseries)
+  timeseries <- data.table(data_id = meta$dat_id, timeseries)
   timeseries <- apply(timeseries, 1, paste, collapse = ",")
   timeseries <- paste0("(", timeseries, ")")
   timeseries <- paste(timeseries, collapse = ",")
@@ -532,7 +555,7 @@ db.insert.update.timeseries <- function(db, meta, timeseries) {
     "VALUES",
     "%s"
   ),
-  meta$var_period,
+  meta$var_interval,
   meta$var_name,
   timeseries)
   
@@ -541,4 +564,43 @@ db.insert.update.timeseries <- function(db, meta, timeseries) {
   print(paste("Inserted", rows.affected, "rows into the database"))
  
   return(rows.affected == timeseries.length)
+}
+
+#' @title Fetch a new data ID from the database
+#' @param db Handle to MySQL database, taken from db.setup()
+#' @return A new and unique data ID
+db.new.data.id <- function(db) {
+  
+  if(!dbIsValid(db)) {
+    stop("Invalid database connection")
+  }
+  
+  # Fetch the maximum data_id from the database
+  result.ref <- dbSendQuery(db, "SELECT MAX(data_id) AS max_data_id FROM series")
+  data.ID <- dbFetch(result.ref, n = 1)$max_data_id + 1
+  dbClearResult(result.ref)
+  return(data.ID)
+}
+
+#' @title Execute a database operation
+#' @description This function is meant for quickly doing a database operation without needing to open and close a connection explicitly. This is all done automatically.
+#' @param FUN One of the db.<operation> functions
+#' @param ... Arguments to pass to the function
+#' @return Output of the function
+#' @author Jurian
+#' @example data.container <- db.execute(db.select.all, "1day", "H", "RD")
+#' @example data.id <- db.execute(db.new.data.id)
+db.execute <- function(FUN, ...) {
+  
+  # Set up a connection to the database
+  db <- db.setup()
+  
+  result <- tryCatch({
+    FUN(db, ...)
+  }, finally = {
+    # Make sure the connection is properly closed, even if there was an error
+    db.close(db)
+  })
+  
+  return(result)
 }
