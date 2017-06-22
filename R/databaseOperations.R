@@ -21,6 +21,7 @@ db.setup <- function() {
 #' @description This closes the connection, discards all pending work, and frees resources (e.g., memory, sockets). 
 #' @return TRUE, invisibly
 #' @author Jurian and Hidde
+#' @param db Data base
 db.close <- function(db) {
   dbDisconnect(db)
 }
@@ -30,8 +31,8 @@ db.close <- function(db) {
 #' @param time.interval One of {"1hour", "1day", "month", "season, "year"}
 #' @param type One of {"N", "H"} Case insensitive
 #' @param element One of {"RH", "RD", "RR"} Case insensitive
-#' @example data.container <- db.select.all(db, "1hour", "H", "RH") 
 #' @seealso db.setup()
+#' @description a function
 #' @author Jurian and Hidde
 db.select.all <- function(db, time.interval, type, element) {
   
@@ -202,13 +203,14 @@ db.select.all <- function(db, time.interval, type, element) {
 
 #' @title Query the database for timeseries data and metadata
 #' @param db Handle to MySQL database, taken from db.setup()
-#' @param stationIDs A vector of unique station ID's (called "codes" in the DB)
+#' @param station.IDs A vector of unique station ID's (called "codes" in the DB)
 #' @param time.interval One of {"1hour", "1day", "month", "season, "year"}
 #' @param type One of {"N", "H"} (case insensitive)
 #' @param element One of {"RH", "RD", "RR"} (case insensitive)
 #' @return An object of type "mqm.data.container" which contains a list of timeseries and metadata on those series.
-#' @example data.container <- db.select.timeseries(db, c(260, 324, 343, 340), "1hour", "H", "RH")
+#' #@example data.container <- db.select.timeseries(db, c(260, 324, 343, 340), "1hour", "H", "RH")
 #' @author Jurian
+#' @description a function
 #' @seealso db.setup()
 db.select.timeseries <- function(db, station.IDs, time.interval, type, element) {
   
@@ -433,9 +435,11 @@ db.select.timeseries <- function(db, station.IDs, time.interval, type, element) 
 #' @param db Handle to MySQL database, taken from db.setup()
 #' @param meta An object of type mqm.meta.timeseries
 #' @param timeseries An object of type mqm.data.timeseries, data.table of structure <datetime, value>
-#' @example db.insert.update.timeseries(db, data.container$meta[<data_id>], data.container$1hour[<data_id>])
+#' #@example db.insert.update.timeseries(db, data.container$meta[<data_id>], data.container$1hour[<data_id>])
+#' @description a function
 #' @author Jurian
 #' @seealso db.setup()
+#' @export
 db.insert.update.timeseries <- function(db, meta, timeseries) {
   
   if(!dbIsValid(db)) {
@@ -569,6 +573,8 @@ db.insert.update.timeseries <- function(db, meta, timeseries) {
 #' @title Fetch a new data ID from the database
 #' @param db Handle to MySQL database, taken from db.setup()
 #' @return A new and unique data ID
+#' @description a function
+#' @export
 db.new.data.id <- function(db) {
   
   if(!dbIsValid(db)) {
@@ -588,8 +594,9 @@ db.new.data.id <- function(db) {
 #' @param ... Arguments to pass to the function
 #' @return Output of the function
 #' @author Jurian
-#' @example data.container <- db.execute(db.select.all, "1day", "H", "RD")
-#' @example data.id <- db.execute(db.new.data.id)
+#' #@example data.container <- db.execute(db.select.all, "1day", "H", "RD")
+#' #@example data.id <- db.execute(db.new.data.id)
+#' @export
 db.execute <- function(FUN, ...) {
   
   # Set up a connection to the database
@@ -641,6 +648,7 @@ station.info<-function(){
 #' @title Get information from nearby stations from the database
 #' @description get the metadata for all stations, input looks like code_real="260_H"
 #' @author Marieke 
+#' @param code_real code like 260_H
 #' @export
 #' 
 station.nearby<-function(code_real){
