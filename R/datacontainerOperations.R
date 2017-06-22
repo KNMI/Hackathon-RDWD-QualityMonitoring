@@ -4,7 +4,7 @@
 #' @param a Fist data container
 #' @param b Second data container
 #' @return A new data container containing the meta data from both containers and their respective time interval data
-#' @example 1hour.and.1day.data <- merge.mqm.data.container(1hour.data, 1day.data)
+#' #@example 1hour.and.1day.data <- merge.mqm.data.container(1hour.data, 1day.data)
 #' @author Jurian
 merge.mqm.data.container <- function(a, b) {
   

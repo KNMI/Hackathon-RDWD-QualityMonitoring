@@ -24,7 +24,8 @@ RainRatePlotting(timeseries1, timeseries2, averagedtimeseries1,
 Visualisation function of rain rate timelines of the selection of stations and their average.
 }
 \details{
-When selecting subsets of stations that should be compared, the rain rate of each individual station as well as the overall averaged rain rate of both subsets are plotted in time.
+When selecting subsets of stations that should be compared, the rain rate of each individual station as well as the overall averaged rain rate of both subsets are plotted in time. 
+#@example RainRatePlotting(timeseries1, timeseries2, averagedtimeseries1, averagedtimeseries2, timespan1=as.Date("20000101", format="%Y%m%d"), timespan2=as.Date("20150101", format="%Y%m%d"))
 }
 \author{
 Lotte

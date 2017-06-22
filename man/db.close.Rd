@@ -6,6 +6,9 @@
 \usage{
 db.close(db)
 }
+\arguments{
+\item{db}{Data base}
+}
 \value{
 TRUE, invisibly
 }

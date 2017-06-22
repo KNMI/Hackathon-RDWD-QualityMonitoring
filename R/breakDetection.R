@@ -9,7 +9,6 @@ break.detection <- function(series1, range = 2, plot.score = FALSE) {
   #series1 is a data.table with datetime and value elements
   #range indicates the radius (in years) of the temporal interval that is ysed for the identification of local minima/maxima (see below for more details)
   #Package "climtrends" is needed
-  library("climtrends")
   
   #Check if dataset is long enough (if not, return NULL)
   if (length(series1$value) < as.numeric(row.names(Buishand.Critical.Values[1,]))) {
