@@ -15,6 +15,9 @@ sourceDirectory("R")
  # Input data #
 
     StartTime <- proc.time()
+obj <- dbExecute(db.select.all, "1hour", "H", "RH")
+db.select.all(db, "1hour", "H", "RH")
+        
 db <- db.setup()
 obj <- db.select.all(db, "hour", "validated", "rh")
 obj2 <- db.select.all(db, "day", "derived", "rd")
