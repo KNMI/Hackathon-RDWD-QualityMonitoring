@@ -170,6 +170,18 @@ aggregateTo.seasonal <- function(obj, all.stations=TRUE, sta_type="AWS", var_id=
   return(obj)
 }
 
+#' @title Aggregate 8 am to 8 am data to yearly sums
+#' @description  The function takes the R object, calculates aggregates and returns this in the object, included updated meta data. 
+#' @details When data availability is below 80% in a season (i.e. >18 days missing), or a year (i.e. > 73 days missing), the aggregation becomes NA.
+#' @param data.container The R object containing all timeseries and metadata
+# ' @param all.stations default is "TRUE" means all stations are aggregated. If all.stations = FALSE, an array of sta_ID needs to be provided.
+# ' @param sta_type default is "AWS", but could be extended to for instance "WOW" in the future.
+# ' @param var_id default is "RD" for daily rainfall.
+# ' @param sta_id defines the string of sta_id's that need to be aggregated. Only applies when all.stations = FALSE.
+# ' #@example aggregated.seasonal <- aggregate.to.seasonal(obj)
+#' @author Jurian and Lotte
+#' @export
+
 aggregateTo.year <- function(data.container) {
   
   if(is.null(data.container$`1day`)) {
@@ -217,7 +229,7 @@ aggregateTo.year <- function(data.container) {
   return(data.container)
 }
 
-#' @title Aggregate 8 am to 8 am data to yearly sums and seasonal sums
+#' @title Aggregate 8 am to 8 am data to seasonal sums
 #' @description Since the variability is seasonal dependent we would like to be able to compare certain seasons only. The function takes the R object, calculates aggregates and returns this in the object, included updated meta data. 
 #' @details When data availability is below 80% in a season (i.e. >18 days missing), or a year (i.e. > 73 days missing), the aggregation becomes NA.
 #' @param data.container The R object containing all timeseries and metadata
