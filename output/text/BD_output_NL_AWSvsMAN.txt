@@ -1,0 +1,6 @@
+station(s),y,djf,mam,jja,son
+NL_AWSvsMAN,OK,OK,OK,OK,Break!
+NL_AWSvsMAN,OK,OK,OK,OK,Break!
+NL_AWSvsMAN,OK,Break!,OK,OK,OK
+NL_AWSvsMAN,OK,OK,OK,OK,Break!
+NL_AWSvsMAN,OK,Break!,OK,OK,OK

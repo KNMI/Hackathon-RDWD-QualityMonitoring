@@ -1,13 +1,18 @@
 # library(RMySQL)
 # library(data.table)
+#PROBLEMS WITH OPEN CONNECTIONS?
+#TRY
+# (1) dbListConnections( dbDriver( drv = "MySQL"))
+# (2) lapply( dbListConnections( dbDriver( drv = "MySQL")), dbDisconnect)
 
 #' @title Setup a connection to the MySQL database
 #' @description This function returns a handle which can be used later to query the db.
 #' @return An object of class "MySQLConnection" and "RMySQL"
 #' @author Jurian and Hidde
+#' @export
 db.setup <- function() {
   
-  cfg <- config::get(file = "config/config.db.yml")
+  cfg <- config::get(file = "~/Hackathon-RDWD-QualityMonitoring/config/config.db.yml")
   
   dbConnect(RMySQL::MySQL(), 
             dbname = cfg$dbname, 
@@ -21,23 +26,73 @@ db.setup <- function() {
 #' @description This closes the connection, discards all pending work, and frees resources (e.g., memory, sockets). 
 #' @return TRUE, invisibly
 #' @author Jurian and Hidde
+#' @export
 db.close <- function(db) {
   dbDisconnect(db)
 }
 
 #' @title Get station information from database
 #' @description get the metadata for all stations
-#' @return TRUE, invisibly
 #' @author Marieke 
 #' @export
 station.info<-function(){
   db<-db.setup()
-  query<-"SELECT * FROM stations"
+  query<-"SELECT * FROM stations" 
   
-  db<-dbSendQuery(db,query)
-  results<-dbFetch(db)
+  query_new<-"SELECT stations.name, 
+                 stations.latitude, 
+                 stations.longitude, 
+                 CONCAT(stations.code, '_', types.type) as code_real, 
+                 stations.code, 
+                 stations.type_id, 
+                 elements.element,
+                 start,
+                 stop 
+          FROM stations, types, elements, series, series_derived 
+          WHERE stations.type_id=types.type_id and 
+                stations.type_id=series.type_id and 
+                stations.code=series.code and 
+                series.element_id=elements.element_id and 
+                series.data_id=series_derived.data_id ;"
+  
+  db.q<-dbSendQuery(db,query_new)
+  results<-dbFetch(db.q,n=-1)
   
   
+  dbDisconnect(db)
+  
+  return(results)
+}
+
+#' @title Get information from nearby stations from the database
+#' @description get the metadata for all stations, input looks like code_real="260_H"
+#' @author Marieke 
+#' @export
+#' 
+station.nearby<-function(code_real){
+
+split<-unlist(strsplit(code_real,"_"))
+code=split[1]
+type=split[2]
+
+db<-db.setup()
+  query<-"SELECT * FROM nearby_stations"
+  
+
+  query_new<-sprintf("SELECT name,
+
+CONCAT(nearby_stations.nearby_code,'_',types.type) as nearby_code_real,
+                             latitude,
+                             longitude
+                      FROM nearby_stations,stations,types
+                      WHERE nearby_stations.code=stations.code and
+                            nearby_stations.type_id=stations.type_id and
+                            nearby_stations.type_id=types.type_id and
+                            nearby_stations.code=%s and types.type='%s';",
+                     code,type)
+  
+  db.q<-dbSendQuery(db,query_new)
+  results<-dbFetch(db.q,n=-1)
   dbDisconnect(db)
   return(results)
 }
@@ -159,6 +214,7 @@ db.select.all <- function(db, time.period, station.type, element.name) {
   # Clean up
   dbClearResult(data.ref)
   rm(result)
+ 
   return(obj)
 }
 
@@ -298,7 +354,7 @@ db.select.timeseries <- function(db, stationIDs, time.period, station.type, elem
   })
   
 
-  
+  # dbDisconnect(db)
   return(obj)
 }
 

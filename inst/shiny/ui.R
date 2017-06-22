@@ -167,26 +167,66 @@ fluidPage(
         tabPanel(
           "Map experiments",
           class = "creedy",
+          fluidRow(class = "creedy",
+                   div(class = "col-xs-offset-2 col-xs-8",
+                       leafletOutput("map"))),
           fluidRow(
-            class = "creedy",
-            div(class = "col-xs-6",
-                leafletOutput(
-                  "map", width = "100%", height = "100%"
-                )),
             div(
-              class = "col-xs-6",
-              checkboxGroupInput("Type", "Station Type", c("AWS" =
-                                                             1,
-                                                           "Manual" =
-                                                             2), selected = 2),
-              sliderInput("Radius", "Radius", 0, 100, value = 30),
-              sliderInput("nr", "Number", 0, 10, value = 3),
-              tableOutput("clickedDistance"),
-              tableOutput("clickedNumber")
-            )
+              class = "row",
+              div(
+                class = "col-xl-4",
+                
+                textOutput("clickedMarker"),
+                checkboxGroupInput("Type", "Station Type",
+                                   c("AWS" = 2,
+                                     "Manual" = 1),
+                                   selected = c(1, 2))
+              )
+            ),
+            
+            div(class = "row",
+                div(
+                  class = "col-l-4",
+                  
+                  sliderInput(
+                    "date1",
+                    "Start:",
+                    min =  as.Date("1981-01-01"),
+                    max = Sys.Date(),
+                    value = as.Date("2000-01-01")
+                  ),
+                  sliderInput(
+                    "date2",
+                    "Stop:",
+                    min = as.Date("1981-01-01"),
+                    max = Sys.Date(),
+                    value = as.Date("2010-01-01")
+                  )
+                )),
+            div(class = "row",
+                div(
+                  class = "col-l-4",
+                  
+                  sliderInput("Radius", "Radius", 0, 100, value =
+                                30),
+                  sliderInput("nr", "Number", 0, 10, value =
+                                3)
+                ))
           ),
-          fluidRow(div(class = "col-xs-offset-2 col-xs-8",
-                       textOutput("clickedMarker")))
+          
+          navlistPanel(
+            tabPanel("Radius",
+                     div(class = "col-xs-offset-2 col-xs-8",
+                         tableOutput("clickedDistance"))),
+            tabPanel("Number",
+                     div(class = "col-xs-offset-2 col-xs-8",
+                         tableOutput("clickedNumber"))),
+            tabPanel(
+              "Data Base",
+              div(class = "col-xs-offset-2 col-xs-8",
+                  tableOutput("stationsNearby"))
+            )
+          )
         )
       )
     )
