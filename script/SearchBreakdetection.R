@@ -17,13 +17,13 @@ Sys.setenv(R_CONFIG_ACTIVE = "test")
 obj <- db.execute(db.select.all, time.interval="1hour", type="H", element="RH")  # AWS
 obj <- aggregate.to.88.2(obj)
 obj <- aggregate.to.seasonal.2(obj)
-obj <- aggregate.to.year(obj) 
+obj <- aggregateTo.year(obj) 
 obj2 <- db.execute(db.select.all, time.interval="1day", type="N", element="RD")  # MAN
 obj2 <- aggregate.to.seasonal.2(obj2)
-obj2 <- aggregate.to.year(obj2) 
+obj2 <- aggregateTo.year(obj2) 
 obj3 <- db.execute(db.select.all, time.interval="1hour", type="N", element="RR") # Radar at MAN locations
 obj3 <- aggregate.to.88.2(obj3)
-obj3 <- aggregate.to.year(obj3) 
+obj3 <- aggregateTo.year(obj3) 
 
 AWS_series <- names(obj$`1hour`$meta)
 AWS_labels <- sapply(obj$`1hour`$meta, function(m){paste0(m$sta_id, "_H")})
@@ -51,7 +51,6 @@ for(n in 0:length(AWS_labels)){
   
 
   # Aggregation to yearly values #
-  aggregate.to.seasonal.2()
 
   # Spatial averaging #
 
