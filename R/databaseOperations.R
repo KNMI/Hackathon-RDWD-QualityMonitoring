@@ -404,7 +404,7 @@ db.select.timeseries <- function(db, station.IDs, time.interval, type, element) 
   setkey(result, datetime)
   dbClearResult(result.ref)
   
-  data.container[[time.interval.db]]$data <- by(result, factor(result$data_id), function(x) {
+  data.container[[time.interval.db]]$data <- by(result, factor(data.IDs), function(x) {
     
     dt <- data.table(datetime = x$datetime, value = x$value)
     setkey(dt, datetime)
@@ -431,8 +431,6 @@ db.select.timeseries <- function(db, station.IDs, time.interval, type, element) 
   })
   names(data.container[[time.interval.db]]$data) <- sapply(data.container[[time.interval.db]]$meta, function(x){x$dat_id})
   rm(result)
-  
-
   
   return(data.container)
 }
