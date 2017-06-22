@@ -16,7 +16,7 @@ sourceDirectory("R")
 
     StartTime <- proc.time()
 db <- db.setup()
-obj <- db.select.all(db, "hour", "validated", "rh")
+obj <- db.select.all(db, "1day", "N", "RD")
 obj2 <- db.select.all(db, "day", "derived", "rd")
 db.close(db)
     cat(sprintf("Finished obtaining obj. (%.1f seconds)\n",round((proc.time()-StartTime)[3],digits=1)))
