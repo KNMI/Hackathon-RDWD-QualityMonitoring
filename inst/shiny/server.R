@@ -89,27 +89,35 @@ server <- function(input, output, session) {
       df<-df[which(df$type_id==input$Type),]
       df.number<-head(df,n=input$nr+1)
     })
+  
+  #example of button saving and loading data https://shiny.rstudio.com/articles/persistent-data-storage.html    
+  radiusStations<-observeEvent(input$buttonradius,{
+  dfNr()
+    #HERE COMES A FUNCTION FOR BREAKDETECTION
+  })
+  
+ numberStations<-observeEvent(input$buttonnumber,{
+  df()
+   #HERE COMES A FUNCTION FOR BREAKDETECTION
+  })
+  
+  nearbyStations<-observeEvent(input$buttonnearby,{
+  dfNearby()
+    #HERE COMES A FUNCTION FOR BREAKDETECTION
+  })
+  
+  #HERE COMES CODE FOR THE OUTPUT OF THE BREAKDETECTION
+  #An example in for a table:
+  #output$breakradius<-renderTable({radiusStations()})
+  #output$breaknumber<-renderTable({numberStations()})
+  #output$breaknearby<-renderTable({nearbyStations()})
+  
     
-  radiusStations<-eventReactive(input$buttonradius,{
-    radius<-dfNr()
-  })
-  
-  numberStations<-eventReactive(input$buttonnumber,{
-    number<-df()
-  })
-  
-  nearbyStations<-eventReactive(input$buttonnearby,{
-    nearby<-dfNearby()
-  })
-  
-    
-    #NOT WORKING!!!
     dfNearby<-reactive({
       data$clickedMarker <- markerClickEvent
       dfNearby<-station.nearby(data$clickedMarker$id) #function making a connection to the db
     })
     output$stationsNearby<-renderTable({
-      # if (!is.null(dfNearby())){paste("The station you selected is not on the list")}
       dfNearby()
     })
     ##############
