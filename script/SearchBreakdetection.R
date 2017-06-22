@@ -21,12 +21,21 @@ obj <- aggregateTo.year(obj)
 obj2 <- db.execute(db.select.all, time.interval="1day", type="N", element="RD")  # MAN
 obj2 <- aggregate.to.seasonal.2(obj2)
 obj2 <- aggregateTo.year(obj2) 
+
+  MAN_labels2 <- sapply(obj2$year$meta, function(m){m$sta_id})
+  MAN_labels <- c()
+  for(m in 1:length(MAN_labels2)){MAN_labels[m] <- MAN_labels2[[m]]}
+  
 obj3 <- db.execute(db.select.all, time.interval="1hour", type="N", element="RR") # Radar at MAN locations
+obj3selec <- sapply(obj3$`1hour`$meta, function(m){m$sta_id %in% MAN_labels & m$sta_type=="n"})
+# obj3$`1hour`$data <- obj3$`1hour`$data[obj3selec]   #only take the radar timeseries at MAN stations
+# obj3$`1hour`$meta <- obj3$`1hour`$meta[obj3selec]   
 obj3 <- aggregate.to.88.2(obj3)
+obj3 <- aggregate.to.seasonal.2(obj3)
 obj3 <- aggregateTo.year(obj3) 
 
-AWS_series <- names(obj$`1hour`$meta)
-AWS_labels <- sapply(obj$`1hour`$meta, function(m){paste0(m$sta_id, "_H")})
+AWS_series <- names(obj$year$meta)
+AWS_labels <- sapply(obj$year$meta, function(m){paste0(m$sta_id, "_H")})
 
 
 for(n in 0:length(AWS_labels)){
@@ -37,24 +46,37 @@ for(n in 0:length(AWS_labels)){
     obj_subset3 <- obj3
   }else{
     Comb_Name <- AWS_labels[[n]]
-    obj_subset1 <- obj$`1day`$data[n]  # list with 1 data.table. 
+    obj_subset1_y <- obj$year$data[n]  # list with 1 data.table. 
+    obj_subset1_season <- obj$season$data[n]  # list with 1 data.table. 
+    
     stations_nearby <- station.nearby(AWS_labels[[n]])$nearby_code_real
     if(length(stations_nearby)==0){next} # in case no nearby stations are available
     nearby_labels <- substr(stations_nearby, 1, (nchar(stations_nearby)-2))
     
-    selec_obj2 <- sapply(obj2$`1day`$meta, function(m){m$sta_id %in% substr(stations_nearby, 1, nchar(stations_nearby)-2) }) 
-    obj_subset2 <- obj2$`1day`$data[selec_obj2]
+    selec_obj2_y <- sapply(obj2$year$meta, function(m){m$sta_id %in% substr(stations_nearby, 1, nchar(stations_nearby)-2) }) 
+    obj_subset2_y <- obj2$year$data[selec_obj2]
+    selec_obj2_season <- sapply(obj2$season$meta, function(m){m$sta_id %in% substr(stations_nearby, 1, nchar(stations_nearby)-2) }) 
+    obj_subset2_season <- obj2$season$data[selec_obj2]
     
-    selec_obj3 <- sapply(obj3$`1day`$meta, function(m){m$sta_id %in% substr(stations_nearby, 1, nchar(stations_nearby)-2) }) 
-    obj_subset3 <- obj3$`1day`$data[selec_obj3]
+    selec_obj3_y <- sapply(obj3$year$meta, function(m){m$sta_id %in% substr(stations_nearby, 1, nchar(stations_nearby)-2) }) 
+    obj_subset3_y <- obj3$year$data[selec_obj3]
+    selec_obj3_season <- sapply(obj3$year$meta, function(m){m$sta_id %in% substr(stations_nearby, 1, nchar(stations_nearby)-2) }) 
+    obj_subset3_season <- obj3$year$data[selec_obj3]
     }
-  
-
-  # Aggregation to yearly values #
 
   # Spatial averaging #
 
-obj1_average   <- average.spatial(timeseries=AWS_timeseriesselec_y) 
+obj1_average_y  <- average.spatial(timeseries=obj_subset1_y) 
+obj2_average_y  <- average.spatial(timeseries=obj_subset2_y) 
+obj3_average_y  <- average.spatial(timeseries=obj_subset3_y) 
+
+obj1_average_season  <- average.spatial(timeseries=obj_subset1_season) 
+obj2_average_season  <- average.spatial(timeseries=obj_subset2_season) 
+obj3_average_season  <- average.spatial(timeseries=obj_subset3_season) 
+
+  # Calculate relative difference # 
+
+rel_dif_AWSvsMAN <- timeseries.relative.difference(timeserie1=obj1, timeserie2=MAN_average_y)
 
 
 
