@@ -20,7 +20,7 @@ for(label in label_list){
   # Input data #
   if(label == "NL"){
     db <- db.setup()
-    dbExecute(db.select.all,"1day", "N", "rd")
+    dbExecute(db.select.all(db, time.interval="1day", "N", "RH"))
     
     subset1 <- db.select.all(db, "hour", "validated", "rh")         # list of time series data.tables, dependent on label.  
     subset2 <- db.select.all(db, "day", "derived", "rd")  
