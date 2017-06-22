@@ -171,6 +171,29 @@ aggregate.to.seasonal <- function(obj, all.stations=TRUE, sta_type="AWS", var_id
 }
 
 
+aggregate.to.88.2 <- function(data.container) {
+  if(is.null(data.container$`1hour`)) {
+    stop("Data container does not have hourly data")
+  }
+  
+  agg <- function(timeseries, metadata) {
+    
+    # Make timeline of timestamps 0800 indicating the end of each day
+    # Use integers for really fast comparison
+    first_timestep <- which(hour(strptime(timeseries$datetime, format="%Y%m%d%H%M%S")) == 9)[1]
+    # Last occurence of 8, same as first occurance of the reverse
+    last_timestep <- rev(which(hour(strptime(timeseries$datetime, format="%Y%m%d%H%M%S")) == 8))[1]
+    
+    if(is.na(first_timestep) | is.na(last_timestep)) stop("Incomplete timeperiod")
+    
+    
+  }
+  
+
+  
+  
+}
+
 
 #' Daily aggeration
 #' @title Aggregate hourly data to daily from 8am to 8am the next day
