@@ -6,9 +6,16 @@
 \usage{
 break.detection(series1, range = 2, plot.score = FALSE)
 }
+\arguments{
+\item{series1}{time series to check, it must be a table with two columns (datetime and value)}
+
+\item{range}{radius (in years) of the running window that is used for the identification of local minima/maxima}
+
+\item{plot.score}{if TRUE it produces a plot for the visualization of the breaks}
+}
 \description{
 Function for break detection in a yearly or seasonal series that uses the Buishand cumulative test. It needs a table with two columns (datetime and value). the input is temporarily downloaded by the dummy data
 }
 \author{
-Antonello Squintu and Hidde
+Antonello and Hidde
 }

@@ -17,6 +17,7 @@ Imports:  config,
           RMySQL,
           shiny,
           R.utils,
-          stats
+          stats,
+          climtrends
 License: What license is it under?
 RoxygenNote: 6.0.1.9000
