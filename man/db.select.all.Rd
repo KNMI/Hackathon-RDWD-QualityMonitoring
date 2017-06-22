@@ -13,8 +13,7 @@ db.select.all(db, time.interval, type, element)
 
 \item{type}{One of {"N", "H"} Case insensitive}
 
-\item{element}{One of {"RH", "RD", "RR"} Case insensitive
-#@example data.container <- db.select.all(db, "1hour", "N", "RH")}
+\item{element}{One of {"RH", "RD", "RR"} Case insensitive}
 }
 \description{
 a function

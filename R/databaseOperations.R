@@ -31,7 +31,6 @@ db.close <- function(db) {
 #' @param time.interval One of {"1hour", "1day", "month", "season, "year"}
 #' @param type One of {"N", "H"} Case insensitive
 #' @param element One of {"RH", "RD", "RR"} Case insensitive
-#' #@example data.container <- db.select.all(db, "1hour", "N", "RH") 
 #' @seealso db.setup()
 #' @description a function
 #' @author Jurian and Hidde
