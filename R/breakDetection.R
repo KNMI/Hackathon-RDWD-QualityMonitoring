@@ -4,7 +4,6 @@
 #' @param range radius (in years) of the running window that is used for the identification of local minima/maxima
 #' @param plot.score if TRUE it produces a plot for the visualization of the breaks
 #' @author Antonello and Hidde
-
 break.detection <- function(series1, range = 2, plot.score = FALSE) {
   #series1 is a data.table with datetime and value elements
   #range indicates the radius (in years) of the temporal interval that is ysed for the identification of local minima/maxima (see below for more details)

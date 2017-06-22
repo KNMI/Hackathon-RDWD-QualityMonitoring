@@ -1,21 +1,11 @@
 #' @title Break detection with Buishand method
 #' @description Function for break detection in a yearly or seasonal series that uses the Buishand cumulative test. It needs a table with two columns (datetime and value). the input is temporarily downloaded by the dummy data
 #' @author Antonello Squintu
-
-break.detection <- function (series_1) {
- #series is an element of a list, it must have its series id as a name and table must have two columns (datatime and value)
-  
-  ser_id=as.integer(names(series))
-  
-  
-  
-    
-}
-
+#' @param id id
+#' @param input input
 buishand <- function(id,input){
   
   #Package "climtrends" is needed
-  library("climtrends")
   
   #Uploading of dummy series. Comment out when working in flow
   setwd("/home/squintu/Hackathon-RDWD-QualityMonitoring/data")
