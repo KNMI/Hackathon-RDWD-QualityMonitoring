@@ -1,5 +1,5 @@
 #' Run app
 #' @export
-runQalityMonitor <- function() {
+runQualityMonitoring <- function() {
   runApp("inst/shiny", launch.browser = TRUE)
 }
