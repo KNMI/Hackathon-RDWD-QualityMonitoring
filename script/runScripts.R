@@ -14,26 +14,19 @@ sourceDirectory("R")
 
  # Input data #
 
+# in case of processing all AWS vs all MAN: 
     StartTime <- proc.time()
 obj <- db.execute(db.select.all, "1hour", "H", "RH")
 obj2 <- db.execute(db.select.all, "1day", "N", "RD")
   cat(sprintf("Finished obtaining obj. (%.1f seconds)\n",round((proc.time()-StartTime)[3],digits=1)))
 
-obj <- db.select.timeseries(db, c(260, 324, 343, 340), "1hour", "H", "RH")
-  
-    
-        
-db <- db.setup()
-obj <- db.select.all(db, "hour", "validated", "rh")
-obj2 <- db.select.all(db, "day", "derived", "rd")
-db.close(db)
-    cat(sprintf("Finished obtaining obj. (%.1f seconds)\n",round((proc.time()-StartTime)[3],digits=1)))
-    
- # Define the list of sta_id that you want to process #    
-#sta_id <-   #output of query range selection (made by Marieke)/ standard list of related stations from database    
-  # to be filled in once the exact formulation of those outputs is known. 
-  # Possible output of range selection is all station id's with distance to station that is selected. In that case add line that selects only the stations where this distance is shorter than a given range. 
-  
+# in case of processing a selection of AWS vs a selection of MAN: 
+  StartTime <- proc.time()
+obj <- db.execute(db.select.timeseries, station.IDs=260, "1hour", "H", "RH")
+obj2 <- db.execute(db.select.timeseries, station.IDs=c(343, 340), "1day", "N", "RD")
+  cat(sprintf("Finished obtaining obj. (%.1f seconds)\n",round((proc.time()-StartTime)[3],digits=1)))
+                   
+
  # Aggregate AWS hourly values in 8-8 daily values #
     StartTime <- proc.time()
 obj <- aggregate.to.88(obj=obj, all.stations=TRUE, sta_type="AWS", var_id="RH", sta_id=sta_id)
@@ -42,7 +35,7 @@ obj <- aggregate.to.88(obj=obj, all.stations=TRUE, sta_type="AWS", var_id="RH", 
     
 # Aggregate AWS and MAN daily values in yearly and seasonal values #
     StartTime <- proc.time()
-obj <- aggregate.to.seasonal(obj=obj, all.stations=TRUE, sta_type="AWS", var_id="RD", sta_id=sta_id) 
+obj <- aggregate.to.seasonal(obj=obj, all.stations=TRUE, sta_type="AWS", var_id="RH", sta_id=sta_id) 
 obj2 <- aggregate.to.seasonal(obj=obj2, all.stations=TRUE, sta_type="MAN", var_id="RD", sta_id=sta_id) 
     cat(sprintf("Finished yearly aggregating of AWS and MAN. (%.1f seconds)\n",round((proc.time()-StartTime)[3],digits=1)))
 
