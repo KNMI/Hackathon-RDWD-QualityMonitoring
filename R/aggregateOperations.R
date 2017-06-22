@@ -255,20 +255,26 @@ aggregate.to.seasonal.2 <- function(data.container) {
     seasons <- factor(paste0(seasons, timeseries$years))
     timeseries$seasons <- seasons
     
- 
+    #return(timeseries)
+    
     timeseries <- rbindlist(by(timeseries, seasons, function(s) {
       
+      m <- rev(s$months + 1)[1]
+      m <- ifelse(nchar(m) == 1, paste0("0",m), m)
+      
       dt <- data.table (
-        datetime = as.character(
-          as.Date(paste(s$years[1], s$months[1], "01", sep = "-"), format="%Y-%m-%d"),
-          format = "%Y%m%d%H%M%S"
-        ),
+        datetime = paste0(s$years[1], m, "01", "08", "0000"),
         value = sum(s$value, na.rm = T)
       )
       setkey(dt, datetime)
       
-      no.of.NAs <- sum(is.na(s$value))
-      if(no.of.NAs > MaxNAPerSeason) {
+      nr.of.months <- length(table(month(s$datetime)))
+      if(nr.of.months < 3) {
+        dt$value <- NA
+      }
+      
+      nr.of.NAs <- sum(is.na(s$value))
+      if(nr.of.NAs > MaxNAPerSeason) {
         dt$value <- NA
       }
       
