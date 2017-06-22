@@ -204,7 +204,7 @@ fluidPage(
           ),
           
           
-          navlistPanel(
+          tabsetPanel(
             tabPanel("Radius",
                      div(class = "col-xs-offset-2 col-xs-8",
                          tableOutput("clickedDistance"))),
