@@ -2,9 +2,9 @@
 % Please edit documentation in R/aggregateOperations.R
 \name{aggregate.to.seasonal.2}
 \alias{aggregate.to.seasonal.2}
-\title{Aggregate 8 am to 8 am data to yearly sums and seasonal sums}
+\title{Aggregate 8 am to 8 am data to seasonal sums}
 \usage{
-aggregate.to.seasonal.2(data.container)
+\method{aggregate}{to.seasonal.2}(data.container)
 }
 \arguments{
 \item{data.container}{The R object containing all timeseries and metadata}

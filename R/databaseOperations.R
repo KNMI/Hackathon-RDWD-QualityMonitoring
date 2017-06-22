@@ -599,6 +599,38 @@ db.insert.update.timeseries <- function(db, meta, timeseries) {
   return(rows.affected == timeseries.length)
 }
 
+db.insert.breakdetection.results <- function(db, DB_output) {
+  
+  if(!dbIsValid(db)) {
+    stop("Invalid database connection")
+  }
+  
+  query <- "DELETE FROM break_detection"
+  rows.affected <- dbExecute(db, query)
+  print(paste("Deleted", rows.affected, "rows from the database"))
+  
+  
+  values <- apply(BD_output, 1, function(row){
+      a <- paste(row, collapse = "','")
+      a <- paste0("('", a, "')")
+  })
+  
+  values <- paste(values, collapse = ",")
+  
+  query <- sprintf(paste(
+    
+    "INSERT INTO",
+      "break_detection",
+    "VALUES",
+      "%s"
+  ), values)
+  
+  rows.affected <- dbExecute(db, query)
+  print(paste("Inserted", rows.affected, "rows into the database"))
+  
+  return(rows.affected == nrow(DB_output))
+}
+
 #' @title Fetch a new data ID from the database
 #' @param db Handle to MySQL database, taken from db.setup()
 #' @return A new and unique data ID
@@ -668,6 +700,11 @@ station.info <- function(db){
   db.q<-dbSendQuery(db,query_new)
   results<-dbFetch(db.q,n=-1)
   dbClearResult(db.q)
+<<<<<<< HEAD
+=======
+  
+  dbDisconnect(db)
+>>>>>>> 84e872df5181067e187eb077c94dcd3d925aaf13
   
   return(results)
 }
@@ -699,9 +736,16 @@ CONCAT(nearby_stations.nearby_code,'_',types.type) as nearby_code_real,
                             nearby_stations.code=%s and types.type='%s';",
                      code,type)
   
+<<<<<<< HEAD
   db.q <- dbSendQuery(db,query_new)
   results <- dbFetch(db.q, n=-1)
   dbClearResult(db.q)
 
+=======
+  db.q<-dbSendQuery(db,query_new)
+  results<-dbFetch(db.q,n=-1)
+  dbClearResult(db.q)
+  dbDisconnect(db)
+>>>>>>> 84e872df5181067e187eb077c94dcd3d925aaf13
   return(results)
 }

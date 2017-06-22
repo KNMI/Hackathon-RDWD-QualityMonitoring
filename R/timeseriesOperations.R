@@ -13,7 +13,11 @@ timeseries.relative.difference <- function(timeserie1, timeserie2){
   if(names(timeserie1)[1] != "datetime" | names(timeserie1)[2] != "value" | names(timeserie2)[1] != "datetime" | names(timeserie2)[2] != "value")
     stop("Names of input file columns are not 'time' and/or 'average'")
   
-  if(length(which(timeserie1$time != timeserie2$time) > 0)) 
+  time <- data.table(datetime=sort(unique(c(timeserie1$datetime, timeserie2$datetime))))  
+  timeserie1 <- base::merge(time, timeserie1, by="datetime", all.x=TRUE)
+  timeserie2 <- base::merge(time, timeserie2, by="datetime", all.x=TRUE)
+
+  if(length(which(timeserie1$datetime != timeserie2$datetime)) > 0) 
     stop("Timeperiods of input files do not match")
   
   relative_dif <- 100 * (timeserie2$value - timeserie1$value) / timeserie1$value

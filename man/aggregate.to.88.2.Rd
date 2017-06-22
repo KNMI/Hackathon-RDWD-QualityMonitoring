@@ -4,7 +4,7 @@
 \alias{aggregate.to.88.2}
 \title{Aggregate hourly data to daily from 8am to 8am the next day}
 \usage{
-aggregate.to.88.2(data.container)
+\method{aggregate}{to.88.2}(data.container)
 }
 \arguments{
 \item{data.container}{The R object containing all timeseries and metadata}
