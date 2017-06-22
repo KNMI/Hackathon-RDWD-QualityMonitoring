@@ -42,10 +42,11 @@ for(n in 0:length(AWS_labels)){
     }
   
   # Aggregation to daily values # 
-
+obj_subset1 <- aggregate.to.88.2(obj_subset1)
+obj_subset3 <- aggregate.to.88.2(obj_subset3)
   
 
-
+  # Aggregation to yearly values #
 
 
 } # end n-loop
