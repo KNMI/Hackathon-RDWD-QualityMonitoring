@@ -88,6 +88,7 @@ server <- function(input, output, session) {
       setkey(df,"d")
       df<-df[which(df$type_id==input$Type),]
       df.number<-head(df,n=input$nr+1)
+
     })
   
   #example of button saving and loading data https://shiny.rstudio.com/articles/persistent-data-storage.html    
@@ -125,10 +126,21 @@ server <- function(input, output, session) {
       paste("Station ", data$clickedStation$id, "has been selected")
     })
     output$clickedDistance <- renderTable({
-      df()
+      data.df<-df()
+      data.df<-subset(data.df,select=c("name",
+                                     "code_real",
+                                     "latitude",
+                                     "longitude"))
+      data.df
     })
     output$clickedNumber <- renderTable({
-      dfNr()
+      data.dfNr<-dfNr()
+      
+      data.dfNr<-subset(data.dfNr,select=c("name",
+                                     "code_real",
+                                     "latitude",
+                                     "longitude"))
+      data.dfNr
     })
     print(data$clickedStation)
   }
@@ -171,43 +183,44 @@ server <- function(input, output, session) {
   
   #Leaflet update not always correct...stations() not always updated 
   #This could be a solution: https://www.r-bloggers.com/r-shiny-leaflet-using-observers/
-  output$map<-renderLeaflet(
-    leaflet(data=stations(),options = leafletOptions(minZoom = 7, maxZoom = 13)) %>%
-      setView(lng=5.3878, lat=52.1561, zoom=7) %>%
-      addProviderTiles(providers$Stamen.TonerLite,
-                       options = providerTileOptions(noWrap = TRUE)) 
-    
-  )
+output$map<-renderLeaflet(
+      leaflet(data=stations(),options = leafletOptions(minZoom = 7, maxZoom = 13)) %>%
+        setView(lng=5.3878, lat=52.1561, zoom=7) %>%
+        addProviderTiles(providers$Stamen.TonerLite,
+                         options = providerTileOptions(noWrap = TRUE)) 
+
+       )
   
+
+observeEvent(input$Type,{
+  if(nrow(stations())==0) { leafletProxy("map") %>% clearShapes()} 
+  else {
+    leafletProxy("map", data=stations() ) %>% clearShapes() %>%
+      addCircleMarkers(
+        lat = ~ latitude,
+        lng = ~ longitude,
+        popup = ~ name,
+        layerId = ~ code_real,
+        label = ~type_id,
+        color = ~pal(type_id))
+  }
+})
+
+observeEvent(input$dateRange,{
+  if(nrow(stations())==0) { leafletProxy("map") %>% clearShapes()} 
+  else {
+    leafletProxy("map", data=stations() ) %>% clearShapes() %>%
+      addCircleMarkers(
+        lat = ~ latitude,
+        lng = ~ longitude,
+        popup = ~ name,
+        layerId = ~ code_real,
+        label = ~type_id,
+        color = ~pal(type_id))
+  }
+})
   
-  observeEvent(input$Type,{
-    if(nrow(stations())==0) { leafletProxy("map") %>% clearShapes()} 
-    else {
-      leafletProxy("map", data=stations() ) %>% clearShapes() %>%
-        addCircleMarkers(
-          lat = ~ latitude,
-          lng = ~ longitude,
-          popup = ~ name,
-          layerId = ~ code_real,
-          label = ~type_id,
-          color = ~pal(type_id))
-    }
-  })
-  
-  observeEvent(input$dateRange,{
-    if(nrow(stations())==0) { leafletProxy("map") %>% clearShapes()} 
-    else {
-      leafletProxy("map", data=stations() ) %>% clearShapes() %>%
-        addCircleMarkers(
-          lat = ~ latitude,
-          lng = ~ longitude,
-          popup = ~ name,
-          layerId = ~ code_real,
-          label = ~type_id,
-          color = ~pal(type_id))
-    }
-  })
-  
+
   output$clickedStation <- renderText("Please select a station")
   outputOptions(output, "showDetails", suspendWhenHidden = FALSE)
   outputOptions(output, "stationId", suspendWhenHidden = FALSE)
