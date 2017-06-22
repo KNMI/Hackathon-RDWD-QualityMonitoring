@@ -28,8 +28,12 @@ body > .container-fluid {
   margin: 0;
 }
 
-.creedy, .creedy .container-fluid {
+.greedy, .greedy .container-fluid {
   flex: 1;
+}
+
+#map {
+  border-radius: 0.5rem;
 }
 
 .Header .navbar {
