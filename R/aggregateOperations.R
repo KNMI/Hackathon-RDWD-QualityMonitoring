@@ -171,6 +171,52 @@ aggregate.to.seasonal <- function(obj, all.stations=TRUE, sta_type="AWS", var_id
   return(obj)
 }
 
+aggregate.to.year <- function(data.container) {
+  
+  if(is.null(data.container$`1day`)) {
+    stop("Data container does not have daily data")
+  }
+  
+  cfg <- config::get(file = "config/config.yml")
+  # If exceeded, the day should be excluded.
+  data.availability.threshold <- cfg$data.availability.threshold
+  MaxNAPerYear <- floor((1 - data.availability.threshold) * 365)  
+  
+  agg.year <- function(timeseries) {
+    timeseries$datetime <- as.Date(timeseries$datetime, format="%Y%m%d")
+    years <- factor(year(timeseries$datetime))
+    
+    timeseries <- rbindlist(by(timeseries, years, function(y) {
+      dt <- data.table (
+        datetime = as.character(
+          as.Date(paste(year(y$datetime)[1], "01", "01", sep = "-"), format="%Y-%m-%d"),
+          format = "%Y%m%d%H%M%S"
+        ),
+        value = sum(y$value, na.rm = T)
+      )
+      setkey(dt, datetime)
+      
+      no.of.NAs <- sum(is.na(s$value))
+      if(no.of.NAs > MaxNAPerYear) {
+        dt$value <- NA
+      }
+      
+      return(dt)
+    }))
+    
+    
+    return(timeseries)
+  }
+
+  data.container$year <- list()
+  data.container$year$data <- lapply(data.container$`1day`$data, agg.year)
+  data.container$year$meta <- lapply(data.container$`1day`$meta, function(m) {
+    m$var_interval <- "year"
+    return(m)
+  })
+  
+  return(data.container)
+}
 
 aggregate.to.seasonal.2 <- function(data.container) {
   
@@ -181,8 +227,8 @@ aggregate.to.seasonal.2 <- function(data.container) {
   cfg <- config::get(file = "config/config.yml")
   # If exceeded, the day should be excluded.
   data.availability.threshold <- cfg$data.availability.threshold
-  MaxNAPerSeason <- floor((1-data.availability.threshold)*(365/4))   
-  MaxNAPerYear <- floor((1-data.availability.threshold)*(365))  
+  MaxNAPerSeason <- floor((1 - data.availability.threshold) * (365 / 4))   
+
   
   # Define meteorological seasons
   winter <- c(12, 1, 2)
@@ -211,21 +257,28 @@ aggregate.to.seasonal.2 <- function(data.container) {
     timeseries$seasons <- seasons
     
  
-    test <- by(timeseries, seasons, function(s) {
-      dt <- data.table(
+    timeseries <- rbindlist(by(timeseries, seasons, function(s) {
+      
+      dt <- data.table (
         datetime = as.character(
           as.Date(paste(s$years[1], s$months[1], "01", sep = "-"), format="%Y-%m-%d"),
           format = "%Y%m%d%H%M%S"
         ),
-        value = sum(s$value)
+        value = sum(s$value, na.rm = T)
       )
       setkey(dt, datetime)
+      
+      no.of.NAs <- sum(is.na(s$value))
+      if(no.of.NAs > MaxNAPerSeason) {
+        dt$value <- NA
+      }
+      
       return(dt)
-    })
+    }))
     
+    setkey(timeseries, datetime)
     
-    
-    return(rbindlist(test))
+    return(timeseries)
   }
   
   data.container$season <- list()
