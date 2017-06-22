@@ -7,7 +7,7 @@
 #' @author Jurian and Hidde
 db.setup <- function() {
   
-  cfg <- config::get(file = "config/config.db.yml")
+  cfg <- config::get(file = "~/Hackathon-RDWD-QualityMonitoring/config/config.db.yml")
   
   dbConnect(RMySQL::MySQL(), 
             dbname = cfg$dbname, 
@@ -21,6 +21,7 @@ db.setup <- function() {
 #' @description This closes the connection, discards all pending work, and frees resources (e.g., memory, sockets). 
 #' @return TRUE, invisibly
 #' @author Jurian and Hidde
+#' @param db Data base
 db.close <- function(db) {
   dbDisconnect(db)
 }
@@ -30,8 +31,9 @@ db.close <- function(db) {
 #' @param time.interval One of {"1hour", "1day", "month", "season, "year"}
 #' @param type One of {"N", "H"} Case insensitive
 #' @param element One of {"RH", "RD", "RR"} Case insensitive
-#' @example data.container <- db.select.all(db, "1hour", "N", "RH") 
+#' #@example data.container <- db.select.all(db, "1hour", "N", "RH") 
 #' @seealso db.setup()
+#' @description a function
 #' @author Jurian and Hidde
 db.select.all <- function(db, time.interval, type, element) {
   
@@ -66,7 +68,6 @@ db.select.all <- function(db, time.interval, type, element) {
   type.ID <- type.element$type_id
   element.ID <- type.element$element_id
   rm(type.element)
-
   time.interval.db <- time.interval
   # Fix time interval references for R seq() and difftime() functions
   if(time.interval.db == "1hour" | time.interval.db == "1day") {
@@ -79,39 +80,38 @@ db.select.all <- function(db, time.interval, type, element) {
   
   query <- sprintf(paste(
     "SELECT",
-      "series.data_id AS data_id,",
-      "stations.code AS station_code,",
-      "name,",
-      "element,",
-      "element_group,",
-      "type,",
-      "types.type_id AS type_id,", 
-      "scale,", 
-      "unit,", 
-      "latitude,", 
-      "longitude,",
-      "elevation,", 
-      "aggregation,", 
-      "elements.element_id AS element_id",
+    "series.data_id AS data_id,",
+    "stations.code AS station_code,",
+    "name,",
+    "element,",
+    "element_group,",
+    "type,",
+    "types.type_id AS type_id,", 
+    "scale,", 
+    "unit,", 
+    "latitude,", 
+    "longitude,",
+    "elevation,", 
+    "aggregation,", 
+    "elements.element_id AS element_id",
     "FROM",
-      "series",
+    "series",
     "INNER JOIN stations ON",
-      "stations.code = series.code AND stations.type_id = series.type_id",
+    "stations.code = series.code AND stations.type_id = series.type_id",
     "INNER JOIN types ON",
-      "types.type_id = series.type_id",
+    "types.type_id = series.type_id",
     "INNER JOIN elements ON",
-      "elements.element_id = series.element_id",
+    "elements.element_id = series.element_id",
     "INNER JOIN series_derived ON",
-      "series.data_id = series_derived.data_id",
+    "series.data_id = series_derived.data_id",
     "WHERE",
-      "series.type_id = %i AND series.element_id = %i AND series.aggregation = %s",
+    "series.type_id = %i AND series.element_id = %i AND series.aggregation = %s",
     "GROUP BY",
-      "data_id, station_code"
+    "data_id, station_code"
   ),
   type.ID,
   element.ID,
   paste0("'", time.interval.db, "'"))
-
   result.ref <- dbSendQuery(db, query)
   result <- dbFetch(result.ref, cfg$database.max.records)
   dbClearResult(result.ref)
@@ -146,29 +146,28 @@ db.select.all <- function(db, time.interval, type, element) {
   if(nrow(result) == 0) {
     stop("No stations match this description")
   }
-
+  
   data.IDs <- result$data_id
   names(data.container[[time.interval.db]]$meta) <- data.IDs
   
   query <- sprintf(paste(
     "SELECT",
-      "data_id, DATE_FORMAT(date, %%s) AS datetime, value, qc",
+    "data_id, DATE_FORMAT(date, %%s) AS datetime, value, qc",
     "FROM",
-      "%s_series_%s",
+    "%s_series_%s",
     "WHERE",
-      "data_id IN (%s)"
+    "data_id IN (%s)"
   ),
   time.interval.db,
   element,
   paste(data.IDs, collapse = ","))
- 
+  
   query <- sprintf(query, "'%Y%m%d%H%i%s'")
-
+  
   result.ref <- dbSendQuery(db, query)
   result <- dbFetch(result.ref, cfg$database.max.records)
   dbClearResult(result.ref)
   
- 
   data.container[[time.interval.db]]$data <- by(result, factor(result$data_id), function(x) {
     
     dt <- data.table(datetime = x$datetime, value = x$value)
@@ -194,7 +193,6 @@ db.select.all <- function(db, time.interval, type, element) {
     class(dt) <- append(class(dt), cfg$data.container.timeseries.class)
     return(dt)
   })
-
   rm(result)
   return(data.container)
 }
@@ -202,16 +200,17 @@ db.select.all <- function(db, time.interval, type, element) {
 
 #' @title Query the database for timeseries data and metadata
 #' @param db Handle to MySQL database, taken from db.setup()
-#' @param stationIDs A vector of unique station ID's (called "codes" in the DB)
+#' @param station.IDs A vector of unique station ID's (called "codes" in the DB)
 #' @param time.interval One of {"1hour", "1day", "month", "season, "year"}
 #' @param type One of {"N", "H"} (case insensitive)
 #' @param element One of {"RH", "RD", "RR"} (case insensitive)
 #' @return An object of type "mqm.data.container" which contains a list of timeseries and metadata on those series.
-#' @example data.container <- db.select.timeseries(db, c(260, 324, 343, 340), "1hour", "H", "RH")
+#' #@example data.container <- db.select.timeseries(db, c(260, 324, 343, 340), "1hour", "H", "RH")
 #' @author Jurian
+#' @description a function
 #' @seealso db.setup()
 db.select.timeseries <- function(db, station.IDs, time.interval, type, element) {
-
+  
   #--------------------------------------#
   ### Check the arguments for validity ###
   #--------------------------------------#
@@ -262,19 +261,19 @@ db.select.timeseries <- function(db, station.IDs, time.interval, type, element) 
 
   query <- sprintf(paste(
     "SELECT",
-      "series.data_id AS data_id, aggregation, element",
+    "series.data_id AS data_id, aggregation, element",
     "FROM",
-      "series, elements, series_derived",
+    "series, elements, series_derived",
     "WHERE",
-      "series.code IN (%s) AND series.type_id = %i",
+    "series.code IN (%s) AND series.type_id = %i",
     "AND",
-      "elements.element_id = series.element_id",
+    "elements.element_id = series.element_id",
     "AND",
-      "series.data_id = series_derived.data_id",
+    "series.data_id = series_derived.data_id",
     "AND",
-      "elements.element_id = %i",
+    "elements.element_id = %i",
     "AND",
-      "series.aggregation = %s",
+    "series.aggregation = %s",
     ";"),
     paste(station.IDs, collapse = ","),
     type.ID,
@@ -311,11 +310,11 @@ db.select.timeseries <- function(db, station.IDs, time.interval, type, element) 
   
   query <- sprintf(paste(
     "SELECT",
-      "data_id, DATE_FORMAT(date, %%s) AS datetime, value, qc",
+    "data_id, DATE_FORMAT(date, %%s) AS datetime, value, qc",
     "FROM",
-      "%s_series_%s",
+    "%s_series_%s",
     "WHERE",
-      "data_id IN (%s)",
+    "data_id IN (%s)",
     ";"),
     time.interval.db,
     element.name,
@@ -363,40 +362,39 @@ db.select.timeseries <- function(db, station.IDs, time.interval, type, element) 
   
   query <- sprintf(paste(
     "SELECT",
-      "series.data_id AS data_id,",
-      "stations.code AS station_code,",
-      "name,",
-      "element,",
-      "element_group,",
-      "type,",
-      "types.type_id AS type_id,", 
-      "scale,", 
-      "unit,", 
-      "latitude,", 
-      "longitude,",
-      "elevation,", 
-      "aggregation,", 
-      "elements.element_id AS element_id",
+    "series.data_id AS data_id,",
+    "stations.code AS station_code,",
+    "name,",
+    "element,",
+    "element_group,",
+    "type,",
+    "types.type_id AS type_id,", 
+    "scale,", 
+    "unit,", 
+    "latitude,", 
+    "longitude,",
+    "elevation,", 
+    "aggregation,", 
+    "elements.element_id AS element_id",
     "FROM",
-      "series",
+    "series",
     "INNER JOIN stations ON",
-      "stations.code = series.code AND stations.type_id = series.type_id",
+    "stations.code = series.code AND stations.type_id = series.type_id",
     "INNER JOIN types ON",
-      "types.type_id = series.type_id",
+    "types.type_id = series.type_id",
     "INNER JOIN elements ON",
-      "elements.element_id = series.element_id",
+    "elements.element_id = series.element_id",
     "INNER JOIN series_derived ON",
-      "series.data_id = series_derived.data_id",
+    "series.data_id = series_derived.data_id",
     "WHERE",
-      "series.data_id IN (%s)",
+    "series.data_id IN (%s)",
     "GROUP BY",
-      "data_id, station_code"
+    "data_id, station_code"
   ),paste(data.IDs, collapse = ","))
   
   result.ref <- dbSendQuery(db, dbEscapeStrings(db, query))
   result <- dbFetch(result.ref, n = -1)
   dbClearResult(result.ref)
-
   data.container[[time.interval.db]]$meta <- by(result, factor(data.IDs), function(x) {
     
     meta <- list (
@@ -433,9 +431,11 @@ db.select.timeseries <- function(db, station.IDs, time.interval, type, element) 
 #' @param db Handle to MySQL database, taken from db.setup()
 #' @param meta An object of type mqm.meta.timeseries
 #' @param timeseries An object of type mqm.data.timeseries, data.table of structure <datetime, value>
-#' @example db.insert.update.timeseries(db, data.container$meta[<data_id>], data.container$1hour[<data_id>])
+#' #@example db.insert.update.timeseries(db, data.container$meta[<data_id>], data.container$1hour[<data_id>])
+#' @description a function
 #' @author Jurian
 #' @seealso db.setup()
+#' @export
 db.insert.update.timeseries <- function(db, meta, timeseries) {
   
   if(!dbIsValid(db)) {
@@ -457,14 +457,14 @@ db.insert.update.timeseries <- function(db, meta, timeseries) {
   #-----------------------------------------------------#
   
   query <- sprintf(paste(
-      "SELECT data_id FROM", 
-        "series", 
-      "WHERE",
-        "code = %i AND type_id = %i AND element_id = %i AND aggregation = %s"), 
-  meta$sta_id,
-  meta$sta_type_id,
-  meta$var_id,
-  paste0("'", meta$var_interval, "'"))
+    "SELECT data_id FROM", 
+    "series", 
+    "WHERE",
+    "code = %i AND type_id = %i AND element_id = %i AND aggregation = %s"), 
+    meta$sta_id,
+    meta$sta_type_id,
+    meta$var_id,
+    paste0("'", meta$var_interval, "'"))
   
   result.ref <- dbSendQuery(db, query)
   result <- dbFetch(result.ref)
@@ -521,9 +521,9 @@ db.insert.update.timeseries <- function(db, meta, timeseries) {
     
     query <- sprintf(paste(
       "DELETE FROM",
-        "%s_series_%s",
+      "%s_series_%s",
       "WHERE",
-        "data_id = %i"
+      "data_id = %i"
     ), 
     meta$var_interval,
     meta$var_name,
@@ -562,13 +562,15 @@ db.insert.update.timeseries <- function(db, meta, timeseries) {
   rows.affected <- dbExecute(db, query)
   
   print(paste("Inserted", rows.affected, "rows into the database"))
- 
+  
   return(rows.affected == timeseries.length)
 }
 
 #' @title Fetch a new data ID from the database
 #' @param db Handle to MySQL database, taken from db.setup()
 #' @return A new and unique data ID
+#' @description a function
+#' @export
 db.new.data.id <- function(db) {
   
   if(!dbIsValid(db)) {
@@ -588,8 +590,9 @@ db.new.data.id <- function(db) {
 #' @param ... Arguments to pass to the function
 #' @return Output of the function
 #' @author Jurian
-#' @example data.container <- db.execute(db.select.all, "1day", "H", "RD")
-#' @example data.id <- db.execute(db.new.data.id)
+#' #@example data.container <- db.execute(db.select.all, "1day", "H", "RD")
+#' #@example data.id <- db.execute(db.new.data.id)
+#' @export
 db.execute <- function(FUN, ...) {
   
   # Set up a connection to the database
@@ -603,4 +606,71 @@ db.execute <- function(FUN, ...) {
   })
   
   return(result)
+}
+
+#' @title Get station information from database
+#' @description get the metadata for all stations
+#' @author Marieke 
+#' @export
+station.info<-function(){
+  db<-db.setup()
+  query<-"SELECT * FROM stations" 
+  
+  query_new<-"SELECT stations.name, 
+  stations.latitude, 
+  stations.longitude, 
+  CONCAT(stations.code, '_', types.type) as code_real, 
+  stations.code, 
+  stations.type_id, 
+  elements.element,
+  start,
+  stop 
+  FROM stations, types, elements, series, series_derived 
+  WHERE stations.type_id=types.type_id and 
+  stations.type_id=series.type_id and 
+  stations.code=series.code and 
+  series.element_id=elements.element_id and 
+  series.data_id=series_derived.data_id ;"
+  
+  db.q<-dbSendQuery(db,query_new)
+  results<-dbFetch(db.q,n=-1)
+  
+  
+  dbDisconnect(db)
+  
+  return(results)
+}
+
+#' @title Get information from nearby stations from the database
+#' @description get the metadata for all stations, input looks like code_real="260_H"
+#' @author Marieke 
+#' @param code_real code like 260_H
+#' @export
+#' 
+station.nearby<-function(code_real){
+  
+  split<-unlist(strsplit(code_real,"_"))
+  code=split[1]
+  type=split[2]
+  
+  db<-db.setup()
+  query<-"SELECT * FROM nearby_stations"
+  
+  
+  query_new<-sprintf("SELECT name,
+
+CONCAT(nearby_stations.nearby_code,'_',types.type) as nearby_code_real,
+                             latitude,
+                             longitude
+                      FROM nearby_stations,stations,types
+                      WHERE nearby_stations.code=stations.code and
+                            nearby_stations.type_id=stations.type_id and
+                            nearby_stations.type_id=types.type_id and
+                            nearby_stations.code=%s and types.type='%s';",
+                     code,type)
+  
+  db.q<-dbSendQuery(db,query_new)
+  results<-dbFetch(db.q,n=-1)
+  dbDisconnect(db)
+  return(results)
 }

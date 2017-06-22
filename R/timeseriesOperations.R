@@ -3,7 +3,7 @@ library(data.table)
 #' @title Relative difference of timeseries
 #' @description Calculate the relative difference between two timeseries as 100% * (timeseries2 - timeseries1)/timeseries1.
 #' @details the input should have certain column names and identical timeseries. If not, the function stops with an error that identifies the problem. 
-#' @example input; files <- grab.test.data(); AWS_timeserie <- files$Almelo_664_N_seasonal_precip[,c(1,3)]; Man_timeserie <- files$Enschede_665_N_seasonal_precip[,c(1,3)]; names(AWS_timeserie) <- names(Man_timeserie) <- c("time", "average")
+#' #@example input; files <- grab.test.data(); AWS_timeserie <- files$Almelo_664_N_seasonal_precip[,c(1,3)]; Man_timeserie <- files$Enschede_665_N_seasonal_precip[,c(1,3)]; names(AWS_timeserie) <- names(Man_timeserie) <- c("time", "average")
 #' @param timeserie1 timeserie as data.table with first column datetime and second column (average) value. Possible input is AWS_timeserie. 
 #' @param timeserie2 timeserie as data.table with first column datetime and second column (average) value. Possible input is MAN_timeserie. 
 #' @author Lotte and Jurian
@@ -34,8 +34,8 @@ timeseries.relative.difference <- function(timeserie1, timeserie2){
 timeseries.intersection <- function(timeseries) {
   
   # Find the latest start datetime and earliest stop datetime
-  datetime.start <- max(sapply(timeseries, function(ts) min(ts$datetime)))
-  datetime.stop <- min(sapply(timeseries, function(ts) max(ts$datetime)))
+  datetime.start <- min(sapply(timeseries, function(ts) min(ts$datetime)))
+  datetime.stop <- max(sapply(timeseries, function(ts) max(ts$datetime)))
 
   # We make use of data.tables fast fintersect() function
   # The datetime column is already a key, which makes this very fast

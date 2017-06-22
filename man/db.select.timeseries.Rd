@@ -4,21 +4,25 @@
 \alias{db.select.timeseries}
 \title{Query the database for timeseries data and metadata}
 \usage{
-db.select.timeseries(db, station.IDs, type.ID, element.ID, series.type)
+db.select.timeseries(db, station.IDs, time.interval, type, element)
 }
 \arguments{
 \item{db}{Handle to MySQL database, taken from db.setup()}
 
-\item{series.type}{One of {"validated", "derived", "series"}}
+\item{station.IDs}{A vector of unique station ID's (called "codes" in the DB)}
 
-\item{stationIDs}{A vector of unique station ID's (called "codes" in the DB)}
+\item{time.interval}{One of {"1hour", "1day", "month", "season, "year"}}
 
-\item{typeID}{Unique identifier for type (e.g. 1 for "N", 2 for "H")}
+\item{type}{One of {"N", "H"} (case insensitive)}
 
-\item{elementID}{Unique identifier for element (e.g. 1 for "RH", 2 for "RD")}
+\item{element}{One of {"RH", "RD", "RR"} (case insensitive)}
 }
 \value{
 An object of type "mqm.data.container" which contains a list of timeseries and metadata on those series.
+#@example data.container <- db.select.timeseries(db, c(260, 324, 343, 340), "1hour", "H", "RH")
+}
+\description{
+a function
 }
 \seealso{
 db.setup()

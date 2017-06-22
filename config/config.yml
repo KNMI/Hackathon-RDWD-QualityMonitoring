@@ -23,5 +23,3 @@ test:
 production:
  inherits: test
  database.max.records : -1
-
-

@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/KNMI/Hackathon-RDWD-QualityMonitoring.svg?branch=master)](https://travis-ci.org/KNMI/Hackathon-RDWD-QualityMonitoring)
+
 # Hackathon-RDWD-QualityMonitoring
 Hackathon RDWD 2017 (June 12th - June 23rd) : Quality Monitoring
 

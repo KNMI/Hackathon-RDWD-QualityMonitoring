@@ -11,7 +11,11 @@ db.insert.update.timeseries(db, meta, timeseries)
 
 \item{meta}{An object of type mqm.meta.timeseries}
 
-\item{timeseries}{An object of type mqm.data.timeseries, data.table of structure <datetime, value>}
+\item{timeseries}{An object of type mqm.data.timeseries, data.table of structure <datetime, value>
+#@example db.insert.update.timeseries(db, data.container$meta[<data_id>], data.container$1hour[<data_id>])}
+}
+\description{
+a function
 }
 \seealso{
 db.setup()
