@@ -170,6 +170,18 @@ aggregateTo.seasonal <- function(obj, all.stations=TRUE, sta_type="AWS", var_id=
   return(obj)
 }
 
+#' @title Aggregate 8 am to 8 am data to yearly sums
+#' @description  The function takes the R object, calculates aggregates and returns this in the object, included updated meta data. 
+#' @details When data availability is below 80% in a season (i.e. >18 days missing), or a year (i.e. > 73 days missing), the aggregation becomes NA.
+#' @param data.container The R object containing all timeseries and metadata
+# ' @param all.stations default is "TRUE" means all stations are aggregated. If all.stations = FALSE, an array of sta_ID needs to be provided.
+# ' @param sta_type default is "AWS", but could be extended to for instance "WOW" in the future.
+# ' @param var_id default is "RD" for daily rainfall.
+# ' @param sta_id defines the string of sta_id's that need to be aggregated. Only applies when all.stations = FALSE.
+# ' #@example aggregated.seasonal <- aggregate.to.seasonal(obj)
+#' @author Jurian and Lotte
+#' @export
+
 aggregateTo.year <- function(data.container) {
   
   if(is.null(data.container$`1day`)) {
@@ -187,15 +199,16 @@ aggregateTo.year <- function(data.container) {
     
     timeseries <- rbindlist(by(timeseries, years, function(y) {
       dt <- data.table (
-        datetime = as.character(
-          as.Date(paste(year(y$datetime)[1], "01", "01", sep = "-"), format="%Y-%m-%d"),
-          format = "%Y%m%d%H%M%S"
-        ),
+        datetime = paste0(year((y$datetime)[1]) + 1, "01", "01", "08", "0000"),
+        #datetime = as.character(
+        #  as.Date(paste(year(y$datetime)[1], "01", "01", sep = "-"), format="%Y-%m-%d"),
+        #  format = "%Y%m%d%H%M%S"
+        #),
         value = sum(y$value, na.rm = T)
       )
       setkey(dt, datetime)
       
-      no.of.NAs <- sum(is.na(s$value))
+      no.of.NAs <- sum(is.na(y$value))
       if(no.of.NAs > MaxNAPerYear) {
         dt$value <- NA
       }
@@ -217,7 +230,19 @@ aggregateTo.year <- function(data.container) {
   return(data.container)
 }
 
-aggregate.to.seasonal.2 <- function(data.container) {
+#' @title Aggregate 8 am to 8 am data to seasonal sums
+#' @description Since the variability is seasonal dependent we would like to be able to compare certain seasons only. The function takes the R object, calculates aggregates and returns this in the object, included updated meta data. 
+#' @details When data availability is below 80% in a season (i.e. >18 days missing), or a year (i.e. > 73 days missing), the aggregation becomes NA.
+#' @param data.container The R object containing all timeseries and metadata
+# ' @param all.stations default is "TRUE" means all stations are aggregated. If all.stations = FALSE, an array of sta_ID needs to be provided.
+# ' @param sta_type default is "AWS", but could be extended to for instance "WOW" in the future.
+# ' @param var_id default is "RD" for daily rainfall.
+# ' @param sta_id defines the string of sta_id's that need to be aggregated. Only applies when all.stations = FALSE.
+# ' #@example aggregated.seasonal <- aggregate.to.seasonal(obj)
+#' @author Jurian and Lotte
+#' @export
+
+aggregateTo.seasonal.2 <- function(data.container) {
   
   if(is.null(data.container$`1day`)) {
     stop("Data container does not have daily data")
@@ -255,20 +280,26 @@ aggregate.to.seasonal.2 <- function(data.container) {
     seasons <- factor(paste0(seasons, timeseries$years))
     timeseries$seasons <- seasons
     
- 
+    #return(timeseries)
+    
     timeseries <- rbindlist(by(timeseries, seasons, function(s) {
       
+      m <- rev(s$months + 1)[1]
+      m <- ifelse(nchar(m) == 1, paste0("0",m), m)
+      
       dt <- data.table (
-        datetime = as.character(
-          as.Date(paste(s$years[1], s$months[1], "01", sep = "-"), format="%Y-%m-%d"),
-          format = "%Y%m%d%H%M%S"
-        ),
+        datetime = paste0(s$years[1], m, "01", "08", "0000"),
         value = sum(s$value, na.rm = T)
       )
       setkey(dt, datetime)
       
-      no.of.NAs <- sum(is.na(s$value))
-      if(no.of.NAs > MaxNAPerSeason) {
+      nr.of.months <- length(table(month(s$datetime)))
+      if(nr.of.months < 3) {
+        dt$value <- NA
+      }
+      
+      nr.of.NAs <- sum(is.na(s$value))
+      if(nr.of.NAs > MaxNAPerSeason) {
         dt$value <- NA
       }
       
@@ -290,7 +321,19 @@ aggregate.to.seasonal.2 <- function(data.container) {
   return(data.container)
 }
 
-aggregate.to.88.2 <- function(data.container) {
+#' Daily aggeration
+#' @title Aggregate hourly data to daily from 8am to 8am the next day
+#' @description Rain is measured hourly in the automatic weather stations, this needs to be converted to sums from 8 am to 8 am on the next day.
+#' @param data.container The R object containing all timeseries and metadata
+# ' @param all.stations default is "TRUE" means all stations are aggregated. If all.stations = FALSE, an array of sta_ID needs to be provided.
+# ' @param sta_type default is "AWS", but could be extended to for instance "WOW" in the future.
+# ' @param var_id default is "RH" for hourly rainfall.
+# ' @param sta_id defines the string of sta_id's that need to be aggregated. Only applies when all.stations = FALSE.
+# ' #@example aggregated88 <- aggregate.to.88(obj=obj)
+#' @author Lotte, Jurian & Hidde
+#' @export
+
+aggregateTo.88.2 <- function(data.container) {
   
   if(is.null(data.container$`1hour`)) {
     stop("Data container does not have hourly data")
@@ -332,7 +375,7 @@ aggregate.to.88.2 <- function(data.container) {
     
     return(aggregated_data)
   }
-  
+#  count <- 0
   data.container$`1day` <- list()
   data.container$`1day`$data <- lapply(data.container$`1hour`$data, agg.88)
   data.container$`1day`$meta <- lapply(data.container$`1hour`$meta, function(m) {

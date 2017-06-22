@@ -1,13 +1,14 @@
 Package: QualityMonitoR
 Type: Package
 Title: What the package does (short line)
-Version: 1.0.1
+Version: 1.0.2
 Date: 2017-06-23
 Author: Who wrote it
 Maintainer: Who to complain to <yourfault@somewhere.net>
 Description: More about what it does (maybe more than one line)
 Imports:  config,
           data.table,
+          DBI,
           ggmap,
           ggplot2,
           graphics,
@@ -17,6 +18,7 @@ Imports:  config,
           RMySQL,
           R.utils,
           shiny,
+          sp,
           stats,
           climtrends
 License: What license is it under?

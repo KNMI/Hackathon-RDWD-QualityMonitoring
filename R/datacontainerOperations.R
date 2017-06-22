@@ -8,7 +8,8 @@
 #' @author Jurian
 merge.mqm.data.container <- function(a, b) {
   
-  cfg <- config::get(file = "config/config.yml")
+  cfg <- config::get(file = system.file("config", "config.yml",
+                                        package = "QualityMonitoR"))
   
   if(class(a) != cfg$data.container.main.class | class(b) != cfg$data.container.main.class) {
     stop(paste("One or both arguments not of class", cfg$data.container.main.class))

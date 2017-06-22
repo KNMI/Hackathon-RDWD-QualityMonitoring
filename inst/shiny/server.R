@@ -1,18 +1,20 @@
 #runApp("~/Hackathon-RDWD-QualityMonitoring/inst/shiny")
-library(shiny)
-library(leaflet)
-library(ggplot2)
+# library(shiny)
+# library(leaflet)
+# library(ggplot2)
 library(data.table)
-library(lubridate)
-library(stringr)
-# library(raster)
-source("~/Hackathon-RDWD-QualityMonitoring/R/databaseOperations.R",local=TRUE)
+# library(lubridate)
+# library(stringr)
+library(raster)
+library(sp)
+library(QualityMonitoR)
+# source("~/Hackathon-RDWD-QualityMonitoring/R/databaseOperations.R",local=TRUE)
 
 # stations <-readRDS("~/Hackathon-RDWD-QualityMonitoring/data/testdata/stationInfo.rds")
 # stations.nearby <-readRDS("~/Hackathon-RDWD-QualityMonitoring/data/testdata/stationNearby.rds")
 
 # change name of DB_output file if required. DB's are constructed in runScripts.R
-DB_output <- read.table("~/Hackathon-RDWD-QualityMonitoring/output/text/BD_output_NL_AWSvsMAN.txt", sep=",", header=T)  
+DB_output <- read.table("../output/text/BD_output_NL_AWSvsMAN.txt", sep=",", header=T)  
 
 
 #query from the db
@@ -33,13 +35,13 @@ stations.all<-subset(stations.all,select=c("name",
 
 server <- function(input, output, session) {
   
-  stations<-reactive({stations.all[which(stations.all$start<=input$date1 & 
-                                           stations.all$stop>=input$date2 & 
+  stations<-reactive({stations.all[which(stations.all$start<=input$dateRange[[1]] & 
+                                           stations.all$stop>=input$dateRange[[2]] & 
                                            stations.all$type_id==input$Type),]})
   detection_datetime <- Sys.time()
   
   rv <- reactiveValues(showDetails = "false", station = "")
-  data <- reactiveValues(clickedMarker = NULL)
+  data <- reactiveValues(clickedStation = NULL)
   
   
   setDetails <- function(detailVisible, station) {
@@ -54,14 +56,14 @@ server <- function(input, output, session) {
 
   markerClicked <- function(markerClickEvent) {
     print("observed marker click")
-    data$clickedMarker <- markerClickEvent
+    data$clickedStation <- markerClickEvent
   
     df<-reactive({
       spdf<-stations()
       coordinates(spdf)<-~longitude+latitude
       proj4string(spdf)<-CRS("+init=epsg:4326")  
       
-    sp<-data.frame(data$clickedMarker)
+    sp<-data.frame(data$clickedStation)
     coordinates(sp)<-~lng+lat
     proj4string(sp)<-CRS("+init=epsg:4326")
 
@@ -77,7 +79,7 @@ server <- function(input, output, session) {
       spdf<-stations()
       coordinates(spdf)<-~longitude+latitude
       proj4string(spdf)<-CRS("+init=epsg:4326")
-      sp<-data.frame(data$clickedMarker)
+      sp<-data.frame(data$clickedStation)
    
       coordinates(sp)<-~lng+lat
       proj4string(sp)<-CRS("+init=epsg:4326")
@@ -88,37 +90,68 @@ server <- function(input, output, session) {
       setkey(df,"d")
       df<-df[which(df$type_id==input$Type),]
       df.number<-head(df,n=input$nr+1)
-    })
-    
 
+    })
+  
+  #example of button saving and loading data https://shiny.rstudio.com/articles/persistent-data-storage.html    
+  radiusStations<-observeEvent(input$buttonradius,{
+  dfNr()
+    #HERE COMES A FUNCTION FOR BREAKDETECTION
+  })
+  
+ numberStations<-observeEvent(input$buttonnumber,{
+  df()
+   #HERE COMES A FUNCTION FOR BREAKDETECTION
+  })
+  
+  nearbyStations<-observeEvent(input$buttonnearby,{
+  dfNearby()
+    #HERE COMES A FUNCTION FOR BREAKDETECTION
+  })
+  
+  #HERE COMES CODE FOR THE OUTPUT OF THE BREAKDETECTION
+  #An example in for a table:
+  #output$breakradius<-renderTable({radiusStations()})
+  #output$breaknumber<-renderTable({numberStations()})
+  #output$breaknearby<-renderTable({nearbyStations()})
+  
     
-    #NOT WORKING!!!
     dfNearby<-reactive({
-      data$clickedMarker <- markerClickEvent
-      dfNearby<-station.nearby(data$clickedMarker$id) #function making a connection to the db
+      data$clickedStation <- markerClickEvent
+      dfNearby<-station.nearby(data$clickedStation$id) #function making a connection to the db
     })
     output$stationsNearby<-renderTable({
-      # if (!is.null(dfNearby())){paste("The station you selected is not on the list")}
       dfNearby()
     })
     ##############
-    output$clickedMarker <- renderText({
-      paste("Station ", data$clickedMarker$id, "has been selected")
+    output$clickedStation <- renderText({
+      paste("Station ", data$clickedStation$id, "has been selected")
     })
     output$clickedDistance <- renderTable({
-      df()
+      data.df<-df()
+      data.df<-subset(data.df,select=c("name",
+                                     "code_real",
+                                     "latitude",
+                                     "longitude"))
+      data.df
     })
     output$clickedNumber <- renderTable({
-      dfNr()
+      data.dfNr<-dfNr()
+      
+      data.dfNr<-subset(data.dfNr,select=c("name",
+                                     "code_real",
+                                     "latitude",
+                                     "longitude"))
+      data.dfNr
     })
-    print(data$clickedMarker)
+    print(data$clickedStation)
   }
   
   mapClicked <- function(mapClickEvent) {
     print("observed map click")
-    data$clickedMarker <- NULL
-    print(data$clickedMarker)
-    output$clickedMarker <-
+    data$clickedStation <- NULL
+    print(data$clickedStation)
+    output$clickedStation <-
       renderText("No station has been selected")
   }
   
@@ -152,11 +185,19 @@ server <- function(input, output, session) {
   
   #Leaflet update not always correct...stations() not always updated 
   #This could be a solution: https://www.r-bloggers.com/r-shiny-leaflet-using-observers/
-  output$map <- renderLeaflet(
-    leaflet(data=stations()) %>%
-      setView(lng=5.3878, lat=52.1561, zoom=7) %>%
-      addProviderTiles(providers$Stamen.TonerLite,
-                       options = providerTileOptions(noWrap = TRUE))  %>%
+output$map<-renderLeaflet(
+      leaflet(data=stations(),options = leafletOptions(minZoom = 7, maxZoom = 13)) %>%
+        setView(lng=5.3878, lat=52.1561, zoom=7) %>%
+        addProviderTiles(providers$Stamen.TonerLite,
+                         options = providerTileOptions(noWrap = TRUE)) 
+
+       )
+  
+
+observeEvent(input$Type,{
+  if(nrow(stations())==0) { leafletProxy("map") %>% clearShapes()} 
+  else {
+    leafletProxy("map", data=stations() ) %>% clearShapes() %>%
       addCircleMarkers(
         lat = ~ latitude,
         lng = ~ longitude,
@@ -164,54 +205,25 @@ server <- function(input, output, session) {
         layerId = ~ code_real,
         label = ~type_id,
         color = ~pal(type_id))
-      )
-  
-  
-  observe({
-    input$date1
-    leafletProxy("map", data = stations()) %>%
-      clearShapes() %>%
+  }
+})
+
+observeEvent(input$dateRange,{
+  if(nrow(stations())==0) { leafletProxy("map") %>% clearShapes()} 
+  else {
+    leafletProxy("map", data=stations() ) %>% clearShapes() %>%
       addCircleMarkers(
         lat = ~ latitude,
         lng = ~ longitude,
         popup = ~ name,
         layerId = ~ code_real,
         label = ~type_id,
-        color = ~pal(type_id)
-      )
-  })
+        color = ~pal(type_id))
+  }
+})
   
-  observe({
-    input$date2
-    leafletProxy("map", data = stations()) %>%
-      clearShapes() %>%
-      addCircleMarkers(
-        lat = ~ latitude,
-        lng = ~ longitude,
-        popup = ~ name,
-        layerId = ~ code_real,
-        label = ~type_id,
-        color = ~pal(type_id)
-      )
-  })
-  
-  observe({
-    input$Type
-    leafletProxy("map", data = stations()) %>%
-      clearShapes() %>%
-      addCircleMarkers(
-        lat = ~ latitude,
-        lng = ~ longitude,
-        popup = ~ name,
-        layerId = ~ code_real,
-        label = ~type_id,
-        color = ~pal(type_id)
-      )
-  })
-  
-  
-  
-  output$clickedMarker <- renderText("Please select a station")
+
+  output$clickedStation <- renderText("Please select a station")
   outputOptions(output, "showDetails", suspendWhenHidden = FALSE)
   outputOptions(output, "stationId", suspendWhenHidden = FALSE)
   
