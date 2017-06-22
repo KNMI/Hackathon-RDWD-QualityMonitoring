@@ -28,12 +28,44 @@ body > .container-fluid {
   margin: 0;
 }
 
+.tab-pane.active .row.direction {
+  flex-direction: row;
+}
+
+.row.direction div {
+  margin-right: 0.5rem;
+}
+
+.col-inner {
+  padding: 0;
+}
+
+.col-right {
+  padding: 0 0 0 2rem;
+}
+
 .greedy, .greedy .container-fluid {
   flex: 1;
 }
 
+.heading {
+  margin-top: 0.5rem;
+}
+
 #map {
   border-radius: 0.5rem;
+}
+
+#Type {
+  margin-bottom: 0;
+}
+
+#stationTables {
+  margin-bottom: 1rem;
+}
+
+#stationTables, #stationTables div {
+  flex: 1;
 }
 
 .Header .navbar {
@@ -67,6 +99,10 @@ body > .container-fluid {
     text-decoration: none;
 }
 
+.navbar {
+  margin-bottom: 0;
+}
+
 .navbar .logo {
     margin: 0.1rem 0.3rem 0.4rem;
     width: 2.5rem;
@@ -79,6 +115,11 @@ body > .container-fluid {
 
 .MainSection .container-fluid {
   margin: 0;
+  padding: 1rem;
+}
+
+.MainSection nav .container-fluid {
+  padding: 0;
 }
 
 .tab-pane .panel-heading i {
@@ -106,7 +147,7 @@ body > .container-fluid {
 }
 
 .tab-content > div, .tab-content .row {
-  width: inherit;
+  width: 100%;
 }
 
 .tab-pane .panel-body .includeDivider {
@@ -121,3 +162,15 @@ td strong {
     flex: 1;
     overflow: hidden;
 }
+
+.tabbable .tab-content {
+  border: 0.05rem solid #ddd;
+  border-top: none;
+  border-radius: 0 0 0.5rem 0.5rem;
+  flex: 1;
+}
+
+.shiny-input-container:not(.shiny-input-container-inline) {
+  width: 100%;
+}
+

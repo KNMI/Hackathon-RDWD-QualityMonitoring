@@ -148,7 +148,7 @@ server <- function(input, output, session) {
     paste(format(detection_datetime - 363421), ": 280 - MAM")
   })
   
-  pal <- colorFactor(c("green", "orange"),domain = c("1","2"))
+  pal <- colorFactor(c("#bcdff1", "#d0e9c6"),domain = c("1","2"))
   
   #Leaflet update not always correct...stations() not always updated 
   #This could be a solution: https://www.r-bloggers.com/r-shiny-leaflet-using-observers/
@@ -162,8 +162,9 @@ server <- function(input, output, session) {
         lng = ~ longitude,
         popup = ~ name,
         layerId = ~ code_real,
-        label = ~type_id,
-        color = ~pal(type_id))
+        color = ~pal(type_id),
+        stroke = FALSE, fillOpacity = 0.9,
+        radius = 10)
       )
   
   observe({
@@ -175,8 +176,9 @@ server <- function(input, output, session) {
         lng = ~ longitude,
         popup = ~ name,
         layerId = ~ code_real,
-        label = ~type_id,
-        color = ~pal(type_id)
+        color = ~pal(type_id),
+        stroke = FALSE, fillOpacity = 0.9,
+        radius = 10
       )
   })
   
@@ -189,12 +191,13 @@ server <- function(input, output, session) {
         lng = ~ longitude,
         popup = ~ name,
         layerId = ~ code_real,
-        label = ~type_id,
-        color = ~pal(type_id)
+        color = ~pal(type_id),
+        stroke = FALSE, fillOpacity = 0.9,
+        radius = 10
       )
   })
   
-  output$clickedStation <- renderText("Please select a station")
+  output$clickedStation <- renderText("Please select a station on the map")
   outputOptions(output, "showDetails", suspendWhenHidden = FALSE)
   outputOptions(output, "stationId", suspendWhenHidden = FALSE)
   
