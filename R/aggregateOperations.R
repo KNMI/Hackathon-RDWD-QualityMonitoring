@@ -192,28 +192,50 @@ aggregate.to.seasonal.2 <- function(data.container) {
   
   agg.season <- function(timeseries) {
     
-    months <- month(strptime(timeseries$datetime, format="%Y%m%d%H%M%S"))
-    years <- year(strptime(timeseries$datetime, format="%Y%m%d%H%M%S"))
+    timeseries$datetime <- as.Date(timeseries$datetime, format="%Y%m%d")
     
-    decembers.idx <- which(months == 12)
+    timeseries$months <- month(timeseries$datetime)
+    timeseries$years <- year(timeseries$datetime)
     
-    years[decembers.idx] <- years[decembers.idx] + 1
+    decembers.idx <- which(timeseries$months == 12)
+    timeseries$years[decembers.idx] <- timeseries$years[decembers.idx] + 1
     
     # Assign seasons to observations
-    seasons <- vector("", length = length(months))
-    seasons[months %in% winter] <- "winter"
-    seasons[months %in% spring] <- "spring"
-    seasons[months %in% summer] <- "summer"
-    seasons[months %in% autumn] <- "autumn"
-    # Make sure the columns are in the correct ordering
-    seasons <- factor(seasons, levels = c("winter", "spring", "summer", "autumn"))
+    seasons <- character(length = length(timeseries$months))
+    seasons[timeseries$months %in% winter] <- "winter"
+    seasons[timeseries$months %in% spring] <- "spring"
+    seasons[timeseries$months %in% summer] <- "summer"
+    seasons[timeseries$months %in% autumn] <- "autumn"
+
+    seasons <- factor(paste0(seasons, timeseries$years))
+    timeseries$seasons <- seasons
+    
+ 
+    test <- by(timeseries, seasons, function(s) {
+      dt <- data.table(
+        datetime = as.character(
+          as.Date(paste(s$years[1], s$months[1], "01", sep = "-"), format="%Y-%m-%d"),
+          format = "%Y%m%d%H%M%S"
+        ),
+        value = sum(s$value)
+      )
+      setkey(dt, datetime)
+      return(dt)
+    })
     
     
-    return(seasons)
+    
+    return(rbindlist(test))
   }
   
+  data.container$season <- list()
+  data.container$season$data <- lapply(data.container$`1day`$data, agg.season)
+  data.container$season$meta <- lapply(data.container$`1day`$meta, function(m) {
+    m$var_interval <- "season"
+    return(m)
+  })
   
-  
+  return(data.container)
 }
 
 aggregate.to.88.2 <- function(data.container) {
