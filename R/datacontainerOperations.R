@@ -15,7 +15,6 @@ merge.mqm.data.container <- function(a, b) {
   }
   
   c <- append(a, b)
-  
   class(c) <- cfg$data.container.main.class
   
   return(c)
