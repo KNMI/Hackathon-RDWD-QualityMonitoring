@@ -268,8 +268,13 @@ aggregate.to.seasonal.2 <- function(data.container) {
       )
       setkey(dt, datetime)
       
-      no.of.NAs <- sum(is.na(s$value))
-      if(no.of.NAs > MaxNAPerSeason) {
+      nr.of.months <- length(table(month(s$datetime)))
+      if(nr.of.months < 3) {
+        dt$value <- NA
+      }
+      
+      nr.of.NAs <- sum(is.na(s$value))
+      if(nr.of.NAs > MaxNAPerSeason) {
         dt$value <- NA
       }
       
