@@ -190,7 +190,7 @@ server <- function(input, output, session) {
           lng = ~ longitude,
           popup = ~ name,
           layerId = ~ code_real,
-      #    label = ~type_id,
+          label = ~type_id,
           color = ~pal(type_id))
     }
   })
@@ -204,7 +204,7 @@ server <- function(input, output, session) {
           lng = ~ longitude,
           popup = ~ name,
           layerId = ~ code_real,
-       #   label = ~type_id,
+          label = ~type_id,
           color = ~pal(type_id))
     }
   })
