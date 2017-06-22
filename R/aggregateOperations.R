@@ -338,13 +338,9 @@ aggregate.to.88.2 <- function(data.container) {
     
     return(aggregated_data)
   }
-  count <- 0
+#  count <- 0
   data.container$`1day` <- list()
-  data.container$`1day`$data <- lapply(data.container$`1hour`$data, function(x){
-    count <- count + 1
-    print(count)
-    agg.88(x)
-  })
+  data.container$`1day`$data <- lapply(data.container$`1hour`$data, agg.88)
   data.container$`1day`$meta <- lapply(data.container$`1hour`$meta, function(m) {
     m$var_interval <- "1day"
     return(m)
