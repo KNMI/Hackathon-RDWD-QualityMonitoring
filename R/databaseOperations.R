@@ -33,7 +33,6 @@ db.close <- function(db) {
 
 #' @title Get station information from database
 #' @description get the metadata for all stations
-#' @return TRUE, invisibly
 #' @author Marieke 
 #' @export
 station.info<-function(){
@@ -67,26 +66,31 @@ station.info<-function(){
 
 #' @title Get information from nearby stations from the database
 #' @description get the metadata for all stations, input looks like code_real="260_H"
-#' @return TRUE, invisibly
 #' @author Marieke 
 #' @export
 #' 
 station.nearby<-function(code_real){
 
 split<-unlist(strsplit(code_real,"_"))
-  
 code=split[1]
 type=split[2]
 
-
-  
-  db<-db.setup()
+db<-db.setup()
   query<-"SELECT * FROM nearby_stations"
   
 
-  query_new<-sprintf("SELECT nearby_stations.code,nearby_stations.type_id,nearby_stations.nearby_code,nearby_stations.nearby_type_id 
-                     FROM nearby_stations,types WHERE nearby_stations.type_id=types.type_id and nearby_stations.code=%s and types.type='%s';",code,type)
+  query_new<-sprintf("SELECT name,
 
+CONCAT(nearby_stations.nearby_code,'_',types.type) as nearby_code_real,
+                             latitude,
+                             longitude
+                      FROM nearby_stations,stations,types
+                      WHERE nearby_stations.code=stations.code and
+                            nearby_stations.type_id=stations.type_id and
+                            nearby_stations.type_id=types.type_id and
+                            nearby_stations.code=%s and types.type='%s';",
+                     code,type)
+  
   db.q<-dbSendQuery(db,query_new)
   results<-dbFetch(db.q,n=-1)
   dbDisconnect(db)
