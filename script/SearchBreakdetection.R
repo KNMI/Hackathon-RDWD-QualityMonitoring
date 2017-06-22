@@ -74,9 +74,27 @@ obj1_average_season  <- average.spatial(timeseries=obj_subset1_season)
 obj2_average_season  <- average.spatial(timeseries=obj_subset2_season) 
 obj3_average_season  <- average.spatial(timeseries=obj_subset3_season) 
 
+obj1_average_djf <- obj1_average_season [which(month(as.Date(obj1_average_season$datetime, format="%Y%m%d%H%M%S")) == 3)]
+obj1_average_mam <- obj1_average_season [which(month(as.Date(obj1_average_season$datetime, format="%Y%m%d%H%M%S")) == 3)]
+obj1_average_jja
+obj1_average_son
+
+
   # Calculate relative difference # 
 
-rel_dif_AWSvsMAN <- timeseries.relative.difference(timeserie1=obj1, timeserie2=MAN_average_y)
+rel_dif_AWSvsMAN_y <- timeseries.relative.difference(timeserie1=obj1_average_y, timeserie2=obj2_average_y)
+rel_dif_AWSvsRAD_y <- timeseries.relative.difference(timeserie1=obj1_average_y, timeserie2=obj3_average_y)
+
+rel_dif
+
+rel_dif_AWSvsMAN_djf <- timeseries.relative.difference(timeserie1=obj1_average_djf, timeserie2=MAN_average_y)
+rel_dif_AWSvsRAD_djf <- timeseries.relative.difference(timeserie1=obj1_average_djf, timeserie2=MAN_average_y)
+rel_dif_AWSvsMAN_mam <- timeseries.relative.difference(timeserie1=obj1_average_y, timeserie2=MAN_average_y)
+rel_dif_AWSvsRAD_mam <- timeseries.relative.difference(timeserie1=obj1_average_y, timeserie2=MAN_average_y)
+rel_dif_AWSvsMAN_jja <- timeseries.relative.difference(timeserie1=obj1_average_y, timeserie2=MAN_average_y)
+rel_dif_AWSvsRAD_jja <- timeseries.relative.difference(timeserie1=obj1_average_y, timeserie2=MAN_average_y)
+rel_dif_AWSvsMAN_son <- timeseries.relative.difference(timeserie1=obj1_average_y, timeserie2=MAN_average_y)
+rel_dif_AWSvsRAD_son <- timeseries.relative.difference(timeserie1=obj1_average_y, timeserie2=MAN_average_y)
 
 
 
