@@ -3,6 +3,13 @@ setwd("~/Hackathon-RDWD-QualityMonitoring/")
 Sys.setenv(R_CONFIG_ACTIVE = "test")
 
  # Functions # 
+<<<<<<< HEAD
+source("R/databaseOperations.R")
+source("R/aggregateOperations.R")
+source("R/averagingOperations.R")
+source("R/timeseriesOperations.R")
+source("R/breakDetection.R")
+=======
 library(R.utils)
 sourceDirectory("R")
 # source("R/databaseOperations.R")
@@ -10,14 +17,22 @@ sourceDirectory("R")
 # source("R/averagingOperations.R")
 # source("R/timeseriesOperations.R")
 # source("R/breakDetection.R")
+>>>>>>> Development
 
 
  # Input data #
 
     StartTime <- proc.time()
 db <- db.setup()
+<<<<<<< HEAD
+obj <- db.select.all(db, "1day", 2, 1, "rh", "validated")
+obj2 <- db.select.all(db, "1day", 2, 1, "rd", "validated")
+#obj <- db.query(db, "hour", "validated", "rh")
+#obj2 <- db.query(db, "day", "derived", "rd")
+=======
 obj <- db.select.all(db, "1day", "N", "RD")
 obj2 <- db.select.all(db, "day", "derived", "rd")
+>>>>>>> Development
 db.close(db)
     cat(sprintf("Finished obtaining obj. (%.1f seconds)\n",round((proc.time()-StartTime)[3],digits=1)))
     

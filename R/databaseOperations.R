@@ -68,7 +68,6 @@ db.select.all <- function(db, time.interval, type, element) {
   type.ID <- type.element$type_id
   element.ID <- type.element$element_id
   rm(type.element)
-  
   time.interval.db <- time.interval
   # Fix time interval references for R seq() and difftime() functions
   if(time.interval.db == "1hour" | time.interval.db == "1day") {
@@ -113,7 +112,6 @@ db.select.all <- function(db, time.interval, type, element) {
   type.ID,
   element.ID,
   paste0("'", time.interval.db, "'"))
-  
   result.ref <- dbSendQuery(db, query)
   result <- dbFetch(result.ref, cfg$database.max.records)
   dbClearResult(result.ref)
@@ -170,7 +168,6 @@ db.select.all <- function(db, time.interval, type, element) {
   result <- dbFetch(result.ref, cfg$database.max.records)
   dbClearResult(result.ref)
   
-  
   data.container[[time.interval.db]]$data <- by(result, factor(result$data_id), function(x) {
     
     dt <- data.table(datetime = x$datetime, value = x$value)
@@ -196,7 +193,6 @@ db.select.all <- function(db, time.interval, type, element) {
     class(dt) <- append(class(dt), cfg$data.container.timeseries.class)
     return(dt)
   })
-  
   rm(result)
   return(data.container)
 }
@@ -262,7 +258,7 @@ db.select.timeseries <- function(db, station.IDs, time.interval, type, element) 
   #-------------------------------------------------------------#
   ### Query the DB for timeseries info from specific stations ###
   #-------------------------------------------------------------#
-  
+
   query <- sprintf(paste(
     "SELECT",
     "series.data_id AS data_id, aggregation, element",
@@ -346,7 +342,7 @@ db.select.timeseries <- function(db, station.IDs, time.interval, type, element) 
     # We need the begin and end of the timeseries to check for holes
     begin <- strptime(min(dt$datetime), format = "%Y%m%d%H%M%S", tz = "GMT")
     end <- strptime(max(dt$datetime), format = "%Y%m%d%H%M%S", tz = "GMT")
-    
+ 
     # If the timeseries has holes, then fill them up with NA's
     if((difftime(end, begin, tz = "GMT", units = time.interval) + 1) > nrow(dt)) {
       complete.timeline <- data.table(datetime = format(seq(begin, end, by = time.interval), format = "%Y%m%d%H%M%S"))
@@ -399,7 +395,6 @@ db.select.timeseries <- function(db, station.IDs, time.interval, type, element) 
   result.ref <- dbSendQuery(db, dbEscapeStrings(db, query))
   result <- dbFetch(result.ref, n = -1)
   dbClearResult(result.ref)
-  
   data.container[[time.interval.db]]$meta <- by(result, factor(data.IDs), function(x) {
     
     meta <- list (

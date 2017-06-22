@@ -24,6 +24,9 @@
 20170615 EvdB Real data has been included for hourly and daily 
               precipitation, including the corresponding station 
               and series metadata.
+          
+20170619 EvdB Created tables nearby_stations and 10min for temperature
+              nearby_stations filled
               
 20170620 EvdB Created tables for radar derived precipitation.
               Included radar derived precipitation per existing station
@@ -34,6 +37,4 @@
               
 20170622 EvdB Created table break_detection for the output that is 
               used as input for the plotting
-              
-              
-              
+
