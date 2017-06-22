@@ -16,8 +16,8 @@ DB_output <- read.table("~/Hackathon-RDWD-QualityMonitoring/output/text/BD_outpu
 
 
 #query from the db
-stations.all<-station.info()
-stations.all<-subset(stations.all,select=c("name",
+stations.all <- db.execute(station.info)
+stations.all <- subset(stations.all,select=c("name",
                              "latitude",
                              "longitude",
                              "code_real",
@@ -95,7 +95,7 @@ server <- function(input, output, session) {
     #NOT WORKING!!!
     dfNearby<-reactive({
       data$clickedMarker <- markerClickEvent
-      dfNearby<-station.nearby(data$clickedMarker$id) #function making a connection to the db
+      dfNearby<- db.execute(station.nearby, data$clickedMarker$id) #function making a connection to the db
     })
     output$stationsNearby<-renderTable({
       # if (!is.null(dfNearby())){paste("The station you selected is not on the list")}
