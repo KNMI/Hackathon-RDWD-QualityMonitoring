@@ -18,6 +18,8 @@ default:
 
 test:
  test.data.dir : "/home/dirksen/Hackathon-RDWD-QualityMonitoring/data/testdata/"
+ database.max.records : -1
 
 production:
  inherits: test
+ database.max.records : -1
