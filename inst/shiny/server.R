@@ -8,19 +8,39 @@ library(lubridate)
 library(stringr)
 library(raster)
 
-stations <-readRDS("~/Hackathon-RDWD-QualityMonitoring/data/testdata/stationInfo.rds")
+# stations <-readRDS("~/Hackathon-RDWD-QualityMonitoring/data/testdata/stationInfo.rds")
+# stations.nearby <-readRDS("~/Hackathon-RDWD-QualityMonitoring/data/testdata/stationNearby.rds")
+
+# change name of DB_output file if required. DB's are constructed in runScripts.R
+DB_output <- read.table("~/Hackathon-RDWD-QualityMonitoring/output/text/BD_output_NL_AWSvsMAN.txt", sep=",", header=T)  
+
+
+#query from the db
+stations.all<-station.info()
+stations.all<-subset(stations.all,select=c("name",
+                             "latitude",
+                             "longitude",
+                             "code_real",
+                             "type_id",
+                             "element",
+                             "start",
+                             "stop" ))
+# stations.nearby<-station.nearby()
 
 #Create a spatialpointsdataframe to calculate distances later in the server
-spdf<-stations
-coordinates(spdf)<-~longitude+latitude
-proj4string(spdf)<-CRS("+init=epsg:4326")
+
 
 
 server <- function(input, output, session) {
+  
+  stations<-reactive({stations.all[which(stations.all$start<=input$date1 & 
+                                           stations.all$stop>=input$date2 & 
+                                           stations.all$type_id==input$Type),]})
   detection_datetime <- Sys.time()
   
   rv <- reactiveValues(showDetails = "false", station = "")
   data <- reactiveValues(clickedMarker = NULL)
+  
   
   setDetails <- function(detailVisible, station) {
     if (detailVisible) {
@@ -35,46 +55,63 @@ server <- function(input, output, session) {
   markerClicked <- function(markerClickEvent) {
     print("observed marker click")
     data$clickedMarker <- markerClickEvent
-    
+  
     df<-reactive({
+      spdf<-stations()
+      coordinates(spdf)<-~longitude+latitude
+      proj4string(spdf)<-CRS("+init=epsg:4326")  
+      
     sp<-data.frame(data$clickedMarker)
     coordinates(sp)<-~lng+lat
     proj4string(sp)<-CRS("+init=epsg:4326")
 
     d<-pointDistance(sp,spdf,lonlat=TRUE)
     d<-d/1000
-    df<-data.table(stations,d)
+    df<-data.table(stations(),d)
     setkey(df,"d")
     df<-df[which(df$type_id==input$Type),]
     df.radius<-df[which(df$d<input$Radius),]
     })
     
     dfNr<-reactive({
+      spdf<-stations()
+      coordinates(spdf)<-~longitude+latitude
+      proj4string(spdf)<-CRS("+init=epsg:4326")
       sp<-data.frame(data$clickedMarker)
+   
       coordinates(sp)<-~lng+lat
       proj4string(sp)<-CRS("+init=epsg:4326")
       
       d<-pointDistance(sp,spdf,lonlat=TRUE)
       d<-d/1000
-      df<-data.table(stations,d)
+      df<-data.table(stations(),d)
       setkey(df,"d")
       df<-df[which(df$type_id==input$Type),]
-      df.number<-head(df,n=input$nr)
+      df.number<-head(df,n=input$nr+1)
     })
     
+
+    
+    #NOT WORKING!!!
+    dfNearby<-reactive({
+      data$clickedMarker <- markerClickEvent
+      dfNearby<-station.nearby(data$clickedMarker$id) #function making a connection to the db
+    })
+    output$stationsNearby<-renderTable({
+      # if (!is.null(dfNearby())){paste("The station you selected is not on the list")}
+      dfNearby()
+    })
+    ##############
     output$clickedMarker <- renderText({
       paste("Station ", data$clickedMarker$id, "has been selected")
     })
-    print(data$clickedMarker)
-    
     output$clickedDistance <- renderTable({
       df()
     })
-    
     output$clickedNumber <- renderTable({
       dfNr()
     })
-    
+    print(data$clickedMarker)
   }
   
   mapClicked <- function(mapClickEvent) {
@@ -111,30 +148,70 @@ server <- function(input, output, session) {
     paste(format(detection_datetime - 363421), ": 280 - MAM")
   })
   
-  output$plot <- renderPlot({
-    if (input$go == 0)
-      return()
-    
-    isolate(p)
+  pal <- colorFactor(c("green", "orange"),domain = c("1","2"))
+  
+  #Leaflet update not always correct...stations() not always updated 
+  #This could be a solution: https://www.r-bloggers.com/r-shiny-leaflet-using-observers/
+  output$map <- renderLeaflet(
+    leaflet(data=stations()) %>%
+      setView(lng=5.3878, lat=52.1561, zoom=7) %>%
+      addProviderTiles(providers$Stamen.TonerLite,
+                       options = providerTileOptions(noWrap = TRUE))  %>%
+      addCircleMarkers(
+        lat = ~ latitude,
+        lng = ~ longitude,
+        popup = ~ name,
+        layerId = ~ code_real,
+        label = ~type_id,
+        color = ~pal(type_id))
+      )
+  
+  
+  observe({
+    input$date1
+    leafletProxy("map", data = stations()) %>%
+      clearShapes() %>%
+      addCircleMarkers(
+        lat = ~ latitude,
+        lng = ~ longitude,
+        popup = ~ name,
+        layerId = ~ code_real,
+        label = ~type_id,
+        color = ~pal(type_id)
+      )
+  })
+  
+  observe({
+    input$date2
+    leafletProxy("map", data = stations()) %>%
+      clearShapes() %>%
+      addCircleMarkers(
+        lat = ~ latitude,
+        lng = ~ longitude,
+        popup = ~ name,
+        layerId = ~ code_real,
+        label = ~type_id,
+        color = ~pal(type_id)
+      )
+  })
+  
+  observe({
+    input$Type
+    leafletProxy("map", data = stations()) %>%
+      clearShapes() %>%
+      addCircleMarkers(
+        lat = ~ latitude,
+        lng = ~ longitude,
+        popup = ~ name,
+        layerId = ~ code_real,
+        label = ~type_id,
+        color = ~pal(type_id)
+      )
   })
   
   
   
-  output$map <- renderLeaflet(
-    leaflet(stations) %>%
-      setView(lng=5.3878, lat=52.1561, zoom=7) %>%
-      addProviderTiles(providers$Stamen.TonerLite,
-                       options = providerTileOptions(noWrap = TRUE)) %>%
-      addMarkers(
-        lat = ~ latitude,
-        lng = ~ longitude,
-        popup = ~ name,
-        layerId = ~ code
-      )
-  )
-  
   output$clickedMarker <- renderText("Please select a station")
-  
   outputOptions(output, "showDetails", suspendWhenHidden = FALSE)
   outputOptions(output, "stationId", suspendWhenHidden = FALSE)
   
