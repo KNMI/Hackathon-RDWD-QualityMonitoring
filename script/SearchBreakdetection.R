@@ -11,6 +11,19 @@ Sys.setenv(R_CONFIG_ACTIVE = "test")
  source("R/timeseriesOperations.R")
  source("R/breakDetection.R")
 
+obj <- db.execute(db.select.all, time.interval="1hour", type="H", element="RH") 
+obj2 <- db.execute(db.select.all, time.interval="1day", type="N", element="RD") 
+
+AWS_series <- sapply(obj$`1hour`$meta, function(m){paste0(m$sta_id, "_H")} )
+AWS_labels <- names(obj$`1hour`$meta)
+
+
+seriesidselec <- sapply(obj$meta,function(m){m$sta_type=="AWS" & m$var_id == "RA"})
+#seriesidselec <- sapply(obj$meta,function(m){m$sta_type=="AWS" & m$var_id == "RA", sta_id=sta_id}) # line will be used when sta_id is identified. 
+seriesidlist <- names(obj$meta)[seriesidselec]
+
+
+
 label_list <-  c("NL", etc...)    # AWS name list e.g. 260_H
                   
 for(label in label_list){
