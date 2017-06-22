@@ -1,69 +1,119 @@
-#' @title Break detection with Buishand method
-#' @description Function for break detection in a yearly or seasonal series that uses the Buishand cumulative test. It needs a table with two columns (datetime and value). the input is temporarily downloaded by the dummy data
-#' @param series1 time series to check, it must be a table with two columns (datetime and value)
-#' @param range radius (in years) of the running window that is used for the identification of local minima/maxima
-#' @param plot.score if TRUE it produces a plot for the visualization of the breaks
-#' @author Antonello and Hidde
+# Script to analyse all AWS stations with MAN stations, and write the resulting break detections back in the database. 
+# Basically this script is a loop around runScripts.R in order to calculate the BD output for 34 situations:
+# namely the AWS mean with MAN mean, as well as each individual AWS timeserie with the averaged three connected MAN mean. 
 
-break.detection <- function(series1, range = 2, plot.score = FALSE) {
-  #series1 is a data.table with datetime and value elements
-  #range indicates the radius (in years) of the temporal interval that is ysed for the identification of local minima/maxima (see below for more details)
-  #Package "climtrends" is needed
-  
-  
-  
-  
-  #Check if dataset is long enough (if not, return NULL)
-  if (length(series1$value) < as.numeric(row.names(Buishand.Critical.Values[1,]))) {
-    return(integer(0))
+setwd("~/Hackathon-RDWD-QualityMonitoring/")
+
+Sys.setenv(R_CONFIG_ACTIVE = "test")
+source("R/databaseOperations.R")
+source("R/aggregateOperations.R")
+source("R/averagingOperations.R")
+source("R/timeseriesOperations.R")
+source("R/breakDetection.R")
+
+# Data input # 
+# note: these functions will later be replaced by obtaining the data directly through the query.
+
+obj <- db.execute(db.select.all, time.interval="1hour", type="H", element="RH")  # AWS
+obj <- aggregate.to.88.2(obj)
+obj <- aggregate.to.seasonal.2(obj)
+obj <- aggregateTo.year(obj) 
+obj2 <- db.execute(db.select.all, time.interval="1day", type="N", element="RD")  # MAN
+obj2 <- aggregate.to.seasonal.2(obj2)
+obj2 <- aggregateTo.year(obj2) 
+
+MAN_labels2 <- sapply(obj2$year$meta, function(m){m$sta_id})
+MAN_labels <- c()
+for(m in 1:length(MAN_labels2)){MAN_labels[m] <- MAN_labels2[[m]]}
+
+obj3 <- db.execute(db.select.all, time.interval="1hour", type="N", element="RR") # Radar at MAN locations
+obj3selec <- sapply(obj3$`1hour`$meta, function(m){m$sta_id %in% MAN_labels & m$sta_type=="n"})
+obj3$`1hour`$data <- obj3$`1hour`$data[obj3selec]   #only take the radar timeseries at MAN stations
+obj3$`1hour`$meta <- obj3$`1hour`$meta[obj3selec]   
+obj3 <- aggregate.to.88.2(obj3)
+obj3 <- aggregate.to.seasonal.2(obj3)
+obj3 <- aggregateTo.year(obj3) 
+
+AWS_series <- names(obj$year$meta)
+AWS_labels <- sapply(obj$year$meta, function(m){paste0(m$sta_id, "_H")})
+
+
+for(n in 0:length(AWS_labels)){
+  if(n == 0){
+    Comb_Name <- "NL"     # all AWS vs all MAN vs all Radar
+    obj_subset1 <- obj
+    obj_subset2 <- obj2
+    obj_subset3 <- obj3
+  }else{
+    Comb_Name <- AWS_labels[[n]]
+    obj_subset1_y <- obj$year$data[n]  # list with 1 data.table. 
+    obj_subset1_season <- obj$season$data[n]  # list with 1 data.table. 
+    
+    stations_nearby <- station.nearby(AWS_labels[[n]])$nearby_code_real
+    if(length(stations_nearby)==0){next} # in case no nearby stations are available
+    nearby_labels <- substr(stations_nearby, 1, (nchar(stations_nearby)-2))
+    
+    selec_obj2_y <- sapply(obj2$year$meta, function(m){m$sta_id %in% substr(stations_nearby, 1, nchar(stations_nearby)-2) }) 
+    obj_subset2_y <- obj2$year$data[selec_obj2]
+    selec_obj2_season <- sapply(obj2$season$meta, function(m){m$sta_id %in% substr(stations_nearby, 1, nchar(stations_nearby)-2) }) 
+    obj_subset2_season <- obj2$season$data[selec_obj2]
+    
+    selec_obj3_y <- sapply(obj3$year$meta, function(m){m$sta_id %in% substr(stations_nearby, 1, nchar(stations_nearby)-2) }) 
+    obj_subset3_y <- obj3$year$data[selec_obj3]
+    selec_obj3_season <- sapply(obj3$year$meta, function(m){m$sta_id %in% substr(stations_nearby, 1, nchar(stations_nearby)-2) }) 
+    obj_subset3_season <- obj3$year$data[selec_obj3]
   }
   
-  ### Extract year from datetime
+  # Spatial averaging #
   
-  series1$year <- year(as.Date(series1$datetime,format= "%Y%m%d%H%M%S")-1)
+  obj1_average_y  <- average.spatial(timeseries=obj_subset1_y) 
+  obj2_average_y  <- average.spatial(timeseries=obj_subset2_y) 
+  obj3_average_y  <- average.spatial(timeseries=obj_subset3_y) 
   
-  ###Buishand test
-  #Define data frame that will store the results of Buishand test 
-  bd_buishand <- data.frame(year = series1$year)
-  #Apply Buishand test to the series and store the result in the column "store" 
-  bd_buishand$score <- round(BuishandRangeTest(series1$value), digits = 2)
+  obj1_average_season  <- average.spatial(timeseries=obj_subset1_season) 
+  obj2_average_season  <- average.spatial(timeseries=obj_subset2_season) 
+  obj3_average_season  <- average.spatial(timeseries=obj_subset3_season) 
   
-  #Determine the Critical Value (it depends on the length of the series and on the required significance level, 95% in this case)
-  cv <- Buishand.Critical.Values[max(which(length(series1$value) >= as.numeric(row.names(Buishand.Critical.Values)))),2]
+  obj1_average_djf <- obj1_average_season[which(month(as.Date(obj1_average_season$datetime, format="%Y%m%d%H%M%S")) == 3)]
+  obj1_average_mam <- obj1_average_season[which(month(as.Date(obj1_average_season$datetime, format="%Y%m%d%H%M%S")) == 6)]
+  obj1_average_jja <- obj1_average_season[which(month(as.Date(obj1_average_season$datetime, format="%Y%m%d%H%M%S")) == 9)]
+  obj1_average_son <- obj1_average_season[which(month(as.Date(obj1_average_season$datetime, format="%Y%m%d%H%M%S")) == 12)]
   
-  #Identify those years (Critical Years) whose score (without sign) is larger than the critical value
-  cy <- bd_buishand[abs(bd_buishand$score) > cv, ]
+  obj2_average_djf <- obj2_average_season[which(month(as.Date(obj2_average_season$datetime, format="%Y%m%d%H%M%S")) == 3)]
+  obj2_average_mam <- obj2_average_season[which(month(as.Date(obj2_average_season$datetime, format="%Y%m%d%H%M%S")) == 6)]
+  obj2_average_jja <- obj2_average_season[which(month(as.Date(obj2_average_season$datetime, format="%Y%m%d%H%M%S")) == 9)]
+  obj2_average_son <- obj2_average_season[which(month(as.Date(obj2_average_season$datetime, format="%Y%m%d%H%M%S")) == 12)]
   
-  #Define a column where TRUE value indicates the location of a break and FALSE indicates other years
-  bd_buishand$TF <- FALSE
+  obj3_average_djf <- obj3_average_season[which(month(as.Date(obj3_average_season$datetime, format="%Y%m%d%H%M%S")) == 3)]
+  obj3_average_mam <- obj3_average_season[which(month(as.Date(obj3_average_season$datetime, format="%Y%m%d%H%M%S")) == 6)]
+  obj3_average_jja <- obj3_average_season[which(month(as.Date(obj3_average_season$datetime, format="%Y%m%d%H%M%S")) == 9)]
+  obj3_average_son <- obj3_average_season[which(month(as.Date(obj3_average_season$datetime, format="%Y%m%d%H%M%S")) == 12)]
   
-  #Choosing all the years having score larger than the cv is not enough to identify the breaks.
-  #Research of local minima/maxima in the critical years. In case of consecutive min/max or having two years of difference, the first one is labeled as break
-  if (nrow(cy) > 0) {
-    for(i in 1 : nrow(cy))
-    {
-      if (cy$year[i] > bd_buishand$year[1] + range && cy$year[i] < bd_buishand$year[nrow(bd_buishand)] - range)
-      {
-        aux <- bd_buishand[bd_buishand$year %in% (cy$year[i] - range) : (cy$year[i] + range),]
-        if (which.max(abs(aux$score)) == range + 1)
-        {
-          bd_buishand[bd_buishand$year == cy$year[i], 'TF'] = TRUE
-        }
-      }
-    }
-  }
   
-  if (plot.score) {
-    plot(bd_buishand$year,bd_buishand$score,type='l',
-         main='Buishand Test',
-         xlab='year',
-         ylab='buishand score',
-         ylim=c(min(-cv,bd_buishand$score),max(cv,bd_buishand$score)))
-    points(bd_buishand$year,bd_buishand$score,pch=16)
-    abline(h=cv,col='darkgreen',lwd=2)
-    abline(h=-cv,col='darkgreen',lwd=2)
-    abline(v=bd_buishand$year[bd_buishand$TF],col='red',lwd=2)
-  }
+  # Calculate relative difference # 
   
-  return(bd_buishand$year[bd_buishand$TF])
-}
+  rel_dif_AWSvsMAN_y <- timeseries.relative.difference(timeserie1=obj1_average_y, timeserie2=obj2_average_y)
+  rel_dif_AWSvsRAD_y <- timeseries.relative.difference(timeserie1=obj1_average_y, timeserie2=obj3_average_y)
+  
+  rel_dif_AWSvsMAN_djf <- timeseries.relative.difference(timeserie1=obj1_average_djf, timeserie2=obj2_average_djf)
+  rel_dif_AWSvsRAD_djf <- timeseries.relative.difference(timeserie1=obj1_average_djf, timeserie2=obj3_average_djf)
+  rel_dif_AWSvsMAN_mam <- timeseries.relative.difference(timeserie1=obj1_average_mam, timeserie2=obj2_average_mam)
+  rel_dif_AWSvsRAD_mam <- timeseries.relative.difference(timeserie1=obj1_average_mam, timeserie2=obj3_average_mam)
+  rel_dif_AWSvsMAN_jja <- timeseries.relative.difference(timeserie1=obj1_average_jja, timeserie2=obj2_average_jja)
+  rel_dif_AWSvsRAD_jja <- timeseries.relative.difference(timeserie1=obj1_average_jja, timeserie2=obj3_average_jja)
+  rel_dif_AWSvsMAN_son <- timeseries.relative.difference(timeserie1=obj1_average_son, timeserie2=obj2_average_son)
+  rel_dif_AWSvsRAD_son <- timeseries.relative.difference(timeserie1=obj1_average_son, timeserie2=obj3_average_son)
+  
+  
+  # Break detection #
+  
+  BD_y <- break.detection(rel_dif_AWSvsMAN_y)
+  BD_djf <- break.detection(rel_dif_AWSvsMAN_djf)
+  BD_mam <- break.detection(rel_dif_AWSvsMAN_mam)
+  BD_jja <- break.detection(rel_dif_AWSvsMAN_jja)
+  BD_son <- break.detection(rel_dif_AWSvsMAN_son)
+  
+  
+} # end n-loop
+
+
