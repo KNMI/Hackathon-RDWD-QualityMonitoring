@@ -16,7 +16,7 @@ sourceDirectory("R")
 
     StartTime <- proc.time()
 db <- db.setup()
-obj <- db.select.all(db, "hour", "validated", "rh")
+obj <- db.select.all(db, "1day", "N", "RD")
 obj2 <- db.select.all(db, "day", "derived", "rd")
 db.close(db)
     cat(sprintf("Finished obtaining obj. (%.1f seconds)\n",round((proc.time()-StartTime)[3],digits=1)))
@@ -28,14 +28,14 @@ db.close(db)
   
  # Aggregate AWS hourly values in 8-8 daily values #
     StartTime <- proc.time()
-obj <- aggregate.to.88(obj=obj, all.stations=TRUE, sta_type="AWS", var_id="RH", sta_id=sta_id)
+obj <- aggregateTo.88(obj=obj, all.stations=TRUE, sta_type="AWS", var_id="RH", sta_id=sta_id)
     cat(sprintf("Finished Aggregating AWS hourly. (%.1f seconds)\n",round((proc.time()-StartTime)[3],digits=1)))
 
     
 # Aggregate AWS and MAN daily values in yearly and seasonal values #
     StartTime <- proc.time()
-obj <- aggregate.to.seasonal(obj=obj, all.stations=TRUE, sta_type="AWS", var_id="RD", sta_id=sta_id) 
-obj2 <- aggregate.to.seasonal(obj=obj2, all.stations=TRUE, sta_type="MAN", var_id="RD", sta_id=sta_id) 
+obj <- aggregateTo.seasonal(obj=obj, all.stations=TRUE, sta_type="AWS", var_id="RD", sta_id=sta_id) 
+obj2 <- aggregateTo.seasonal(obj=obj2, all.stations=TRUE, sta_type="MAN", var_id="RD", sta_id=sta_id) 
     cat(sprintf("Finished yearly aggregating of AWS and MAN. (%.1f seconds)\n",round((proc.time()-StartTime)[3],digits=1)))
 
     

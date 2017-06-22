@@ -3,6 +3,7 @@
 
 #' @title Create an average over several stations
 #' @param timeseries A list of data.tables, each a timeseries of structure <datetime, value>
+#' @description a function 
 #' @return A single timeserie of structure <datetime, value>
 #' @author Hidde and Jurian
 #' @export
