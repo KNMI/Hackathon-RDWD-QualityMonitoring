@@ -177,12 +177,47 @@ fluidPage(
               ),
               div(
                 class = "row",
-                actionButton("buttonradius","Run Break Detection: Radius"),
-                actionButton("buttonnumber","Run Break Detection: Number"),
-                actionButton("buttonnearby","Run Break Detection: Nearby"),
                 checkboxGroupInput("Type", "Station Type",
                                    c("AWS" = 2,
                                      "Manual" = 1),
+<<<<<<< HEAD
+                                   selected = c(1, 2)),
+                actionButton("buttonradius","Run Break Detection: Radius"),
+                actionButton("buttonnumber","Run Break Detection: Number"),
+                actionButton("buttonnearby","Run Break Detection: Nearby")
+              )
+            ),
+            
+            div(class = "row",
+                div(
+                  class = "col-l-4",
+                  
+                  sliderInput(
+                    "date1",
+                    "Start:",
+                    min =  as.Date("1981-01-01"),
+                    max = Sys.Date(),
+                    value = as.Date("2000-01-01")
+                  ),
+                  sliderInput(
+                    "date2",
+                    "Stop:",
+                    min = as.Date("1981-01-01"),
+                    max = Sys.Date(),
+                    value = as.Date("2010-01-01")
+                  )
+
+                )),
+            div(class = "row",
+                div(
+                  class = "col-l-4",
+                  
+                  sliderInput("Radius", "Radius", 0, 100, value =
+                                30),
+                  sliderInput("nr", "Number", 0, 10, value =
+                                3)
+                ))
+=======
                                    selected = c(1, 2))
               ),
               div(
@@ -199,6 +234,7 @@ fluidPage(
                               3)
               )
             )
+>>>>>>> wim
           ),
           
           

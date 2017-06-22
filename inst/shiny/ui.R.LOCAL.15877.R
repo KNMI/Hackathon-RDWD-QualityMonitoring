@@ -27,7 +27,7 @@ fluidPage(
   div(
     class = "MainSection row",
     conditionalPanel(
-      class = "greedy",
+      class = "creedy",
       condition = "output.showDetails != 'true'",
       navbarPage(
         "",
@@ -160,49 +160,65 @@ fluidPage(
                      )
                    )
                  )),
-        tabPanel("Station analysis",
-          class = "greedy",
+        tabPanel("Background information",
+                 fluidRow(
+                   includeMarkdown("Background_info_example.Rmd")
+                 )),
+        tabPanel(
+          "Map experiments",
+          class = "creedy",
+          fluidRow(class = "creedy",
+                   div(class = "col-xs-offset-2 col-xs-8",
+                       leafletOutput("map"))),
           fluidRow(
-            class = "greedy",
-            div(class = "col-xs-4",
-                leafletOutput("map", width="100%", height="100%")),
             div(
-              class = "col-xs-8",
+              class = "row",
               div(
-                class = "row",
-                div(class = "col-xs-12",
-                    tags$label(class="control-label", "Station to analyse"),
-                    icon("arrow-right", lib = "font-awesome"),
-                    textOutput("clickedStation"))
-              ),
-              div(
-                class = "row",
-                actionButton("buttonradius","Run Break Detection: Radius"),
-                actionButton("buttonnumber","Run Break Detection: Number"),
-                actionButton("buttonnearby","Run Break Detection: Nearby"),
+                class = "col-xl-4",
+                
+                textOutput("clickedMarker"),
                 checkboxGroupInput("Type", "Station Type",
                                    c("AWS" = 2,
                                      "Manual" = 1),
-                                   selected = c(1, 2))
-              ),
-              div(
-                class = "row",
-                sliderInput("dateRange", "When:",
-                            min = as.Date("1981-01-01"),
-                            max = Sys.Date(), value = c(as.Date("2000-01-01"),as.Date("2010-01-01")))
-              ),
-              div(
-                class = "row",
-                sliderInput("Radius", "Radius", 0, 100, value =
-                              30),
-                sliderInput("nr", "Number", 0, 10, value =
-                              3)
+                                   selected = c(1, 2)),
+                actionButton("buttonradius","Run Break Detection: Radius"),
+                actionButton("buttonnumber","Run Break Detection: Number"),
+                actionButton("buttonnearby","Run Break Detection: Nearby")
               )
-            )
+            ),
+            
+            div(class = "row",
+                div(
+                  class = "col-l-4",
+                  
+                  sliderInput(
+                    "date1",
+                    "Start:",
+                    min =  as.Date("1981-01-01"),
+                    max = Sys.Date(),
+                    value = as.Date("2000-01-01")
+                  ),
+                  sliderInput(
+                    "date2",
+                    "Stop:",
+                    min = as.Date("1981-01-01"),
+                    max = Sys.Date(),
+                    value = as.Date("2010-01-01")
+                  )
+
+                )),
+            div(class = "row",
+                div(
+                  class = "col-l-4",
+                  
+                  sliderInput("Radius", "Radius", 0, 100, value =
+                                30),
+                  sliderInput("nr", "Number", 0, 10, value =
+                                3)
+                ))
           ),
           
-          
-          tabsetPanel(
+          navlistPanel(
             tabPanel("Radius",
                      div(class = "col-xs-offset-2 col-xs-8",
                          tableOutput("clickedDistance"))),
@@ -210,16 +226,12 @@ fluidPage(
                      div(class = "col-xs-offset-2 col-xs-8",
                          tableOutput("clickedNumber"))),
             tabPanel(
-              "Associated stations",
+              "Data Base",
               div(class = "col-xs-offset-2 col-xs-8",
                   tableOutput("stationsNearby"))
             )
           )
-        ),
-        tabPanel("Background information",
-                 fluidRow(
-                   includeMarkdown("Background_info_example.Rmd")
-                 ))
+        )
       )
     )
   ),

@@ -177,9 +177,6 @@ fluidPage(
               ),
               div(
                 class = "row",
-                actionButton("buttonradius","Run Break Detection: Radius"),
-                actionButton("buttonnumber","Run Break Detection: Number"),
-                actionButton("buttonnearby","Run Break Detection: Nearby"),
                 checkboxGroupInput("Type", "Station Type",
                                    c("AWS" = 2,
                                      "Manual" = 1),
