@@ -15,8 +15,13 @@ sourceDirectory("R")
  # Input data #
 
     StartTime <- proc.time()
-obj <- dbExecute(db.select.all, "1hour", "H", "RH")
-db.select.all(db, "1hour", "H", "RH")
+obj <- db.execute(db.select.all, "1hour", "H", "RH")
+obj2 <- db.execute(db.select.all, "1day", "N", "RD")
+  cat(sprintf("Finished obtaining obj. (%.1f seconds)\n",round((proc.time()-StartTime)[3],digits=1)))
+
+obj <- db.select.timeseries(db, c(260, 324, 343, 340), "1hour", "H", "RH")
+  
+    
         
 db <- db.setup()
 obj <- db.select.all(db, "hour", "validated", "rh")
