@@ -1,5 +1,4 @@
 .First <- function(){
- library(shiny)
  cat("\nWelcome at", date(), "\n") 
 }
 
