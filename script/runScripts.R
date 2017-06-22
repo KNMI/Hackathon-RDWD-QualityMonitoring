@@ -14,19 +14,18 @@ sourceDirectory("R")
 
  # Input data #
 
-# in case of processing all AWS vs all MAN: 
     StartTime <- proc.time()
-obj <- db.execute(db.select.all, "1hour", "H", "RH")
-obj2 <- db.execute(db.select.all, "1day", "N", "RD")
-  cat(sprintf("Finished obtaining obj. (%.1f seconds)\n",round((proc.time()-StartTime)[3],digits=1)))
-
-# in case of processing a selection of AWS vs a selection of MAN: 
-  StartTime <- proc.time()
-obj <- db.execute(db.select.timeseries, station.IDs=260, "1hour", "H", "RH")
-obj2 <- db.execute(db.select.timeseries, station.IDs=c(343, 340), "1day", "N", "RD")
-  cat(sprintf("Finished obtaining obj. (%.1f seconds)\n",round((proc.time()-StartTime)[3],digits=1)))
-                   
-
+db <- db.setup()
+obj <- db.select.all(db, "1day", "N", "RD")
+obj2 <- db.select.all(db, "day", "derived", "rd")
+db.close(db)
+    cat(sprintf("Finished obtaining obj. (%.1f seconds)\n",round((proc.time()-StartTime)[3],digits=1)))
+    
+ # Define the list of sta_id that you want to process #    
+#sta_id <-   #output of query range selection (made by Marieke)/ standard list of related stations from database    
+  # to be filled in once the exact formulation of those outputs is known. 
+  # Possible output of range selection is all station id's with distance to station that is selected. In that case add line that selects only the stations where this distance is shorter than a given range. 
+  
  # Aggregate AWS hourly values in 8-8 daily values #
     StartTime <- proc.time()
 obj <- aggregate.to.88(obj=obj, all.stations=TRUE, sta_type="AWS", var_id="RH", sta_id=sta_id)
@@ -35,7 +34,7 @@ obj <- aggregate.to.88(obj=obj, all.stations=TRUE, sta_type="AWS", var_id="RH", 
     
 # Aggregate AWS and MAN daily values in yearly and seasonal values #
     StartTime <- proc.time()
-obj <- aggregate.to.seasonal(obj=obj, all.stations=TRUE, sta_type="AWS", var_id="RH", sta_id=sta_id) 
+obj <- aggregate.to.seasonal(obj=obj, all.stations=TRUE, sta_type="AWS", var_id="RD", sta_id=sta_id) 
 obj2 <- aggregate.to.seasonal(obj=obj2, all.stations=TRUE, sta_type="MAN", var_id="RD", sta_id=sta_id) 
     cat(sprintf("Finished yearly aggregating of AWS and MAN. (%.1f seconds)\n",round((proc.time()-StartTime)[3],digits=1)))
 
@@ -99,7 +98,31 @@ BD_jja <- break.detection(series1=rd_AWS_MAN_jja)
 BD_son <- break.detection(series1=rd_AWS_MAN_son)
     cat(sprintf("Finished calculating break detections. (%.1f seconds)\n",round((proc.time()-StartTime)[3],digits=1)))
 
- 
+    #comparename should be identified automatically where the choises are made concerning which subset is compared with which other subset. 
+    #In this case a name for all AWS vs all MAN in NL are considered. 
+    #If multiple comparisons are done, loop the BD calculation selection and rbind the BD output. A different compareName should be constructed for each loop.     
+compareName <-  "NL_AWSvsMAN"   # temporary compareName. 
+  
+  # Output for  shiny overview #
+  BDs <- sort(unique(c(BD_y, BD_djf, BD_mam, BD_jja, BD_son)))
+  l <- length(BDs)
+if(l < 1){
+  BD_output <- NULL
+    }else{
+  BD_output <- data.table("station(s)"=rep(compareName,l), "y"=rep("OK",l), "djf"=rep("OK",l), "mam"=rep("OK",l), "jja"=rep("OK",l), "son"=rep("OK",l) )
+  BD_output$y[which(BDs %in% BD_y)] <- "Break!"
+  BD_output$djf[which(BDs %in% BD_djf)] <- "Break!"
+  BD_output$mam[which(BDs %in% BD_mam)] <- "Break!"
+  BD_output$jja[which(BDs %in% BD_jja)] <- "Break!"
+  BD_output$son[which(BDs %in% BD_son)] <- "Break!" }
+  
+if(exists("BD_complete_output")){
+  rbind(BD_complete_output, BD_output)
+}else{ BD_complete_output <- BD_output}
+#} end of loop that calculated BD for various subsets. 
+  
+write.table(BD_complete_output, paste0("output/text/BD_output_NL_AWSvsMAN.txt"), sep=",", row.names=F, quote=F)  
+      
   # Visualisation # 
 png(paste0("output/fig/hackathon_",compareName,"_y.png"))
 plot(rd_AWS_MAN_y$datetime, rd_AWS_MAN_y$value, type="l", xlab="Time", ylab="Relative difference [%]", main="Yearly AWS vs MAN")
