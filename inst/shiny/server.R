@@ -7,6 +7,7 @@ library(data.table)
 library(lubridate)
 library(stringr)
 library(raster)
+source("~/Hackathon-RDWD-QualityMonitoring/R/databaseOperations.R",local=TRUE)
 
 # stations <-readRDS("~/Hackathon-RDWD-QualityMonitoring/data/testdata/stationInfo.rds")
 # stations.nearby <-readRDS("~/Hackathon-RDWD-QualityMonitoring/data/testdata/stationNearby.rds")
