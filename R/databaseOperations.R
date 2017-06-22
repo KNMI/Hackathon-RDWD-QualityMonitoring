@@ -29,8 +29,8 @@ db.close <- function(db) {
 #' @title Query the database for hourly 
 #' @param db Handle to MySQL database, taken from db.setup()
 #' @param time.interval One of {"1hour", "1day", "month", "season, "year"}
-#' @param type One of {"N", "H"} Case insensitive
-#' @param element One of {"RH", "RD", "RR"} Case insensitive
+#' @param type One of {"N" (Manual), "H" (Automatic)} Case insensitive
+#' @param element One of {"RH" (Precipitation, originated from hourly data), "RD" (Precipitation, from daily data), "RR" (Precipitation, from radar data)} Case insensitive
 #' #@example data.container <- db.select.all(db, "1hour", "N", "RH") 
 #' @seealso db.setup()
 #' @description a function
