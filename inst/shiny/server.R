@@ -2,10 +2,11 @@
 # library(shiny)
 # library(leaflet)
 # library(ggplot2)
-# library(data.table)
+library(data.table)
 # library(lubridate)
 # library(stringr)
-# # library(raster)
+library(raster)
+library(sp)
 library(QualityMonitoR)
 # source("~/Hackathon-RDWD-QualityMonitoring/R/databaseOperations.R",local=TRUE)
 
