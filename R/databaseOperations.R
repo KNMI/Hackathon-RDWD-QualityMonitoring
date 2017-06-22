@@ -684,6 +684,7 @@ station.nearby<-function(code_real){
 #' @title Get break detection information from database
 #' @description get the break detection information per combine name
 #' @author Else
+#' @param comb_name combine name
 #' @export
 break.info<-function(comb_name){
   db<-db.setup()
