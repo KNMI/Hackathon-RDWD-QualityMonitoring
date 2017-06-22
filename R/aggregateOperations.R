@@ -200,10 +200,6 @@ aggregateTo.year <- function(data.container) {
     timeseries <- rbindlist(by(timeseries, years, function(y) {
       dt <- data.table (
         datetime = paste0(year((y$datetime)[1]) + 1, "01", "01", "08", "0000"),
-        #datetime = as.character(
-        #  as.Date(paste(year(y$datetime)[1], "01", "01", sep = "-"), format="%Y-%m-%d"),
-        #  format = "%Y%m%d%H%M%S"
-        #),
         value = sum(y$value, na.rm = T)
       )
       setkey(dt, datetime)
@@ -216,7 +212,7 @@ aggregateTo.year <- function(data.container) {
       return(dt)
     }))
     
-    
+    class(timeseries) <- append(class(timeseries), cfg$obj.timeseries.class)
     return(timeseries)
   }
 
@@ -224,6 +220,7 @@ aggregateTo.year <- function(data.container) {
   data.container$year$data <- lapply(data.container$`1day`$data, agg.year)
   data.container$year$meta <- lapply(data.container$`1day`$meta, function(m) {
     m$var_interval <- "year"
+    class(m) <- cfg$obj.timeseries.meta.class
     return(m)
   })
   
@@ -307,7 +304,7 @@ aggregate.to.seasonal.2 <- function(data.container) {
     }))
     
     setkey(timeseries, datetime)
-    
+    class(timeseries) <- append(class(timeseries), cfg$obj.timeseries.class)
     return(timeseries)
   }
   
@@ -315,6 +312,7 @@ aggregate.to.seasonal.2 <- function(data.container) {
   data.container$season$data <- lapply(data.container$`1day`$data, agg.season)
   data.container$season$meta <- lapply(data.container$`1day`$meta, function(m) {
     m$var_interval <- "season"
+    class(m) <- cfg$obj.timeseries.meta.class
     return(m)
   })
   
@@ -370,16 +368,18 @@ aggregate.to.88.2 <- function(data.container) {
     value_agg <- setDT(as.data.table(timeselec))[,lapply(.SD,sum, na.rm=T),by=.(time_agg)]$timeselec
     value_agg[days_with_over20percent_NAvalues] <- NA
     
-    aggregated_data <- timeseries[seq((first_timestep + 23 ), last_timestep, by = 24), 1]
-    aggregated_data$value <- value_agg
+    timeseries <- timeseries[seq((first_timestep + 23 ), last_timestep, by = 24), 1]
+    timeseries$value <- value_agg
     
-    return(aggregated_data)
+    class(timeseries) <- append(class(timeseries), cfg$obj.timeseries.class)
+    return(timeseries)
   }
 #  count <- 0
   data.container$`1day` <- list()
   data.container$`1day`$data <- lapply(data.container$`1hour`$data, agg.88)
   data.container$`1day`$meta <- lapply(data.container$`1hour`$meta, function(m) {
     m$var_interval <- "1day"
+    class(m) <- cfg$obj.timeseries.meta.class
     return(m)
   })
 
