@@ -700,12 +700,7 @@ station.info <- function(db){
   db.q<-dbSendQuery(db,query_new)
   results<-dbFetch(db.q,n=-1)
   dbClearResult(db.q)
-<<<<<<< HEAD
-=======
-  
-  dbDisconnect(db)
->>>>>>> 84e872df5181067e187eb077c94dcd3d925aaf13
-  
+
   return(results)
 }
 
@@ -736,16 +731,10 @@ CONCAT(nearby_stations.nearby_code,'_',types.type) as nearby_code_real,
                             nearby_stations.code=%s and types.type='%s';",
                      code,type)
   
-<<<<<<< HEAD
+
   db.q <- dbSendQuery(db,query_new)
   results <- dbFetch(db.q, n=-1)
   dbClearResult(db.q)
 
-=======
-  db.q<-dbSendQuery(db,query_new)
-  results<-dbFetch(db.q,n=-1)
-  dbClearResult(db.q)
-  dbDisconnect(db)
->>>>>>> 84e872df5181067e187eb077c94dcd3d925aaf13
   return(results)
 }
