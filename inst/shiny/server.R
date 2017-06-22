@@ -6,13 +6,14 @@
 # library(lubridate)
 # library(stringr)
 # # library(raster)
+library(QualityMonitoR)
 # source("~/Hackathon-RDWD-QualityMonitoring/R/databaseOperations.R",local=TRUE)
 
 # stations <-readRDS("~/Hackathon-RDWD-QualityMonitoring/data/testdata/stationInfo.rds")
 # stations.nearby <-readRDS("~/Hackathon-RDWD-QualityMonitoring/data/testdata/stationNearby.rds")
 
 # change name of DB_output file if required. DB's are constructed in runScripts.R
-DB_output <- read.table("~/Hackathon-RDWD-QualityMonitoring/output/text/BD_output_NL_AWSvsMAN.txt", sep=",", header=T)  
+DB_output <- read.table("../output/text/BD_output_NL_AWSvsMAN.txt", sep=",", header=T)  
 
 
 #query from the db
@@ -189,7 +190,7 @@ server <- function(input, output, session) {
           lng = ~ longitude,
           popup = ~ name,
           layerId = ~ code_real,
-          label = ~type_id,
+      #    label = ~type_id,
           color = ~pal(type_id))
     }
   })
@@ -203,7 +204,7 @@ server <- function(input, output, session) {
           lng = ~ longitude,
           popup = ~ name,
           layerId = ~ code_real,
-          label = ~type_id,
+       #   label = ~type_id,
           color = ~pal(type_id))
     }
   })
