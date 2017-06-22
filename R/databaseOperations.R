@@ -7,9 +7,10 @@
 #' @author Jurian and Hidde
 db.setup <- function() {
   
-  cfg <- config::get(file = "~/Hackathon-RDWD-QualityMonitoring/config/config.db.yml")
+  cfg <- config::get(file = system.file("config", "config.db.yml",
+                                        package = "QualityMonitoR"))
   
-  dbConnect(RMySQL::MySQL(), 
+  DBI::dbConnect(RMySQL::MySQL(), 
             dbname = cfg$dbname, 
             username = cfg$username,
             password = cfg$password, 
@@ -23,7 +24,7 @@ db.setup <- function() {
 #' @author Jurian and Hidde
 #' @param db Data base
 db.close <- function(db) {
-  dbDisconnect(db)
+  DBI::dbDisconnect(db)
 }
 
 #' @title Query the database for hourly 
