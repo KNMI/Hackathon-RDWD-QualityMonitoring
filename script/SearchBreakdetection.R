@@ -14,8 +14,10 @@ Sys.setenv(R_CONFIG_ACTIVE = "test")
  # Data input # 
 
 obj <- db.execute(db.select.all, time.interval="1hour", type="H", element="RH")  # AWS
+obj <- aggregate.to.88.2(obj)
 obj2 <- db.execute(db.select.all, time.interval="1day", type="N", element="RD")  # MAN
-obj3 <- db.execute(db.select.all, time.interval="1hour", type="N", element="RR") # Radar
+obj3 <- db.execute(db.select.all, time.interval="1hour", type="N", element="RR") # Radar at MAN locations
+obj3 <- aggregate.to.88.2(obj3)
 
 AWS_series <- names(obj$`1hour`$meta)
 AWS_labels <- sapply(obj$`1hour`$meta, function(m){paste0(m$sta_id, "_H")})
@@ -29,7 +31,7 @@ for(n in 0:length(AWS_labels)){
     obj_subset3 <- obj3
   }else{
     Comb_Name <- AWS_labels[[n]]
-    obj_subset1 <- obj$`1hour`$data[n]  # list with 1 data.table. 
+    obj_subset1 <- obj$`1day`$data[n]  # list with 1 data.table. 
     stations_nearby <- station.nearby(AWS_labels[[n]])$nearby_code_real
     if(length(stations_nearby)==0){next} # in case no nearby stations are available
     nearby_labels <- substr(stations_nearby, 1, (nchar(stations_nearby)-2))
@@ -37,16 +39,21 @@ for(n in 0:length(AWS_labels)){
     selec_obj2 <- sapply(obj2$`1day`$meta, function(m){m$sta_id %in% substr(stations_nearby, 1, nchar(stations_nearby)-2) }) 
     obj_subset2 <- obj2$`1day`$data[selec_obj2]
     
-    selec_obj3 <- sapply(obj3$`1hour`$meta, function(m){m$sta_id %in% substr(stations_nearby, 1, nchar(stations_nearby)-2) }) 
-    obj_subset3 <- obj3$`1hour`$data[selec_obj3]
+    selec_obj3 <- sapply(obj3$`1day`$meta, function(m){m$sta_id %in% substr(stations_nearby, 1, nchar(stations_nearby)-2) }) 
+    obj_subset3 <- obj3$`1day`$data[selec_obj3]
     }
   
-  # Aggregation to daily values # 
-obj_subset1 <- aggregate.to.88.2(obj_subset1)
-obj_subset3 <- aggregate.to.88.2(obj_subset3)
+
+
   
 
   # Aggregation to yearly values #
+
+
+  # Spatial averaging #
+
+obj1_average   <- average.spatial(timeseries=AWS_timeseriesselec_y) 
+
 
 
 } # end n-loop
