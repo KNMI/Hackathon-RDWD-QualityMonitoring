@@ -177,9 +177,6 @@ fluidPage(
               ),
               div(
                 class = "row",
-                actionButton("buttonradius","Run Break Detection: Radius"),
-                actionButton("buttonnumber","Run Break Detection: Number"),
-                actionButton("buttonnearby","Run Break Detection: Nearby"),
                 checkboxGroupInput("Type", "Station Type",
                                    c("AWS" = 2,
                                      "Manual" = 1),
@@ -197,12 +194,17 @@ fluidPage(
                               30),
                 sliderInput("nr", "Number", 0, 10, value =
                               3)
+              ),
+              div(class="row",
+                  actionButton("buttonradius","Run Break Detection: Radius"),
+                  actionButton("buttonnumber","Run Break Detection: Number"),
+                  actionButton("buttonnearby","Run Break Detection: Nearby")    
               )
             )
           ),
           
           
-          tabsetPanel(
+          navlistPanel(
             tabPanel("Radius",
                      div(class = "col-xs-offset-2 col-xs-8",
                          tableOutput("clickedDistance"))),
