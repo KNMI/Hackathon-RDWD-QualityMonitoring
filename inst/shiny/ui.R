@@ -180,7 +180,10 @@ fluidPage(
                 checkboxGroupInput("Type", "Station Type",
                                    c("AWS" = 2,
                                      "Manual" = 1),
-                                   selected = c(1, 2))
+                                   selected = c(1, 2)),
+                actionButton("buttonradius","Run Break Detection: Radius"),
+                actionButton("buttonnumber","Run Break Detection: Number"),
+                actionButton("buttonnearby","Run Break Detection: Nearby")
               )
             ),
             
@@ -202,6 +205,7 @@ fluidPage(
                     max = Sys.Date(),
                     value = as.Date("2010-01-01")
                   )
+
                 )),
             div(class = "row",
                 div(

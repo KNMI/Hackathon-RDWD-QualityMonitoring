@@ -90,7 +90,18 @@ server <- function(input, output, session) {
       df.number<-head(df,n=input$nr+1)
     })
     
-
+  radiusStations<-eventReactive(input$buttonradius,{
+    radius<-dfNr()
+  })
+  
+  numberStations<-eventReactive(input$buttonnumber,{
+    number<-df()
+  })
+  
+  nearbyStations<-eventReactive(input$buttonnearby,{
+    nearby<-dfNearby()
+  })
+  
     
     #NOT WORKING!!!
     dfNearby<-reactive({
