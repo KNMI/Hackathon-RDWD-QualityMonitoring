@@ -32,3 +32,8 @@
 20170621 EvdB Renamed validated and derived tables to series
               Created and filled a derived series table
               
+20170622 EvdB Created table break_detection for the output that is 
+              used as input for the plotting
+              
+              
+              
