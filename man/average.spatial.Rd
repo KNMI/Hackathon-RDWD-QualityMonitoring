@@ -12,6 +12,9 @@ average.spatial(timeseries)
 \value{
 A single timeserie of structure <datetime, value>
 }
+\description{
+a function
+}
 \author{
 Hidde and Jurian
 }

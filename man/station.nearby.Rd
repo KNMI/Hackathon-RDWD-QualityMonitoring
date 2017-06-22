@@ -6,8 +6,8 @@
 \usage{
 station.nearby(code_real)
 }
-\value{
-TRUE, invisibly
+\arguments{
+\item{code_real}{code like 260_H}
 }
 \description{
 get the metadata for all stations, input looks like code_real="260_H"

@@ -10,12 +10,11 @@
 #' @param sta_type default is "AWS", but could be extended to for instance "WOW" in the future.
 #' @param var_id default is "RD" for daily rainfall. 
 #' @param sta_id defines the string of sta_id's that need to be aggregated. Only applies when all.stations = FALSE. 
-#' @example aggregated.seasonal <- aggregate.to.seasonal(obj)
+#' #@example aggregated.seasonal <- aggregate.to.seasonal(obj)
 #' @author Jurian and Lotte
 #' @export
 
-aggregate.to.seasonal <- function(obj, all.stations=TRUE, sta_type="AWS", var_id="RD", sta_id=NULL) {
-  
+aggregateTo.seasonal <- function(obj, all.stations=TRUE, sta_type="AWS", var_id="RD", sta_id=NULL) {
   cfg <- config::get(file = "config/config.yml")
   data.availability.threshold <- cfg$data.availability.threshold
   MaxNAPerSeason <- floor((1-data.availability.threshold)*(365/4))  #if exceeded, the day should be excluded. 
@@ -80,14 +79,14 @@ aggregate.to.seasonal <- function(obj, all.stations=TRUE, sta_type="AWS", var_id
       years_with_over20percent_NAvalues <- as.character(NAvaluestable[which(NAvaluestable$Freq>MaxNAPerYear),1])
 
       # Create a data.table for calendar yearly sums
-      yearly.sums <- data.table(aggregate(list(y = daily$value), by = list(year = year(daily$date)), sum, na.rm=T))
+      yearly.sums <- data.table(stats::aggregate(list(y = daily$value), by = list(year = year(daily$date)), sum, na.rm=T))
       # Set key for really fast merging later on
       setkey(yearly.sums, year)      
       
       # Create a list of data.tables, one for each season, this makes it easier to merge later on than
       # aggregating by year AND season at once. This is because we need them merged column wise and not row wise.
       aggregate.sums <- by(daily, daily$season, function(x) {
-        seasonal.sum <- data.table(aggregate(list(value = x$value), list(year = x$year), sum, na.rm=T))
+        seasonal.sum <- data.table(stats::aggregate(list(value = x$value), list(year = x$year), sum, na.rm=T))
         # Set key for really fast merging later on
         setkey(seasonal.sum, year)
         return(seasonal.sum)
@@ -171,7 +170,7 @@ aggregate.to.seasonal <- function(obj, all.stations=TRUE, sta_type="AWS", var_id
   return(obj)
 }
 
-aggregate.to.year <- function(data.container) {
+aggregateTo.year <- function(data.container) {
   
   if(is.null(data.container$`1day`)) {
     stop("Data container does not have daily data")
@@ -359,14 +358,14 @@ aggregate.to.88.2 <- function(data.container) {
 #' @param sta_type default is "AWS", but could be extended to for instance "WOW" in the future.
 #' @param var_id default is "RH" for hourly rainfall. 
 #' @param sta_id defines the string of sta_id's that need to be aggregated. Only applies when all.stations = FALSE. 
-#' @example aggregated88 <- aggregate.to.88(obj=obj)
+#' #@example aggregated88 <- aggregate.to.88(obj=obj)
 #' @author Lotte, Jurian & Hidde
 #' @export
 
 
 #function makes aggregations from all AWS datasets. 
 #default is all.stations=TRUE. if all.stations=FALSE, specify sta_ID. 
-aggregate.to.88 <- function(obj, all.stations=TRUE, sta_type="AWS", var_id="RH", sta_id=NULL){
+aggregateTo.88 <- function(obj, all.stations=TRUE, sta_type="AWS", var_id="RH", sta_id=NULL){
     cfg <- config::get(file = "config/config.yml")
     data.availability.threshold <- cfg$data.availability.threshold
     MaxNAPerDay <- floor((1-data.availability.threshold)*24)  #if exceeded, the day should be excluded. 

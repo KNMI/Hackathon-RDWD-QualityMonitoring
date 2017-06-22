@@ -1,12 +1,11 @@
 #runApp("~/Hackathon-RDWD-QualityMonitoring/inst/shiny")
-
 library(shiny)
 library(leaflet)
 library(ggplot2)
 library(data.table)
 library(lubridate)
 library(stringr)
-library(raster)
+# library(raster)
 source("~/Hackathon-RDWD-QualityMonitoring/R/databaseOperations.R",local=TRUE)
 
 # stations <-readRDS("~/Hackathon-RDWD-QualityMonitoring/data/testdata/stationInfo.rds")

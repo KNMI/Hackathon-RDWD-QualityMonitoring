@@ -4,16 +4,19 @@
 \alias{db.select.all}
 \title{Query the database for hourly}
 \usage{
-db.select.all(db, time.period, station.type, element.name)
+db.select.all(db, time.interval, type, element)
 }
 \arguments{
 \item{db}{Handle to MySQL database, taken from db.setup()}
 
-\item{time.period}{One of {"hour", "day", "month", "year"} NB. Season not supported ATM!}
+\item{time.interval}{One of {"1hour", "1day", "month", "season, "year"}}
 
-\item{station.type}{One of {"validated", "derived"}}
+\item{type}{One of {"N", "H"} Case insensitive}
 
-\item{element.name}{Name of type of data; e.g. "rh" for hourly rainfall or "t" for temperature}
+\item{element}{One of {"RH", "RD", "RR"} Case insensitive}
+}
+\description{
+a function
 }
 \seealso{
 db.setup()
