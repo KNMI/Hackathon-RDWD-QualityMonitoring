@@ -1,0 +1,183 @@
+# script to search for breakdetections based on the subset selections obtained via the app user interface. 
+# the script should be one big funciton that makes use of the app output and automatically generates the years with breakdetections, 
+# as well as a plot of relative differences with MAN stations and with Radar values at those stations. 
+
+#' Calculate seasonal sums
+#' @title Break detection of app input
+#' @description Function plots relative differences of station with selected subset MAN and Radar values, where breaks are clearly identified. 
+#' @details The function generates timelines of relative precipitation differences, as well as breakpoints (as compared to stations measurements), and visualizes this in 5 plots: full year and seasonal. The plot automatically visualises the entire period that is available. 
+#' @param 
+#' @param all.stations default is "TRUE" means all stations are aggregated. If all.stations = FALSE, an array of sta_ID needs to be provided. 
+#' @example 
+#' @author Lotte
+#' @export
+
+
+
+BreakDetectionFinder <- function(stationname, subsetselection){
+
+Sys.setenv(R_CONFIG_ACTIVE = "test")
+source("R/databaseOperations.R")
+source("R/aggregateOperations.R")
+source("R/averagingOperations.R")
+source("R/timeseriesOperations.R")
+source("R/breakDetection.R")
+cfg <- config::get(file = "config/config.yml")
+
+# Data input # 
+
+# find obj corresponding with stationname:
+
+db.select.timeseries <- function(db, station.IDs, time.interval, type, element) {
+obj <- db.execute(db.select.timeseries, time.interval)
+  
+obj <- db.execute(db.select.all, time.interval="1hour", type="H", element="RH")  # AWS
+obj <- aggregate.to.88.2(obj)
+obj <- aggregate.to.seasonal.2(obj)
+obj <- aggregateTo.year(obj) 
+obj2 <- db.execute(db.select.all, time.interval="1day", type="N", element="RD")  # MAN
+obj2 <- aggregate.to.seasonal.2(obj2)
+obj2 <- aggregateTo.year(obj2) 
+
+MAN_labels2 <- sapply(obj2$year$meta, function(m){m$sta_id})
+MAN_labels <- c()
+for(m in 1:length(MAN_labels2)){MAN_labels[m] <- MAN_labels2[[m]]}
+
+obj3 <- db.execute(db.select.all, time.interval="1hour", type="N", element="RR") # Radar at MAN locations
+obj3selec <- sapply(obj3$`1hour`$meta, function(m){m$sta_id %in% MAN_labels & m$sta_type=="n"})
+obj3$`1hour`$data <- obj3$`1hour`$data[obj3selec]   #only take the radar timeseries at MAN stations
+obj3$`1hour`$meta <- obj3$`1hour`$meta[obj3selec]   
+obj3 <- aggregate.to.88.2(obj3)
+obj3 <- aggregate.to.seasonal.2(obj3)
+obj3 <- aggregateTo.year(obj3) 
+
+AWS_series <- names(obj$year$meta)
+AWS_labels <- sapply(obj$year$meta, function(m){paste0(m$sta_id, "_H")})
+
+emptycol <- rep(NA,(length(AWS_labels)+1))
+#BD_output <- data.table(Comb_Name=emptycol, year=emptycol, djf=emptycol, mam=emptycol, jja=emptycol, son=emptycol )
+
+BD_output <- rbindlist(lapply(0:length(AWS_labels), function(n) {
+  
+  if(n == 0) {
+    
+    Comb_Name <- "NL"     # all AWS vs all MAN vs all Radar
+    #  obj_subset1 <- obj
+    #  obj_subset2 <- obj2
+    #  obj_subset3 <- obj3
+    
+    obj_subset1_y <- obj$year$data  # list with 1 data.table. 
+    obj_subset1_season <- obj$season$data  # list with 1 data.table. 
+    
+    obj_subset2_y <- obj2$year$data
+    obj_subset2_season <- obj2$season$data
+    
+    obj_subset3_y <- obj3$year$data
+    obj_subset3_season <- obj3$year$data
+    
+  }else{
+    Comb_Name <- AWS_labels[[n]]
+    obj_subset1_y <- obj$year$data[n]  # list with 1 data.table. 
+    obj_subset1_season <- obj$season$data[n]  # list with 1 data.table. 
+    
+    stations_nearby <- station.nearby(AWS_labels[[n]])$nearby_code_real
+    # in case no nearby stations are available
+    if(length(stations_nearby)==0){
+      BD_output$year[(n+1)] <- cfg$database.na.value
+      BD_output$djf[(n+1)] <- cfg$database.na.value
+      BD_output$mam[(n+1)] <- cfg$database.na.value
+      BD_output$jja[(n+1)] <- cfg$database.na.value
+      BD_output$son[(n+1)] <- cfg$database.na.value
+    }else{
+      
+      nearby_labels <- substr(stations_nearby, 1, (nchar(stations_nearby)-2))
+      
+      selec_obj2_y <- sapply(obj2$year$meta, function(m){m$sta_id %in% substr(stations_nearby, 1, nchar(stations_nearby)-2) }) 
+      obj_subset2_y <- obj2$year$data[selec_obj2]
+      selec_obj2_season <- sapply(obj2$season$meta, function(m){m$sta_id %in% substr(stations_nearby, 1, nchar(stations_nearby)-2) }) 
+      obj_subset2_season <- obj2$season$data[selec_obj2]
+      
+      selec_obj3_y <- sapply(obj3$year$meta, function(m){m$sta_id %in% substr(stations_nearby, 1, nchar(stations_nearby)-2) }) 
+      obj_subset3_y <- obj3$year$data[selec_obj3]
+      selec_obj3_season <- sapply(obj3$year$meta, function(m){m$sta_id %in% substr(stations_nearby, 1, nchar(stations_nearby)-2) }) 
+      obj_subset3_season <- obj3$year$data[selec_obj3]
+    }}
+  
+  # Spatial averaging #
+  
+  obj1_average_y  <- average.spatial(timeseries=obj_subset1_y) 
+  obj2_average_y  <- average.spatial(timeseries=obj_subset2_y) 
+  obj3_average_y  <- average.spatial(timeseries=obj_subset3_y) 
+  
+  obj1_average_season  <- average.spatial(timeseries=obj_subset1_season) 
+  obj2_average_season  <- average.spatial(timeseries=obj_subset2_season) 
+  obj3_average_season  <- average.spatial(timeseries=obj_subset3_season) 
+  
+  obj1_average_djf <- obj1_average_season[which(month(as.Date(obj1_average_season$datetime, format="%Y%m%d%H%M%S")) == 3)]
+  obj1_average_mam <- obj1_average_season[which(month(as.Date(obj1_average_season$datetime, format="%Y%m%d%H%M%S")) == 6)]
+  obj1_average_jja <- obj1_average_season[which(month(as.Date(obj1_average_season$datetime, format="%Y%m%d%H%M%S")) == 9)]
+  obj1_average_son <- obj1_average_season[which(month(as.Date(obj1_average_season$datetime, format="%Y%m%d%H%M%S")) == 12)]
+  
+  obj2_average_djf <- obj2_average_season[which(month(as.Date(obj2_average_season$datetime, format="%Y%m%d%H%M%S")) == 3)]
+  obj2_average_mam <- obj2_average_season[which(month(as.Date(obj2_average_season$datetime, format="%Y%m%d%H%M%S")) == 6)]
+  obj2_average_jja <- obj2_average_season[which(month(as.Date(obj2_average_season$datetime, format="%Y%m%d%H%M%S")) == 9)]
+  obj2_average_son <- obj2_average_season[which(month(as.Date(obj2_average_season$datetime, format="%Y%m%d%H%M%S")) == 12)]
+  
+  obj3_average_djf <- obj3_average_season[which(month(as.Date(obj3_average_season$datetime, format="%Y%m%d%H%M%S")) == 3)]
+  obj3_average_mam <- obj3_average_season[which(month(as.Date(obj3_average_season$datetime, format="%Y%m%d%H%M%S")) == 6)]
+  obj3_average_jja <- obj3_average_season[which(month(as.Date(obj3_average_season$datetime, format="%Y%m%d%H%M%S")) == 9)]
+  obj3_average_son <- obj3_average_season[which(month(as.Date(obj3_average_season$datetime, format="%Y%m%d%H%M%S")) == 12)]
+  
+  
+  # Calculate relative difference # 
+  
+  rel_dif_AWSvsMAN_y <- timeseries.relative.difference(timeserie1=obj1_average_y, timeserie2=obj2_average_y)
+  rel_dif_AWSvsRAD_y <- timeseries.relative.difference(timeserie1=obj1_average_y, timeserie2=obj3_average_y)
+  
+  rel_dif_AWSvsMAN_djf <- timeseries.relative.difference(timeserie1=obj1_average_djf, timeserie2=obj2_average_djf)
+  rel_dif_AWSvsRAD_djf <- timeseries.relative.difference(timeserie1=obj1_average_djf, timeserie2=obj3_average_djf)
+  rel_dif_AWSvsMAN_mam <- timeseries.relative.difference(timeserie1=obj1_average_mam, timeserie2=obj2_average_mam)
+  rel_dif_AWSvsRAD_mam <- timeseries.relative.difference(timeserie1=obj1_average_mam, timeserie2=obj3_average_mam)
+  rel_dif_AWSvsMAN_jja <- timeseries.relative.difference(timeserie1=obj1_average_jja, timeserie2=obj2_average_jja)
+  rel_dif_AWSvsRAD_jja <- timeseries.relative.difference(timeserie1=obj1_average_jja, timeserie2=obj3_average_jja)
+  rel_dif_AWSvsMAN_son <- timeseries.relative.difference(timeserie1=obj1_average_son, timeserie2=obj2_average_son)
+  rel_dif_AWSvsRAD_son <- timeseries.relative.difference(timeserie1=obj1_average_son, timeserie2=obj3_average_son)
+  
+  
+  BDyear <- break.detection(rel_dif_AWSvsMAN_y,name=Comb_Name,type='y',plot.score = TRUE)
+  BDdjf <- break.detection(rel_dif_AWSvsMAN_djf,name=Comb_Name,type='djf',plot.score = TRUE)
+  BDmam <- break.detection(rel_dif_AWSvsMAN_mam,name=Comb_Name,type='mam',plot.score = TRUE)
+  BDjja <- break.detection(rel_dif_AWSvsMAN_jja,name=Comb_Name,type='jja',plot.score = TRUE)
+  BDson <- break.detection(rel_dif_AWSvsMAN_son,name=Comb_Name,type='son',plot.score = TRUE)
+  
+  
+  if(length(BDyear) > 0 | length(BDdjf) > 0 | length(BDmam) > 0 | length(BDjja) > 0 | length(BDson) > 0 ) {
+    
+    return(
+      data.table(
+        Comb_Name = Comb_Name,
+        year = paste(BDyear, collapse = ","),
+        djf <- paste(BDdjf, collapse = ","),
+        mam <- paste(BDmam, collapse = ","),
+        jja <- paste(BDjja, collapse = ","),
+        son <- paste(BDson, collapse = ",")
+      )
+    )
+  } else {
+    return(NULL)
+  }
+  
+}))
+
+db.execute(db.insert.breakdetection.results, BD_output)
+
+
+
+
+
+} # end function
+
+
+
+
+
