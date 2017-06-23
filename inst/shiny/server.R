@@ -116,7 +116,7 @@ server <- function(input, output, session) {
     
     dfNearby<-reactive({
       data$clickedStation <- markerClickEvent
-      stationId <- str_extract(data$clickedStation$id, "(?<=\\().*(?=\\))")
+      stationId <- stringr::str_extract(data$clickedStation$id, "(?<=\\().*(?=\\))")
       dfNearby<-db.execute(station.nearby, stationId) #function making a connection to the db
     })
     output$stationsNearby<-renderTable({
