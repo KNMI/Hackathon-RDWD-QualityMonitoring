@@ -4,7 +4,7 @@
 \alias{station.info}
 \title{Get station information from database}
 \usage{
-station.info()
+station.info(db)
 }
 \description{
 get the metadata for all stations

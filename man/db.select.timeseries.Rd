@@ -19,7 +19,7 @@ db.select.timeseries(db, station.IDs, time.interval, type, element)
 }
 \value{
 An object of type "mqm.data.container" which contains a list of timeseries and metadata on those series.
-#@example data.container <- db.select.timeseries(db, c(260, 324, 343, 340), "1hour", "H", "RH")
+#@example data.container <- db.execute(db.select.timeseries, c(260, 324, 343, 340), "1hour", "H", "RH")
 }
 \description{
 a function

@@ -4,14 +4,12 @@
 
 setwd("~/Hackathon-RDWD-QualityMonitoring/")
 
-
 Sys.setenv(R_CONFIG_ACTIVE = "test")
 source("R/databaseOperations.R")
 source("R/aggregateOperations.R")
 source("R/averagingOperations.R")
 source("R/timeseriesOperations.R")
 source("R/breakDetection.R")
-cfg <- config::get(file = "config/config.yml")
 
 # Data input # 
 # note: these functions will later be replaced by obtaining the data directly through the query.
@@ -39,54 +37,32 @@ obj3 <- aggregateTo.year(obj3)
 AWS_series <- names(obj$year$meta)
 AWS_labels <- sapply(obj$year$meta, function(m){paste0(m$sta_id, "_H")})
 
-emptycol <- rep(NA,(length(AWS_labels)+1))
-#BD_output <- data.table(Comb_Name=emptycol, year=emptycol, djf=emptycol, mam=emptycol, jja=emptycol, son=emptycol )
 
-BD_output <- rbindlist(lapply(0:length(AWS_labels), function(n) {
-  
-  if(n == 0) {
-    
+for(n in 0:length(AWS_labels)){
+  if(n == 0){
     Comb_Name <- "NL"     # all AWS vs all MAN vs all Radar
-    #  obj_subset1 <- obj
-    #  obj_subset2 <- obj2
-    #  obj_subset3 <- obj3
-    
-    obj_subset1_y <- obj$year$data  # list with 1 data.table. 
-    obj_subset1_season <- obj$season$data  # list with 1 data.table. 
-    
-    obj_subset2_y <- obj2$year$data
-    obj_subset2_season <- obj2$season$data
-    
-    obj_subset3_y <- obj3$year$data
-    obj_subset3_season <- obj3$year$data
-    
+    obj_subset1 <- obj
+    obj_subset2 <- obj2
+    obj_subset3 <- obj3
   }else{
     Comb_Name <- AWS_labels[[n]]
     obj_subset1_y <- obj$year$data[n]  # list with 1 data.table. 
     obj_subset1_season <- obj$season$data[n]  # list with 1 data.table. 
     
     stations_nearby <- station.nearby(AWS_labels[[n]])$nearby_code_real
-    # in case no nearby stations are available
-    if(length(stations_nearby)==0){
-      BD_output$year[(n+1)] <- cfg$database.na.value
-      BD_output$djf[(n+1)] <- cfg$database.na.value
-      BD_output$mam[(n+1)] <- cfg$database.na.value
-      BD_output$jja[(n+1)] <- cfg$database.na.value
-      BD_output$son[(n+1)] <- cfg$database.na.value
-    }else{
-      
-      nearby_labels <- substr(stations_nearby, 1, (nchar(stations_nearby)-2))
-      
-      selec_obj2_y <- sapply(obj2$year$meta, function(m){m$sta_id %in% substr(stations_nearby, 1, nchar(stations_nearby)-2) }) 
-      obj_subset2_y <- obj2$year$data[selec_obj2]
-      selec_obj2_season <- sapply(obj2$season$meta, function(m){m$sta_id %in% substr(stations_nearby, 1, nchar(stations_nearby)-2) }) 
-      obj_subset2_season <- obj2$season$data[selec_obj2]
-      
-      selec_obj3_y <- sapply(obj3$year$meta, function(m){m$sta_id %in% substr(stations_nearby, 1, nchar(stations_nearby)-2) }) 
-      obj_subset3_y <- obj3$year$data[selec_obj3]
-      selec_obj3_season <- sapply(obj3$year$meta, function(m){m$sta_id %in% substr(stations_nearby, 1, nchar(stations_nearby)-2) }) 
-      obj_subset3_season <- obj3$year$data[selec_obj3]
-    }}
+    if(length(stations_nearby)==0){next} # in case no nearby stations are available
+    nearby_labels <- substr(stations_nearby, 1, (nchar(stations_nearby)-2))
+    
+    selec_obj2_y <- sapply(obj2$year$meta, function(m){m$sta_id %in% substr(stations_nearby, 1, nchar(stations_nearby)-2) }) 
+    obj_subset2_y <- obj2$year$data[selec_obj2]
+    selec_obj2_season <- sapply(obj2$season$meta, function(m){m$sta_id %in% substr(stations_nearby, 1, nchar(stations_nearby)-2) }) 
+    obj_subset2_season <- obj2$season$data[selec_obj2]
+    
+    selec_obj3_y <- sapply(obj3$year$meta, function(m){m$sta_id %in% substr(stations_nearby, 1, nchar(stations_nearby)-2) }) 
+    obj_subset3_y <- obj3$year$data[selec_obj3]
+    selec_obj3_season <- sapply(obj3$year$meta, function(m){m$sta_id %in% substr(stations_nearby, 1, nchar(stations_nearby)-2) }) 
+    obj_subset3_season <- obj3$year$data[selec_obj3]
+  }
   
   # Spatial averaging #
   
@@ -129,40 +105,15 @@ BD_output <- rbindlist(lapply(0:length(AWS_labels), function(n) {
   rel_dif_AWSvsRAD_son <- timeseries.relative.difference(timeserie1=obj1_average_son, timeserie2=obj3_average_son)
   
   
-  BDyear <- break.detection(rel_dif_AWSvsMAN_y,name=Comb_Name,type='y',plot.score = TRUE)
-  BDdjf <- break.detection(rel_dif_AWSvsMAN_djf,name=Comb_Name,type='djf',plot.score = TRUE)
-  BDmam <- break.detection(rel_dif_AWSvsMAN_mam,name=Comb_Name,type='mam',plot.score = TRUE)
-  BDjja <- break.detection(rel_dif_AWSvsMAN_jja,name=Comb_Name,type='jja',plot.score = TRUE)
-  BDson <- break.detection(rel_dif_AWSvsMAN_son,name=Comb_Name,type='son',plot.score = TRUE)
+  # Break detection #
   
-
-  if(length(BDyear) > 0 | length(BDdjf) > 0 | length(BDmam) > 0 | length(BDjja) > 0 | length(BDson) > 0 ) {
-    
-    return(
-      data.table(
-        Comb_Name = Comb_Name,
-        year = paste(BDyear, collapse = ","),
-        djf <- paste(BDdjf, collapse = ","),
-        mam <- paste(BDmam, collapse = ","),
-        jja <- paste(BDjja, collapse = ","),
-        son <- paste(BDson, collapse = ",")
-      )
-    )
-  } else {
-    return(NULL)
-  }
+  BD_y <- break.detection(rel_dif_AWSvsMAN_y)
+  BD_djf <- break.detection(rel_dif_AWSvsMAN_djf)
+  BD_mam <- break.detection(rel_dif_AWSvsMAN_mam)
+  BD_jja <- break.detection(rel_dif_AWSvsMAN_jja)
+  BD_son <- break.detection(rel_dif_AWSvsMAN_son)
   
-}))
-
-db.execute(db.insert.breakdetection.results, BD_output)
-
-
-
-
-
-
-
-
-
+  
+} # end n-loop
 
 

@@ -4,7 +4,7 @@
 \alias{station.nearby}
 \title{Get information from nearby stations from the database}
 \usage{
-station.nearby(code_real)
+station.nearby(db, code_real)
 }
 \arguments{
 \item{code_real}{code like 260_H}

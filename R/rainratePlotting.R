@@ -10,16 +10,10 @@
 #' @param timespan2 upper bound value in as.Date format that span up the range over which the timeseries should be plotted. If not provided, the entire period provided in the input data is plotted. 
 #' @author Lotte
 
-# test files:
-# timeseries1 <- obj$daily[1:24]
-# timeseries2 <- obj$daily[25:38]
-# averagedtimeseries1 <- average.spatial(timeseries1)
-# averagedtimeseries2 <- average.spatial(timeseries2)
-
-RainRatePlotting <- function(timeseries1, timeseries2, averagedtimeseries1, averagedtimeseries2, timespan1=NULL, timespan2=NULL){
+RainRatePlotting <- function(timeseries1, timeseries2, averagedtimeseries1, averagedtimeseries2, timespan1=NULL, timespan2=NULL) {
   
   #plot over entire period. 
-  if(is.null(timespan1) & is.null(timespan2)){
+  if(is.null(timespan1) & is.null(timespan2)) {
     
     timespan1 <- as.Date(min(sapply(c(timeseries1, timeseries2), function(ts) min(ts$datetime))), format="%Y%m%d%H%M%S", tz="GMT")
     timespan2 <- as.Date(max(sapply(c(timeseries1, timeseries2), function(ts) max(ts$datetime))), format="%Y%m%d%H%M%S", tz="GMT") + 1
@@ -31,10 +25,9 @@ RainRatePlotting <- function(timeseries1, timeseries2, averagedtimeseries1, aver
     for(m in 1:length(timeseries2)){
       if(length(which(is.na(timeseries2[[m]]$value)==F)) < 1){next}
       timeseries2[[m]] <- timeseries2[[m]][(which(is.na(timeseries2[[m]]$value)==F)[1]): nrow(timeseries2[[m]]),] }
-   
      
   #plot over specific interval. 
-  }else{
+  } else {
     if((is.null(timespan1)==F & is.null(timespan2)) | (is.null(timespan2)==F & is.null(timespan1))){
       stop("Provide either both timespan1 and timespan 2, or neither.")}
       if(class(timespan1) != "Date" | class(timespan2) != "Date"){
@@ -79,5 +72,5 @@ RainRatePlotting <- function(timeseries1, timeseries2, averagedtimeseries1, aver
       lines(as.Date(timeseries2[[n]]$datetime, format="%Y%m%d%H%M%S", tz="GMT"), (cumsum(ifelse(is.na( timeseries2[[n]]$value ), 0, timeseries2[[n]]$value )) + timeseries2[[n]]$value *0) / 10 + startvalue[[n]], col=rgb(0, 0, 1, 0.1))}
     
   legend("topleft", c("subset 1", "subset 2"), col=c("red", "blue"), lty=1)
-    }
+}
     
