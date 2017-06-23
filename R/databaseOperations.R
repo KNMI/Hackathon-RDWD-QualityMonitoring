@@ -31,7 +31,7 @@ db.close <- function(db) {
 #' @param time.interval One of {"1hour", "1day", "month", "season, "year"}
 #' @param type One of {"N" (Manual), "H" (Automatic)} Case insensitive
 #' @param element One of {"RH" (Precipitation, originated from hourly data), "RD" (Precipitation, from daily data), "RR" (Precipitation, from radar data)} Case insensitive
-#' #@example data.container <- db.execute(db.select.all, "1hour", "N", "RH") 
+#' #@example data.container <- db.execute(db.select.all, "1hour", "H", "RH") 
 #' @seealso db.setup()
 #' @description a function
 #' @author Jurian and Hidde
@@ -186,13 +186,15 @@ db.select.all <- function(db, time.interval, type, element) {
     begin <- strptime(min(dt$datetime), format = "%Y%m%d%H%M%S", tz = "GMT")
     end <- strptime(max(dt$datetime), format = "%Y%m%d%H%M%S", tz = "GMT")
     
-    # If the timeseries has holes, then fill them up with NA's
-    if((difftime(end, begin, tz = "GMT", units = time.interval) + 1) > nrow(dt)) {
-      complete.timeline <- data.table(datetime = format(seq(begin, end, by = time.interval), format = "%Y%m%d%H%M%S"))
-      setkey(complete.timeline, datetime)
-      dt <- base::merge(dt, complete.timeline, by = "datetime", all = T)
+    if(!time.interval %in% c("season", "year")) {
+      # If the timeseries has holes, then fill them up with NA's
+      if((difftime(end, begin, tz = "GMT", units = time.interval) + 1) > nrow(dt)) {
+        complete.timeline <- data.table(datetime = format(seq(begin, end, by = time.interval), format = "%Y%m%d%H%M%S"))
+        setkey(complete.timeline, datetime)
+        dt <- base::merge(dt, complete.timeline, by = "datetime", all = T)
+      }
     }
-    
+
     class(dt) <- append(class(dt), cfg$data.container.timeseries.class)
     return(dt)
   })
@@ -420,11 +422,13 @@ db.select.timeseries <- function(db, station.IDs, time.interval, type, element) 
     begin <- strptime(min(dt$datetime), format = "%Y%m%d%H%M%S", tz = "GMT")
     end <- strptime(max(dt$datetime), format = "%Y%m%d%H%M%S", tz = "GMT")
     
-    # If the timeseries has holes, then fill them up with NA's
-    if((difftime(end, begin, tz = "GMT", units = time.interval) + 1) > nrow(dt)) {
-      complete.timeline <- data.table(datetime = format(seq(begin, end, by = time.interval), format = "%Y%m%d%H%M%S"))
-      setkey(complete.timeline, datetime)
-      dt <- base::merge(dt, complete.timeline, by = "datetime", all = T)
+    if(!time.interval %in% c("season", "year")) {
+      # If the timeseries has holes, then fill them up with NA's
+      if((difftime(end, begin, tz = "GMT", units = time.interval) + 1) > nrow(dt)) {
+        complete.timeline <- data.table(datetime = format(seq(begin, end, by = time.interval), format = "%Y%m%d%H%M%S"))
+        setkey(complete.timeline, datetime)
+        dt <- base::merge(dt, complete.timeline, by = "datetime", all = T)
+      }
     }
     
     class(dt) <- append(class(dt), cfg$data.container.timeseries.class)
