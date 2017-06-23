@@ -54,6 +54,8 @@ type.subset <- substr(subsetselectionIDs, nchar(subsetselectionIDs), nchar(subse
 element.subset <- rep(NA, length(type.subset))
  element.subset[which(type.subset == "H")] <- "RH" 
  element.subset[which(type.subset == "N")] <- "RD"   
+ 
+ db.execute(db.select.timeseries, c(260, 324, 343, 340), "1hour", "H", "RH")
 
 ########### 
  # find relevant values in obj. This is a temporary solution until we can make a query to obtain these values directly from the database. 

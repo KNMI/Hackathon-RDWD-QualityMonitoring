@@ -11,10 +11,10 @@
 #' @author Lotte
 
 # test files:
-# timeseries1 <- obj$daily[1:24]
-# timeseries2 <- obj$daily[25:38]
-# averagedtimeseries1 <- average.spatial(timeseries1)
-# averagedtimeseries2 <- average.spatial(timeseries2)
+ timeseries1 <- obj$`1day`$data[1:24]
+ timeseries2 <- obj$`1day`$data[25:38]
+ averagedtimeseries1 <- average.spatial(timeseries1)
+ averagedtimeseries2 <- average.spatial(timeseries2)
 
 RainRatePlotting <- function(timeseries1, timeseries2, averagedtimeseries1, averagedtimeseries2, timespan1=NULL, timespan2=NULL) {
   
