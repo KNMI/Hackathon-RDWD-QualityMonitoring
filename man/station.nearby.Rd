@@ -4,9 +4,11 @@
 \alias{station.nearby}
 \title{Get information from nearby stations from the database}
 \usage{
-station.nearby(code_real)
+station.nearby(db, code_real)
 }
 \arguments{
+\item{db}{Handle to MySQL database, taken from db.setup()}
+
 \item{code_real}{code like 260_H}
 }
 \description{
