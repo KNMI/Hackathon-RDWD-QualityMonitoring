@@ -193,6 +193,8 @@ db.select.all <- function(db, time.interval, type, element) {
         setkey(complete.timeline, datetime)
         dt <- base::merge(dt, complete.timeline, by = "datetime", all = T)
       }
+    } else {
+      warning(paste("Timeseries hole checkig for", time.interval.db, "not supported ATM"))
     }
 
     class(dt) <- append(class(dt), cfg$data.container.timeseries.class)
@@ -429,6 +431,8 @@ db.select.timeseries <- function(db, station.IDs, time.interval, type, element) 
         setkey(complete.timeline, datetime)
         dt <- base::merge(dt, complete.timeline, by = "datetime", all = T)
       }
+    } else {
+      warning(paste("Timeseries hole checkig for", time.interval.db, "not supported ATM"))
     }
     
     class(dt) <- append(class(dt), cfg$data.container.timeseries.class)
