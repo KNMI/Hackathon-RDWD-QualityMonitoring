@@ -1,3 +1,4 @@
+library(shiny)
 #' Run app
 #' @export
 runQualityMonitoring <- function() {

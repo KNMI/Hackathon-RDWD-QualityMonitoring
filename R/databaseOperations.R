@@ -666,10 +666,10 @@ db.execute <- function(FUN, ...) {
 
 #' @title Get station information from database
 #' @description get the metadata for all stations
+#' @param db Handle to MySQL database, taken from db.setup()
 #' @author Marieke 
 #' @export
-station.info<-function(){
-  db<-db.setup()
+station.info<-function(db){
   query<-"SELECT * FROM stations" 
   
   query_new<-"SELECT stations.name, 
@@ -690,26 +690,23 @@ station.info<-function(){
   
   db.q<-dbSendQuery(db,query_new)
   results<-dbFetch(db.q,n=-1)
-  
-  
-  dbDisconnect(db)
-  
+  dbClearResult(db.q)
   return(results)
 }
 
 #' @title Get information from nearby stations from the database
 #' @description get the metadata for all stations, input looks like code_real="260_H"
+#' @param db Handle to MySQL database, taken from db.setup()
 #' @author Marieke 
 #' @param code_real code like 260_H
 #' @export
 #' 
-station.nearby<-function(code_real){
+station.nearby<-function(db, code_real){
   
   split<-unlist(strsplit(code_real,"_"))
   code=split[1]
   type=split[2]
   
-  db<-db.setup()
   query<-"SELECT * FROM nearby_stations"
   
   
@@ -731,17 +728,17 @@ station.nearby<-function(code_real){
   
   db.q<-dbSendQuery(db,query_new)
   results<-dbFetch(db.q,n=-1)
-  dbDisconnect(db)
+  dbClearResult(db.q)
   return(results)
 }
 
 #' @title Get break detection information from database
 #' @description get the break detection information per combine name
 #' @author Else
+#' @param db Handle to MySQL database, taken from db.setup()
 #' @param comb_name combine name
 #' @export
-break.info<-function(comb_name){
-  db<-db.setup()
+break.info<-function(db, comb_name){
 
   query<-sprintf("SELECT comb_name,
                          year,
@@ -756,7 +753,6 @@ break.info<-function(comb_name){
   db.q<-dbSendQuery(db,query)
   results<-dbFetch(db.q,n=-1)
   
-  dbDisconnect(db)
-  
+  dbClearResult(db.q)  
   return(results)
 }
