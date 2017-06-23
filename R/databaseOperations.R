@@ -10,7 +10,7 @@ db.setup <- function() {
   cfg <- config::get(file = system.file("config", "config.db.yml",
                                         package = "QualityMonitoR"))
 
-  DBI::dbConnect(RMySQL::MySQL(), 
+  RMySQL::dbConnect(RMySQL::MySQL(), 
             dbname = cfg$dbname, 
             username = cfg$username,
             password = cfg$password, 
@@ -24,7 +24,7 @@ db.setup <- function() {
 #' @author Jurian and Hidde
 #' @param db Data base
 db.close <- function(db) {
-  DBI::dbDisconnect(db)
+  RMySQL::dbDisconnect(db)
 }
 
 #' @title Query the database for hourly 
@@ -42,7 +42,7 @@ db.select.all <- function(db, time.interval, type, element) {
   ### Check the arguments for validity ###
   #--------------------------------------#
   
-  if(!dbIsValid(db)) {
+  if(!RMySQL::dbIsValid(db)) {
     stop("Invalid database connection")
   }
   
@@ -57,10 +57,10 @@ db.select.all <- function(db, time.interval, type, element) {
   element <- tolower(element)
   
   # Find the correct element ID and type ID in the database
-  ref <- dbSendQuery(db, sprintf(
+  ref <- RMySQL::dbSendQuery(db, sprintf(
     "SELECT type_id, element_id FROM types, elements WHERE type = %s AND element = %s;", paste0("'", type, "'"), paste0("'", element, "'")))
-  type.element <- dbFetch(ref, n = 1)
-  dbClearResult(ref)
+  type.element <- RMySQL::dbFetch(ref, n = 1)
+  RMySQL::dbClearResult(ref)
   
   if(nrow(type.element) == 0) {
     stop("Error finding the correct type and/or element in the database")
@@ -113,9 +113,9 @@ db.select.all <- function(db, time.interval, type, element) {
   type.ID,
   element.ID,
   paste0("'", time.interval.db, "'"))
-  result.ref <- dbSendQuery(db, query)
-  result <- dbFetch(result.ref, cfg$database.max.records)
-  dbClearResult(result.ref)
+  result.ref <- RMySQL::dbSendQuery(db, query)
+  result <- RMySQL::dbFetch(result.ref, cfg$database.max.records)
+  RMySQL::dbClearResult(result.ref)
   
   data.container[[time.interval.db]]$meta <- by(result, factor(result$station_code), function(x) {
     
@@ -165,9 +165,9 @@ db.select.all <- function(db, time.interval, type, element) {
   
   query <- sprintf(query, "'%Y%m%d%H%i%s'")
   
-  result.ref <- dbSendQuery(db, query)
-  result <- dbFetch(result.ref, cfg$database.max.records)
-  dbClearResult(result.ref)
+  result.ref <- RMySQL::dbSendQuery(db, query)
+  result <- RMySQL::dbFetch(result.ref, cfg$database.max.records)
+  RMySQL::dbClearResult(result.ref)
   
   data.container[[time.interval.db]]$data <- by(result, factor(result$data_id), function(x) {
     
@@ -234,10 +234,10 @@ db.select.timeseries <- function(db, station.IDs, time.interval, type, element) 
   type <- tolower(type)
   element <- tolower(element)
   
-  ref <- dbSendQuery(db, sprintf(
+  ref <- RMySQL::dbSendQuery(db, sprintf(
     "SELECT type_id, element_id FROM types, elements WHERE type = %s AND element = %s;", paste0("'", type, "'"), paste0("'", element, "'")))
   type.element <- dbFetch(ref, n = 1)
-  dbClearResult(ref)
+  RMySQL::dbClearResult(ref)
   
   if(nrow(type.element) == 0) {
     stop("Error finding the correct type and/or element in the database")
@@ -284,8 +284,8 @@ db.select.timeseries <- function(db, station.IDs, time.interval, type, element) 
     paste0("'", time.interval.db, "'"))
   
   # Fetch from DB and store results
-  result.ref <- dbSendQuery(db, query)
-  result <- dbFetch(result.ref, n = -1)
+  result.ref <- RMySQL::dbSendQuery(db, query)
+  result <- RMySQL::dbFetch(result.ref, n = -1)
   
   if(nrow(result) == 0) {
     stop("No stations match this description")
@@ -295,7 +295,7 @@ db.select.timeseries <- function(db, station.IDs, time.interval, type, element) 
   time.interval.db <- unique(result$aggregation)
   element.name <- tolower(unique(result$element))
   rm(result)
-  dbClearResult(result.ref)
+  RMySQL::dbClearResult(result.ref)
   
   #------------------------------#
   ### Create the master object ###
@@ -323,13 +323,13 @@ db.select.timeseries <- function(db, station.IDs, time.interval, type, element) 
     element.name,
     paste(data.IDs, collapse = ","))
   
-  query <- dbEscapeStrings(db, query)
+  query <- RMySQL::dbEscapeStrings(db, query)
   query <- sprintf(query, "'%Y%m%d%H%i%s'")
   
-  result.ref <- dbSendQuery(db, query)
+  result.ref <- RMySQL::dbSendQuery(db, query)
   result <- data.table(dbFetch(result.ref, n = cfg$database.max.records))
   setkey(result, datetime)
-  dbClearResult(result.ref)
+  RMySQL::dbClearResult(result.ref)
   
   data.container[[time.interval.db]]$data <- by(result, factor(result$data_id), function(x) {
     
@@ -395,9 +395,9 @@ db.select.timeseries <- function(db, station.IDs, time.interval, type, element) 
     "data_id, station_code"
   ),paste(data.IDs, collapse = ","))
   
-  result.ref <- dbSendQuery(db, dbEscapeStrings(db, query))
-  result <- dbFetch(result.ref, n = -1)
-  dbClearResult(result.ref)
+  result.ref <- dbSendQuery(db, RMySQL::dbEscapeStrings(db, query))
+  result <- RMySQL::dbFetch(result.ref, n = -1)
+  RMySQL::dbClearResult(result.ref)
   data.container[[time.interval.db]]$meta <- by(result, factor(data.IDs), function(x) {
     
     meta <- list (
@@ -559,7 +559,7 @@ db.insert.update.timeseries <- function(db, meta, timeseries) {
       "%s"
     ), insert.data)
     
-    rows.affected <- dbExecute(db, query)
+    rows.affected <- DBI::dbExecute(db, query)
     
     if(rows.affected == 0) {
       stop("No series inserted into database!")
@@ -585,7 +585,7 @@ db.insert.update.timeseries <- function(db, meta, timeseries) {
     meta$var_name,
     meta$dat_id)
     
-    rows.affected <- dbExecute(db, query)
+    rows.affected <- DBI::dbExecute(db, query)
     
     if(rows.affected == timeseries.length) {
       print(paste("Deleted", rows.affected, "rows from the database"))
@@ -615,7 +615,7 @@ db.insert.update.timeseries <- function(db, meta, timeseries) {
   meta$var_name,
   timeseries)
   
-  rows.affected <- dbExecute(db, query)
+  rows.affected <- DBI::dbExecute(db, query)
   
   print(paste("Inserted", rows.affected, "rows into the database"))
   
@@ -629,14 +629,14 @@ db.insert.update.timeseries <- function(db, meta, timeseries) {
 #' @export
 db.new.data.id <- function(db) {
   
-  if(!dbIsValid(db)) {
+  if(!RMySQL::dbIsValid(db)) {
     stop("Invalid database connection")
   }
   
   # Fetch the maximum data_id from the database
-  result.ref <- dbSendQuery(db, "SELECT MAX(data_id) AS max_data_id FROM series")
-  data.ID <- dbFetch(result.ref, n = 1)$max_data_id + 1
-  dbClearResult(result.ref)
+  result.ref <- RMySQL::dbSendQuery(db, "SELECT MAX(data_id) AS max_data_id FROM series")
+  data.ID <- RMySQL::dbFetch(result.ref, n = 1)$max_data_id + 1
+  RMySQL::dbClearResult(result.ref)
   return(data.ID)
 }
 
@@ -688,9 +688,9 @@ station.info<-function(db){
   series.element_id=elements.element_id and 
   series.data_id=series_derived.data_id ;"
   
-  db.q<-dbSendQuery(db,query_new)
-  results<-dbFetch(db.q,n=-1)
-  dbClearResult(db.q)
+  db.q<-RMySQL::dbSendQuery(db,query_new)
+  results<-RMySQL::dbFetch(db.q,n=-1)
+  RMySQL::dbClearResult(db.q)
   return(results)
 }
 
@@ -726,9 +726,9 @@ station.nearby<-function(db, code_real){
                      realtypes.type='%s';",
                      code,type)
   
-  db.q<-dbSendQuery(db,query_new)
-  results<-dbFetch(db.q,n=-1)
-  dbClearResult(db.q)
+  db.q<-RMySQL::dbSendQuery(db,query_new)
+  results<-RMySQL::dbFetch(db.q,n=-1)
+  RMySQL::dbClearResult(db.q)
   return(results)
 }
 
@@ -750,9 +750,9 @@ break.info<-function(db, comb_name){
                   WHERE comb_name='%s' ;",
                  comb_name)
   
-  db.q<-dbSendQuery(db,query)
-  results<-dbFetch(db.q,n=-1)
+  db.q<-RMySQL::dbSendQuery(db,query)
+  results<-RMySQL::dbFetch(db.q,n=-1)
   
-  dbClearResult(db.q)  
+  RMySQL::dbClearResult(db.q)  
   return(results)
 }
