@@ -3,6 +3,7 @@
 export(aggregateTo.88)
 export(aggregateTo.seasonal)
 export(average.spatial)
+export(break.info)
 export(db.execute)
 export(db.insert.update.timeseries)
 export(db.new.data.id)
