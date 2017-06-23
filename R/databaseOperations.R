@@ -31,7 +31,7 @@ db.close <- function(db) {
 #' @param time.interval One of {"1hour", "1day", "month", "season, "year"}
 #' @param type One of {"N" (Manual), "H" (Automatic)} Case insensitive
 #' @param element One of {"RH" (Precipitation, originated from hourly data), "RD" (Precipitation, from daily data), "RR" (Precipitation, from radar data)} Case insensitive
-#' #@example data.container <- db.select.all(db, "1hour", "N", "RH") 
+#' #@example data.container <- db.execute(db.select.all, "1hour", "N", "RH") 
 #' @seealso db.setup()
 #' @description a function
 #' @author Jurian and Hidde
@@ -211,7 +211,7 @@ db.select.all <- function(db, time.interval, type, element) {
 #' @param type One of {"N", "H"} (case insensitive)
 #' @param element One of {"RH", "RD", "RR"} (case insensitive)
 #' @return An object of type "mqm.data.container" which contains a list of timeseries and metadata on those series.
-#' #@example data.container <- db.select.timeseries(db, c(260, 324, 343, 340), "1hour", "H", "RH")
+#' #@example data.container <- db.execute(db.select.timeseries, c(260, 324, 343, 340), "1hour", "H", "RH")
 #' @author Jurian
 #' @description a function
 #' @seealso db.setup()
@@ -440,7 +440,7 @@ db.select.timeseries <- function(db, station.IDs, time.interval, type, element) 
 #' @param db Handle to MySQL database, taken from db.setup()
 #' @param meta An object of type mqm.meta.timeseries
 #' @param timeseries An object of type mqm.data.timeseries, data.table of structure <datetime, value>
-#' #@example db.insert.update.timeseries(db, data.container$meta[<data_id>], data.container$1hour[<data_id>])
+#' #@example db.execute(db.insert.update.timeseries, data.container$year$meta[[<data_id>]], data.container$year$data[[<data_id>]])
 #' @description a function
 #' @author Jurian
 #' @seealso db.setup()
