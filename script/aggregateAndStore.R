@@ -3,20 +3,20 @@ source("R/databaseOperations.R")
 source("R/aggregateOperations.R")
 
 obj <- db.execute(db.select.all, time.interval="1hour", type="H", element="RH")  # AWS
-obj <- aggregate.to.88.2(obj)
-obj <- aggregate.to.seasonal.2(obj)
-obj <- aggregateTo.year(obj) 
+obj <- aggregate288(obj)
+obj <- aggregate2Seasonal(obj)
+obj <- aggregate2Year(obj) 
 obj2 <- db.execute(db.select.all, time.interval="1day", type="N", element="RD")  # MAN
-obj2 <- aggregate.to.seasonal.2(obj2)
-obj2 <- aggregateTo.year(obj2) 
+obj2 <- aggregate2Seasonal(obj2)
+obj2 <- aggregate2Year(obj2) 
 obj3 <- db.execute(db.select.all, time.interval="1hour", type="N", element="RR") # Radar at MAN locations
-obj3 <- aggregate.to.88.2(obj3)
-obj3 <- aggregate.to.seasonal.2(obj3)
-obj3 <- aggregateTo.year(obj3)
+obj3 <- aggregate288(obj3)
+obj3 <- aggregate2Seasonal(obj3)
+obj3 <- aggregate2Year(obj3)
 obj4 <- db.execute(db.select.all, time.interval="1hour", type="H", element="RR") # Radar at AWS locations
-obj4 <- aggregate.to.88.2(obj4)
-obj4 <- aggregate.to.seasonal.2(obj4)
-obj4 <- aggregateTo.year(obj4)
+obj4 <- aggregate288(obj4)
+obj4 <- aggregate2Seasonal(obj4)
+obj4 <- aggregate2Year(obj4)
 
 
 db <- db.setup()

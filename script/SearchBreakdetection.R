@@ -17,12 +17,12 @@ cfg <- config::get(file = "config/config.yml")
 # note: these functions will later be replaced by obtaining the data directly through the query.
 
 obj <- db.execute(db.select.all, time.interval="1hour", type="H", element="RH")  # AWS
-obj <- aggregate.to.88.2(obj)
-obj <- aggregate.to.seasonal.2(obj)
-obj <- aggregateTo.year(obj) 
+obj <- aggregate288(obj)
+obj <- aggregate2Seasonal(obj)
+obj <- aggregate2Year(obj) 
 obj2 <- db.execute(db.select.all, time.interval="1day", type="N", element="RD")  # MAN
-obj2 <- aggregate.to.seasonal.2(obj2)
-obj2 <- aggregateTo.year(obj2) 
+obj2 <- aggregate2Seasonal.2(obj2)
+obj2 <- aggregate2Year(obj2) 
 
 MAN_labels2 <- sapply(obj2$year$meta, function(m){m$sta_id})
 MAN_labels <- c()

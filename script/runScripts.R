@@ -28,14 +28,14 @@ db.close(db)
   
  # Aggregate AWS hourly values in 8-8 daily values #
     StartTime <- proc.time()
-obj <- aggregateTo.88(obj=obj, all.stations=TRUE, sta_type="AWS", var_id="RH", sta_id=sta_id)
+obj <- aggregate288(obj=obj, all.stations=TRUE, sta_type="AWS", var_id="RH", sta_id=sta_id)
     cat(sprintf("Finished Aggregating AWS hourly. (%.1f seconds)\n",round((proc.time()-StartTime)[3],digits=1)))
 
     
 # Aggregate AWS and MAN daily values in yearly and seasonal values #
     StartTime <- proc.time()
-obj <- aggregateTo.seasonal(obj=obj, all.stations=TRUE, sta_type="AWS", var_id="RD", sta_id=sta_id) 
-obj2 <- aggregateTo.seasonal(obj=obj2, all.stations=TRUE, sta_type="MAN", var_id="RD", sta_id=sta_id) 
+obj <- aggregate2Seasonal(obj=obj, all.stations=TRUE, sta_type="AWS", var_id="RD", sta_id=sta_id) 
+obj2 <- aggregate2Seasonal(obj=obj2, all.stations=TRUE, sta_type="MAN", var_id="RD", sta_id=sta_id) 
     cat(sprintf("Finished yearly aggregating of AWS and MAN. (%.1f seconds)\n",round((proc.time()-StartTime)[3],digits=1)))
 
     
