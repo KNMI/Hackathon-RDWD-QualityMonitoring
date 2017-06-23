@@ -1,0 +1,6 @@
+default:
+ dbname : "mqm_db"
+ username : "MQMuser"
+ password : "login@K4MQM"
+ host : "145.23.219.9"
+ port : 3306
