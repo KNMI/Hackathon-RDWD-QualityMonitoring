@@ -13,7 +13,7 @@ aggregate288(data.container)
 Rain is measured hourly in the automatic weather stations, this needs to be converted to sums from 8 am to 8 am on the next day.
 }
 \details{
-Daily aggeration
+Daily aggregation
 }
 \author{
 Lotte, Jurian & Hidde
