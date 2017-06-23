@@ -7,7 +7,7 @@
 #' @author Jurian and Hidde
 db.setup <- function() {
   
-  cfg <- config::get(file = "~/Hackathon-RDWD-QualityMonitoring/config/config.db.yml")
+  cfg <- config::get(file = "~/Hackathon-RDWD-QualityMonitoring/inst/config/config.db.yml")
   
   dbConnect(RMySQL::MySQL(), 
             dbname = cfg$dbname, 
