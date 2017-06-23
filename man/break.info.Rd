@@ -4,7 +4,12 @@
 \alias{break.info}
 \title{Get break detection information from database}
 \usage{
-break.info(comb_name)
+break.info(db, comb_name)
+}
+\arguments{
+\item{db}{Handle to MySQL database, taken from db.setup()}
+
+\item{comb_name}{combine name}
 }
 \description{
 get the break detection information per combine name

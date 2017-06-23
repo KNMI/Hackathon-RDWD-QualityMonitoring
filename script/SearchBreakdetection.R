@@ -11,49 +11,74 @@ Sys.setenv(R_CONFIG_ACTIVE = "test")
  source("R/timeseriesOperations.R")
  source("R/breakDetection.R")
 
-label_list <-  c("NL", etc...)    # AWS name list e.g. 260_H
-                  
-for(label in label_list){
-  singleAWS ## based on database query reads which stations are related to this
-  related_MAN ## based on database query reads which stations are related to this 
-  
-  # Input data #
-  if(label == "NL"){
-    db <- db.setup()
-    dbExecute(db.select.all(db, time.interval="1day", "N", "RH"))
+ # Data input # 
+# note: these functions will later be replaced by obtaining the data directly through the query.
+
+obj <- db.execute(db.select.all, time.interval="1hour", type="H", element="RH")  # AWS
+obj <- QualityMonitoR::aggregateTo.88.2(obj)
+obj <- aggregateTo.seasonal.2(obj)
+obj <- aggregateTo.year(obj) 
+obj2 <- db.execute(db.select.all, time.interval="1day", type="N", element="RD")  # MAN
+obj2 <- aggregateTo.seasonal.2(obj2)
+obj2 <- aggregateTo.year(obj2) 
+obj3 <- db.execute(db.select.all, time.interval="1hour", type="N", element="RR") # Radar at MAN locations
+obj3 <- aggregateTo.88.2(obj3)
+obj3 <- aggregateTo.year(obj3)
+
+AWS_series <- names(obj$`1hour`$meta)
+AWS_labels <- sapply(obj$`1hour`$meta, function(m){paste0(m$sta_id, "_H")})
+
+
+for(n in 0:length(AWS_labels)){
+  if(n == 0){
+    Comb_Name <- "NL"     # all AWS vs all MAN vs all Radar
+    obj_subset1 <- obj
+    obj_subset2 <- obj2
+    obj_subset3 <- obj3
+  }else{
+    Comb_Name <- AWS_labels[[n]]
+    obj_subset1 <- obj$`1day`$data[n]  # list with 1 data.table. 
+    stations_nearby <- station.nearby(AWS_labels[[n]])$nearby_code_real
+    if(length(stations_nearby)==0){next} # in case no nearby stations are available
+    nearby_labels <- substr(stations_nearby, 1, (nchar(stations_nearby)-2))
     
-    subset1 <- db.select.all(db, "hour", "validated", "rh")         # list of time series data.tables, dependent on label.  
-    subset2 <- db.select.all(db, "day", "derived", "rd")  
-  }else{    
-    db <- db.setup()
-    subset1 <- db.select.timeseries(db, stationIDs=singleAWS, typeID="H", elementID=1, series.type="validated")          # list of time series data.tables, dependent on label.  
-    subset2 <- db.select.timeseries(db, stationIDs=related_MAN, typeID="N", elementID=2, series.type="derived")    
-    db.close(db)
-  }
-   
-# notes from else branch.   
-  #' @title Query the database for timeseries data and metadata
-  #' @param db Handle to MySQL database, taken from db.setup()
-  #' @param stationIDs A vector of unique station ID's (called "codes" in the DB)
-  #' @param typeID Unique identifier for type (e.g. 1 for "N", 2 for "H")
-  #' @param elementID Unique identifier for element (e.g. 1 for "RH", 2 for "RD")
-  #' @param series.type One of {"validated", "derived", "series"}
-  #' @return An object of type "mqm.data.container" which contains a list of timeseries and metadata on those series.
-  #' @example data.container <- db.select.timeseries(db, c(260, 324, 343, 340), 2, 1, "validated")
-  #' @author Jurian
-  #' @seealso db.setup()
-  db.select.timeseries <-
+    selec_obj2 <- sapply(obj2$`1day`$meta, function(m){m$sta_id %in% substr(stations_nearby, 1, nchar(stations_nearby)-2) }) 
+    obj_subset2 <- obj2$`1day`$data[selec_obj2]
+    
+    selec_obj3 <- sapply(obj3$`1day`$meta, function(m){m$sta_id %in% substr(stations_nearby, 1, nchar(stations_nearby)-2) }) 
+    obj_subset3 <- obj3$`1day`$data[selec_obj3]
+    }
   
-   
-  StartTime <- proc.time()
-  db <- db.setup()
-  obj <- db.select.all(db, "hour", "validated", "rh")
-  obj2 <- db.select.all(db, "day", "derived", "rd")
-  db.close(db)
-  cat(sprintf("Finished obtaining obj. (%.1f seconds)\n",round((proc.time()-StartTime)[3],digits=1)))
-  
-  
-}                  
+
+  # Aggregation to yearly values #
+  aggregate.to.seasonal.2()
+
+  # Spatial averaging #
+
+obj1_average   <- average.spatial(timeseries=AWS_timeseriesselec_y) 
+
+
+
+} # end n-loop
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # Output for  shiny overview #
 BDs <- sort(unique(c(BD_y, BD_djf, BD_mam, BD_jja, BD_son)))

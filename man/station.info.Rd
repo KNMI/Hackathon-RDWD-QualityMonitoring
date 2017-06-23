@@ -4,7 +4,10 @@
 \alias{station.info}
 \title{Get station information from database}
 \usage{
-station.info()
+station.info(db)
+}
+\arguments{
+\item{db}{Handle to MySQL database, taken from db.setup()}
 }
 \description{
 get the metadata for all stations

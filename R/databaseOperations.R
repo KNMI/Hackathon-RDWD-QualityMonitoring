@@ -7,9 +7,10 @@
 #' @author Jurian and Hidde
 db.setup <- function() {
   
-  cfg <- config::get(file = "~/Hackathon-RDWD-QualityMonitoring/inst/config/config.db.yml")
-  
-  dbConnect(RMySQL::MySQL(), 
+  cfg <- config::get(file = system.file("config", "config.db.yml",
+                                        package = "QualityMonitoR"))
+
+  DBI::dbConnect(RMySQL::MySQL(), 
             dbname = cfg$dbname, 
             username = cfg$username,
             password = cfg$password, 
@@ -23,14 +24,14 @@ db.setup <- function() {
 #' @author Jurian and Hidde
 #' @param db Data base
 db.close <- function(db) {
-  dbDisconnect(db)
+  DBI::dbDisconnect(db)
 }
 
 #' @title Query the database for hourly 
 #' @param db Handle to MySQL database, taken from db.setup()
 #' @param time.interval One of {"1hour", "1day", "month", "season, "year"}
-#' @param type One of {"N", "H"} Case insensitive
-#' @param element One of {"RH", "RD", "RR"} Case insensitive
+#' @param type One of {"N" (Manual), "H" (Automatic)} Case insensitive
+#' @param element One of {"RH" (Precipitation, originated from hourly data), "RD" (Precipitation, from daily data), "RR" (Precipitation, from radar data)} Case insensitive
 #' #@example data.container <- db.select.all(db, "1hour", "N", "RH") 
 #' @seealso db.setup()
 #' @description a function
@@ -116,7 +117,7 @@ db.select.all <- function(db, time.interval, type, element) {
   result <- dbFetch(result.ref, cfg$database.max.records)
   dbClearResult(result.ref)
   
-  data.container[[time.interval.db]]$meta <- by(result, factor(result$station_code), function(x){
+  data.container[[time.interval.db]]$meta <- by(result, factor(result$station_code), function(x) {
     
     meta <- list (
       dat_id = x$data_id,
@@ -147,7 +148,7 @@ db.select.all <- function(db, time.interval, type, element) {
     stop("No stations match this description")
   }
   
-  data.IDs <- result$data_id
+  data.IDs <- sapply(data.container[[time.interval.db]]$meta, function(x) {x$dat_id})
   names(data.container[[time.interval.db]]$meta) <- data.IDs
   
   query <- sprintf(paste(
@@ -193,6 +194,8 @@ db.select.all <- function(db, time.interval, type, element) {
     class(dt) <- append(class(dt), cfg$data.container.timeseries.class)
     return(dt)
   })
+  names(data.container[[time.interval.db]]$data) <- data.IDs
+  
   rm(result)
   return(data.container)
 }
@@ -422,6 +425,59 @@ db.select.timeseries <- function(db, station.IDs, time.interval, type, element) 
     return(meta)
   })
   
+  names(data.container[[time.interval.db]]$meta) <- sapply(data.container[[time.interval.db]]$meta, function(x){x$dat_id})
+  rm(result)
+  
+  #---------------------------------------------#
+  ### Query the DB for actual timeseries data ###
+  #---------------------------------------------#
+  
+  query <- sprintf(paste(
+    "SELECT",
+    "data_id, DATE_FORMAT(date, %%s) AS datetime, value, qc",
+    "FROM",
+    "%s_series_%s",
+    "WHERE",
+    "data_id IN (%s)",
+    ";"),
+    time.interval.db,
+    element.name,
+    paste(data.IDs, collapse = ","))
+  
+  query <- dbEscapeStrings(db, query)
+  query <- sprintf(query, "'%Y%m%d%H%i%s'")
+  
+  result.ref <- dbSendQuery(db, query)
+  result <- data.table(dbFetch(result.ref, n = cfg$database.max.records))
+  setkey(result, datetime)
+  dbClearResult(result.ref)
+  
+  data.container[[time.interval.db]]$data <- by(result, factor(data.IDs), function(x) {
+    
+    dt <- data.table(datetime = x$datetime, value = x$value)
+    setkey(dt, datetime)
+    
+    # Set any observations which do not pass the quality check to NA
+    # Set any observations which are missing (-9999) to NA
+    qc.idx <- !(x$qc %in% max.qc)
+    missing.idx <- trunc(x$value) <= db.na.value
+    dt$value[missing.idx | qc.idx] <- NA
+    
+    # We need the begin and end of the timeseries to check for holes
+    begin <- strptime(min(dt$datetime), format = "%Y%m%d%H%M%S", tz = "GMT")
+    end <- strptime(max(dt$datetime), format = "%Y%m%d%H%M%S", tz = "GMT")
+    
+    # If the timeseries has holes, then fill them up with NA's
+    if((difftime(end, begin, tz = "GMT", units = time.interval) + 1) > nrow(dt)) {
+      complete.timeline <- data.table(datetime = format(seq(begin, end, by = time.interval), format = "%Y%m%d%H%M%S"))
+      setkey(complete.timeline, datetime)
+      dt <- base::merge(dt, complete.timeline, by = "datetime", all = T)
+    }
+    
+    class(dt) <- append(class(dt), cfg$data.container.timeseries.class)
+    return(dt)
+  })
+  names(data.container[[time.interval.db]]$data) <- sapply(data.container[[time.interval.db]]$meta, function(x){x$dat_id})
   rm(result)
   
   return(data.container)
@@ -658,15 +714,19 @@ station.nearby<-function(code_real){
   
   
   query_new<-sprintf("SELECT name,
-
-CONCAT(nearby_stations.nearby_code,'_',types.type) as nearby_code_real,
-                             latitude,
-                             longitude
-                      FROM nearby_stations,stations,types
-                      WHERE nearby_stations.nearby_code=stations.code and
-                            nearby_stations.nearby_type_id=stations.type_id and
-                            nearby_stations.type_id=types.type_id and
-                            nearby_stations.code=%s and types.type='%s';",
+                     CONCAT(nearby_stations.nearby_code,'_',nearbytypes.type) as
+                     nearby_code_real,
+                     latitude,
+                     longitude
+                     FROM nearby_stations,stations,types nearbytypes,
+                     types realtypes
+                     WHERE nearby_stations.nearby_code=stations.code and
+                     
+                     nearby_stations.nearby_type_id=stations.type_id and
+                     
+                     nearby_stations.nearby_type_id=nearbytypes.type_id and
+                     nearby_stations.code=%s and
+                     realtypes.type='%s';",
                      code,type)
   
   db.q<-dbSendQuery(db,query_new)
@@ -678,6 +738,7 @@ CONCAT(nearby_stations.nearby_code,'_',types.type) as nearby_code_real,
 #' @title Get break detection information from database
 #' @description get the break detection information per combine name
 #' @author Else
+#' @param comb_name combine name
 #' @export
 break.info<-function(comb_name){
   db<-db.setup()
