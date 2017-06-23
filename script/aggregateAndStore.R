@@ -1,5 +1,6 @@
 Sys.setenv(R_CONFIG_ACTIVE = "test")
 source("R/databaseOperations.R")
+source("R/aggregateOperations.R")
 
 obj <- db.execute(db.select.all, time.interval="1hour", type="H", element="RH")  # AWS
 obj <- aggregate.to.88.2(obj)
@@ -12,6 +13,11 @@ obj3 <- db.execute(db.select.all, time.interval="1hour", type="N", element="RR")
 obj3 <- aggregate.to.88.2(obj3)
 obj3 <- aggregate.to.seasonal.2(obj3)
 obj3 <- aggregateTo.year(obj3)
+obj4 <- db.execute(db.select.all, time.interval="1hour", type="H", element="RR") # Radar at AWS locations
+obj4 <- aggregate.to.88.2(obj4)
+obj4 <- aggregate.to.seasonal.2(obj4)
+obj4 <- aggregateTo.year(obj4)
+
 
 db <- db.setup()
 
@@ -34,6 +40,15 @@ obj3.result <- sapply(names(obj3$`1day`$meta), function(data.ID){
     db,
     obj3$`1day`$meta[[data.ID]],
     obj3$`1day`$data[[data.ID]])
+  
+})
+
+obj4.result <- sapply(names(obj4$`1day`$meta), function(data.ID){
+  
+  db.insert.update.timeseries (
+    db,
+    obj4$`1day`$meta[[data.ID]],
+    obj4$`1day`$data[[data.ID]])
   
 })
 
@@ -68,6 +83,15 @@ obj3.result <- sapply(names(obj3$season$meta), function(data.ID){
   
 })
 
+obj4.result <- sapply(names(obj4$season$meta), function(data.ID){
+  
+  db.insert.update.timeseries (
+    db,
+    obj4$season$meta[[data.ID]],
+    obj4$season$data[[data.ID]])
+  
+})
+
 #-------------------------------------------------------#
 ### Save the yearly aggregations back to the database ###
 #-------------------------------------------------------#
@@ -99,5 +123,13 @@ obj3.result <- sapply(names(obj3$year$meta), function(data.ID){
   
 })
 
+obj4.result <- sapply(names(obj4$year$meta), function(data.ID){
+  
+  db.insert.update.timeseries (
+    db,
+    obj4$year$meta[[data.ID]],
+    obj4$year$data[[data.ID]])
+  
+})
 
 db.close(db)
