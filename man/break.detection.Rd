@@ -4,12 +4,16 @@
 \alias{break.detection}
 \title{Break detection with Buishand method}
 \usage{
-break.detection(series1, range = 2, plot.score = FALSE)
+break.detection(series1, name, type, radius = 2, plot.score = FALSE)
 }
 \arguments{
 \item{series1}{time series to check, it must be a table with two columns (datetime and value)}
 
-\item{range}{radius (in years) of the running window that is used for the identification of local minima/maxima}
+\item{name}{name (or code) of the station}
+
+\item{type}{temporal aggregation of the input {'y', 'djf', 'mam', 'jja', 'son'}}
+
+\item{radius}{radius (in years) of the running window that is used for the identification of local minima/maxima}
 
 \item{plot.score}{if TRUE it produces a plot for the visualization of the breaks}
 }

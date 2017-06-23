@@ -12,7 +12,7 @@ db.insert.update.timeseries(db, meta, timeseries)
 \item{meta}{An object of type mqm.meta.timeseries}
 
 \item{timeseries}{An object of type mqm.data.timeseries, data.table of structure <datetime, value>
-#@example db.insert.update.timeseries(db, data.container$meta[<data_id>], data.container$1hour[<data_id>])}
+#@example db.execute(db.insert.update.timeseries, data.container$year$meta[[<data_id>]], data.container$year$data[[<data_id>]])}
 }
 \description{
 a function

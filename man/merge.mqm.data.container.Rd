@@ -4,7 +4,7 @@
 \alias{merge.mqm.data.container}
 \title{Merge two data containers}
 \usage{
-\method{merge}{mqm.data.container}(a, b)
+merge.mqm.data.container(a, b)
 }
 \arguments{
 \item{a}{Fist data container}

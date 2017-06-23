@@ -4,7 +4,7 @@
 \alias{aggregate.to.seasonal.2}
 \title{Aggregate 8 am to 8 am data to seasonal sums}
 \usage{
-\method{aggregate}{to.seasonal.2}(data.container)
+aggregate.to.seasonal.2(data.container)
 }
 \arguments{
 \item{data.container}{The R object containing all timeseries and metadata}

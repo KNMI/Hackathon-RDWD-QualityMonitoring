@@ -14,7 +14,7 @@ db.select.all(db, time.interval, type, element)
 \item{type}{One of {"N" (Manual), "H" (Automatic)} Case insensitive}
 
 \item{element}{One of {"RH" (Precipitation, originated from hourly data), "RD" (Precipitation, from daily data), "RR" (Precipitation, from radar data)} Case insensitive
-#@example data.container <- db.select.all(db, "1hour", "N", "RH")}
+#@example data.container <- db.execute(db.select.all, "1hour", "H", "RH")}
 }
 \description{
 a function
