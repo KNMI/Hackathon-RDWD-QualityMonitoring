@@ -319,7 +319,7 @@ aggregate.to.seasonal.2 <- function(data.container) {
   return(data.container)
 }
 
-#' Daily aggeration
+#' Daily aggregation
 #' @title Aggregate hourly data to daily from 8am to 8am the next day
 #' @description Rain is measured hourly in the automatic weather stations, this needs to be converted to sums from 8 am to 8 am on the next day.
 #' @param data.container The R object containing all timeseries and metadata
