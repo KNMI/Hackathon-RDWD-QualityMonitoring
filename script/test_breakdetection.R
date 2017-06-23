@@ -15,12 +15,12 @@ source("R/breakDetection.R")
 # note: these functions will later be replaced by obtaining the data directly through the query.
 
 obj <- db.execute(db.select.all, time.interval="1hour", type="H", element="RH")  # AWS
-obj <- aggregate.to.88.2(obj)
-obj <- aggregate.to.seasonal.2(obj)
-obj <- aggregateTo.year(obj) 
+obj <- aggregate288(obj)
+obj <- aggregate2Seasonal(obj)
+obj <- aggregate2Year(obj) 
 obj2 <- db.execute(db.select.all, time.interval="1day", type="N", element="RD")  # MAN
-obj2 <- aggregate.to.seasonal.2(obj2)
-obj2 <- aggregateTo.year(obj2) 
+obj2 <- aggregate2Seasonal(obj2)
+obj2 <- aggregate2Year(obj2) 
 
 MAN_labels2 <- sapply(obj2$year$meta, function(m){m$sta_id})
 MAN_labels <- c()
@@ -30,9 +30,9 @@ obj3 <- db.execute(db.select.all, time.interval="1hour", type="N", element="RR")
 obj3selec <- sapply(obj3$`1hour`$meta, function(m){m$sta_id %in% MAN_labels & m$sta_type=="n"})
 obj3$`1hour`$data <- obj3$`1hour`$data[obj3selec]   #only take the radar timeseries at MAN stations
 obj3$`1hour`$meta <- obj3$`1hour`$meta[obj3selec]   
-obj3 <- aggregate.to.88.2(obj3)
-obj3 <- aggregate.to.seasonal.2(obj3)
-obj3 <- aggregateTo.year(obj3) 
+obj3 <- aggregate288(obj3)
+obj3 <- aggregate2Seasonal(obj3)
+obj3 <- aggregate2Year(obj3) 
 
 AWS_series <- names(obj$year$meta)
 AWS_labels <- sapply(obj$year$meta, function(m){paste0(m$sta_id, "_H")})

@@ -14,20 +14,20 @@
 
 # keep this in working memory if query doesn't work. Warning: takes a long!
 obj <- db.execute(db.select.all, time.interval="1hour", type="H", element="RH")  # AWS
-obj <- aggregate.to.88.2(obj)
-obj <- aggregate.to.seasonal.2(obj)
-obj <- aggregateTo.year(obj) 
+obj <- aggregate288(obj)
+obj <- aggregate2Seasonal(obj)
+obj <- aggregate2Year(obj) 
 obj2 <- db.execute(db.select.all, time.interval="1day", type="N", element="RD")  # MAN
-obj2 <- aggregate.to.seasonal.2(obj2)
-obj2 <- aggregateTo.year(obj2) 
+obj2 <- aggregate2Seasonal(obj2)
+obj2 <- aggregate2Year(obj2) 
 obj3a <- db.execute(db.select.all, time.interval="1hour", type="H", element="RR") # Radar at all locations
 obj3b <- db.execute(db.select.all, time.interval="1hour", type="N", element="RR") # Radar at all locations
-obj3a <- aggregate.to.88.2(obj3a)
-obj3a <- aggregate.to.seasonal.2(obj3a)
-obj3a <- aggregateTo.year(obj3a) 
-obj3b <- aggregate.to.88.2(obj3b)
-obj3b <- aggregate.to.seasonal.2(obj3b)
-obj3b <- aggregateTo.year(obj3b) 
+obj3a <- aggregate288(obj3a)
+obj3a <- aggregate2Seasonal(obj3a)
+obj3a <- aggregate2Year(obj3a) 
+obj3b <- aggregate288(obj3b)
+obj3b <- aggregate2Seasonal(obj3b)
+obj3b <- aggregate2Year(obj3b) 
 
 
 BreakDetectionFinder <- function(stationID, subsetselectionIDs){
