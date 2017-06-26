@@ -49,7 +49,8 @@ db.select.all <- function(db, time.interval, type, element) {
   supported.time.intervals <- c("1hour", "1day", "month", "season", "year")
   if(!time.interval %in% supported.time.intervals) stop(paste("Unsupported time interval:", time.interval))
   
-  cfg <- config::get(file = "config/config.yml")
+  cfg <- config::get(file = system.file("config", "config.yml",
+                                 package = "QualityMonitoR"))
   max.qc <- cfg$qc.threshold
   db.na.value <- cfg$database.na.value
   
